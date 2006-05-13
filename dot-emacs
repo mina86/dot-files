@@ -1,7 +1,7 @@
 ;;                                 -*- mode: lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- EMACS configuration fil</li>
 ;; Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-emacs,v 1.1 2006/05/13 14:38:16 mina86 Exp $
+;; $Id: dot-emacs,v 1.2 2006/05/13 14:41:30 mina86 Exp $
 ;;
 ;;{{{ System dependend data
 
@@ -659,6 +659,11 @@ start to `point-max' if only start is present."
 ;;(add-to-set! auto-mode-alist '("\\.l$" . flex-mode))
 
 ;;}}}
+;;{{{ Script mode
+
+(autoload 'script-mode "script-mode" "Mode fore editing scripts" t)
+
+;;}}}
 
 ;;}}}
 ;;{{{ Various features
@@ -738,7 +743,7 @@ start to `point-max' if only start is present."
 ;;{{{ Notes in *scratch*
 
 ; Notes in *scratch*  v. 0.2
-; Copyright (c) 2006 by Michal Nazarewicz (mina86/AT/projektcode.org)
+; Copyright (c) 2006 by Michal Nazarewicz (mina86/AT/mina86.com)
 
 (defconst scratch-file (expand-file-name "~/.emacs.scratch")
   "File where content of *scratch* buffer will be read from and saved to.")
@@ -797,5 +802,3 @@ start to `point-max' if only start is present."
 ;; You may want to comment it out for debuging
 (setq message-log-max nil)        ;disable messages
 (kill-buffer "*Messages*")        ;kill buffer with messages
-
-(load "script-mode")
