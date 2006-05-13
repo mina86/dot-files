@@ -1,0 +1,801 @@
+;;                                 -*- mode: lisp; indent-tabs-mode: nil -*-
+;; .emacs  -- EMACS configuration fil</li>
+;; Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
+;; $Id: dot-emacs,v 1.1 2006/05/13 14:38:16 mina86 Exp $
+;;
+;;{{{ System dependend data
+
+;; Add  ~/elisp  to load path
+(setq load-path (cons (expand-file-name "~/elisp") load-path))
+
+;; Use  aspell  if it exists
+(setq-default ispell-program-name "aspell")
+
+;;}}}
+;;{{{ Bindings
+
+;;{{{ Sequence commands
+
+;; Sequence commands  1.2  by me, Michal Nazarewicz ;)
+;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
+(defvar seq-store-times 0)
+(defvar seq-start-point 0
+  "Stores location of pointer when sequence of calls of the same
+function was started. This variable is updated by `seq-times'")
+(defvar seq-start-window-start 0
+  "Stores location at which display started in window when
+sequence of calls of the same function was started. This variable
+is updated by `seq-times'")
+
+(defun seq-times (&optional name max)
+  "Returns number of times command `name' was executed. If `name'
+is an empty string won't check if `last-command' matches. If
+`max' is specified the counter will wrap around at the value of
+`max' never reaching it. It also updates `seq-start-point'."
+  (if (numberp name) (setq max name name this-command)
+    (unless name (setq name this-command)))
+  (if (or (equal "" name) (equal last-command name))
+      (if (eq (setq seq-store-times (1+ seq-store-times)) max)
+          (setq seq-store-times 0) seq-store-times)
+    (setq seq-start-point (point) seq-start-window-start (window-start)
+          seq-store-times 0)))
+
+;;}}}
+;;{{{ Home/End
+
+;; My home
+(defun my-home ()
+   "Depending on how many times it was called moves the point to:
+once - beginning of line; twice - indent;
+three times - beginning of buffer; four times - back to where it was."
+   (interactive)
+   (let ((n (seq-times 4)))
+     (cond ((= n 0) (beginning-of-line))
+           ((= n 1) (back-to-indentation))
+           ((= n 2) (goto-char (point-min)))
+           (t (goto-char seq-start-point)))))
+
+(global-set-key "\C-a"          'my-home)
+(global-set-key [home]          'my-home)
+(global-set-key [kp-home]       'my-home)
+(global-set-key [f27]           'my-home)
+(global-set-key "\e[1~"         'my-home)
+
+
+;; My end
+(defun my-end () "Go to end of line or buffer" (interactive)
+  (let ((n (seq-times 4)))
+    (cond ((= n 0) (end-of-line))
+          ((= n 1) (forward-paragraph))
+          ((= n 2) (goto-char (point-max)))
+          (t (goto-char seq-start-point)))))
+
+(global-set-key "\C-e"          'my-end)
+(global-set-key [end]           'my-end)
+(global-set-key [kp-end]        'my-end)
+(global-set-key [select]        'my-end)
+(global-set-key [f33]           'my-end)
+(global-set-key "\e[4~"         'my-end)
+
+;;}}}
+;;{{{ Pager/Scrolling
+
+;; Makes paging functions work the way god intended
+;; http://www.docs.uu.se/~mic/emacs.html
+;; pager.el was modified by my
+(require 'pager)
+(setq pager-goto-edge t)
+
+(global-set-key "\ev"           'pager-page-up)     ; Page Up
+(global-set-key [prior]         'pager-page-up)
+(global-set-key [f29]           'pager-page-up)
+(global-set-key "\C-v"          'pager-page-down)   ; Page Down
+(global-set-key [next]          'pager-page-down)
+(global-set-key [f35]           'pager-page-down)
+
+(global-set-key '[M-up]     (lambda () (interactive) (scroll-down 1))) ; Alt+Up
+(global-set-key '[M-kp-8]   (lambda () (interactive) (scroll-down 1)))
+(global-set-key "\M-p"      (lambda () (interactive) (scroll-down 1)))
+(global-set-key '[M-down]   (lambda () (interactive) (scroll-up   1))) ; Alt=Dn
+(global-set-key '[M-kp-2]   (lambda () (interactive) (scroll-up   1)))
+(global-set-key "\M-n"      (lambda () (interactive) (scroll-up   1)))
+
+(global-set-key '[M-S-up]       'pager-row-up)      ; Alt+Shift+Up
+(global-set-key '[M-S-kp-8]     'pager-row-up)
+(global-set-key "\M-P"          'pager-row-up)
+(global-set-key '[M-S-down]     'pager-row-down)    ; Alt+Shift+Down
+(global-set-key '[M-S-kp-2]     'pager-row-down)
+(global-set-key "\M-N"          'pager-row-down)
+
+;;}}}
+;;{{{ Save with no blanks
+
+;; Save with no trailing whitespaces
+(defun save-no-blanks (&optional arg) (interactive "P")
+  (save-excursion
+    (goto-char 0) (perform-replace "[ \t]+$" "" nil t nil)
+    (goto-char (point-max)) (delete-blank-lines)
+    (save-buffer arg)))
+
+(global-set-key "\C-x\C-s"      'save-no-blanks)        ; C-x C-s  no blanks
+(global-set-key "\C-xS"         'save-buffer)           ; C-x S    normal
+
+;;}}}
+;;{{{ Misc
+
+(global-set-key "\C-h"          'delete-backward-char)
+(global-set-key [backspace]     'delete-backward-char)
+(global-set-key [delete]        'delete-char)
+
+(global-set-key "\C-xg"         'goto-line)             ; C-x g  goto line
+(global-set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
+(global-set-key "\C-xk"         'kill-this-buffer)      ; don't ask which
+                                                        ; buffer to kill
+(global-set-key "\C-cr"         'revert-buffer)         ; Reload buffer
+(global-set-key "\C-x\C-b"      (lambda () (interactive); C-x C-b switch
+  (switch-to-buffer (other-buffer))))
+
+;(autotoload 'goto-last-change "goto-last-change"
+;  "Set point to the position of the last change." t)
+;(global-set-key "\C-x\C-\\" 'goto-last-change)
+
+(eval-when-compile (require 'imenu))
+(global-set-key [S-mouse-3] 'imenu)
+(setq imenu-sort-function 'imenu--sort-by-name)
+
+;; Mouse gestures (a.k.a. strokes)
+;(strokes-mode 1)
+;(global-set-key [down-mouse-3]  'strokes-do-stroke)
+
+
+;; Centering
+;; This defun is insane!!! I cannot believe I wrote it...
+(defun centerer ()
+   "Repositions current line: once - middle, twice - top, three
+and four times - `reposition-window', five times - bottom, six
+times - where it was at the beginning."
+   (interactive)
+   (let ((n (seq-times 6)) (i 0) (old (window-start)))
+     (while (and (< i 6) (equal (window-start) old))
+       (unless (= (setq i (1+ i)) 1) (setq n (seq-times "" 6)))
+       (cond ((= n 0) (recenter))
+             ((= n 1) (recenter 0))
+             ((< n 4) (reposition-window))
+             ((= n 4) (recenter -1))
+             (t (set-window-start (selected-window) seq-start-window-start)))
+       )))
+
+(global-set-key "\C-l"     'centerer)
+
+
+;; Tab - indent or complete
+;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
+
+(defvar indent-or-complete-complete-function 'dabbrev-expand
+  "Function to complete the word when using `indent-or-complete'
+It is called with one argument - nil")
+
+(defvar indent-or-complete--last-was-complete nil)
+
+(defun indent-or-complete ()
+  "Complete if point is at end of a word, otherwise indent line.
+Uses `indent-or-complete-complete-function' function when completing
+and `indent-for-tab-command' when indenting"
+  (interactive)
+  (if (set 'indent-or-complete--last-was-complete
+           (or (looking-at "\\>")
+               (and (eq last-command this-command)
+                    indent-or-complete--last-was-complete)))
+      (funcall indent-or-complete-complete-function nil)
+    (indent-for-tab-command)))
+
+(add-hook 'find-file-hooks (function (lambda ()
+  (local-set-key (kbd "<tab>") 'indent-or-complete))))
+
+
+;; fill-paragraph-or-region
+(defun fill-paragraph-or-region (&optional arg)
+  "Runs `fill-region' if `mark-active', `fill-paragraph' otherwise."
+  (interactive (progn (barf-if-buffer-read-only)
+                      (list (if current-prefix-arg 'full))))
+  (if mark-active
+      (fill-region (region-beginning) (region-end) arg) (fill-paragraph arg)))
+
+(defun my-fill () "" (interactive)
+   (fill-paragraph-or-region (nth (seq-times 4) '(left full right center))))
+
+(global-set-key "\M-q"          'my-fill)
+
+
+;; Do not break line after single character when filling
+(defun fill-single-char-nobreak-p ()
+  "Don't break a line after a single character."
+  (save-excursion
+    (skip-chars-backward " \t") (backward-char 2)
+    (looking-at "[ \t\n][a-zA-Z]")))
+
+(add-to-list 'fill-nobreak-predicate 'fill-single-char-nobreak-p)
+
+
+;; Jump
+(require 'ffap)
+(defun my-jump () "Jump to the thing at point." (interactive)
+  (let ((thing (ffap-guesser))) (if thing (ffap thing)) t))
+
+(global-set-key [C-return] 'my-jump)
+(global-set-key [C-S-mouse-3] 'ffap-at-mouse)
+
+;;}}}
+;;{{{ Fkeys
+
+(defun my-help ()
+  "If function given tries to `describe-function' otherwise uses
+`manual-entry' to display manpage of a `current-word'."
+  (interactive)
+   (let ((fn (function-called-at-point)))
+     (if fn
+         (describe-function fn)
+       (manual-entry (current-word)))))
+
+(global-set-key "\e[OP"     "\e[[A")
+(global-set-key [f1]        "\e[[A")
+(global-set-key "\e[[A"     'my-help)
+
+
+(global-set-key "\e[OQ"     "\e[[B")
+(global-set-key [f2]        "\e[[B")
+(global-set-key "\e[[B"     '(lambda () (interactive) (find-file "~/.emacs")))
+(global-set-key [M-f2]      "\eO3Q")
+(global-set-key "\eO3Q"     '(lambda () (interactive) (find-file "~/.emacs.custom")))
+
+(global-set-key "\e[OR"     "\e[[B")
+(global-set-key [f3]        "\e[[B")
+(global-set-key "\e[[C"     '(lambda () (interactive) (find-file "~/.bashrc")))
+
+
+(defun my-spell (lang &optional start end)
+  "Sets ispell dictionary to lang and checks the whole document
+if args are missing, the selected region if args are missing and
+`mark-active', from start to end if both args are present, from
+start to `point-max' if only start is present."
+  (ispell-change-dictionary lang)
+  (if start (ispell-region start (or end (point-max))) (ispell)))
+
+(global-set-key [f7]        '(lambda () (interactive) (my-spell "pl")))
+(global-set-key [C-f7]      '(lambda () (interactive) (my-spell "pl" (point))))
+(global-set-key [M-f7]      '(lambda () (interactive) (my-spell "en")))
+(global-set-key [C-M-f7]    '(lambda () (interactive) (my-spell "en" (point))))
+
+;;{{{ Keyboard macros
+
+;; http://www.emacswiki.org/cgi-bin/wiki/MacroKey
+(defun ted-macro-dwim (arg)
+  "DWIM keyboard macro recording and executing."
+  (interactive "P")
+  (if defining-kbd-macro (if arg (end-kbd-macro arg) (end-kbd-macro))
+    (if last-kbd-macro (call-last-kbd-macro arg) (start-kbd-macro arg))))
+
+(global-set-key [f8]        'ted-macro-dwim)
+(global-set-key [\M-f8]     (lambda () (interactive) (setq last-kbd-macro ())))
+(global-set-key [\C-f8]     'kmacro-start-macro-or-insert-counter)
+
+;;}}}
+
+(global-set-key "\e\e[[20~" 'compile)                  ; F9    compile
+(global-set-key [f9]        'compile)
+(global-set-key [C-f9]      'recompile)                ; C-F9  recompile
+
+;;}}}
+;;{{{ ISearch mode
+
+(add-hook 'isearch-mode-hook (lambda ()
+ (define-key isearch-mode-map "\C-h"      'isearch-mode-help)
+ (define-key isearch-mode-map "\C-t"      'isearch-toggle-regexp)
+ (define-key isearch-mode-map "\C-c"      'isearch-toggle-case-fold)
+ (define-key isearch-mode-map "\C-j"      'isearch-edit-string)
+; (define-key isearch-mode-map "\C-h"      'isearch-del-char)
+ (define-key isearch-mode-map [backspace] 'isearch-del-char)
+))
+
+;;}}}
+;;{{{ RISC mode
+
+(autoload 'risc-mode        "risc-mode" "Toggles RISC Mode on or off" t)
+(autoload 'risc-mode-toggle "risc-mode" "Toggles RISC Mode on or off" t)
+(global-set-key "\C-c\C-c"     'risc-mode-toggle)
+(global-set-key (kbd "<menu>") 'risc-mode-toggle)
+
+;;}}}
+
+;;}}}
+;;{{{ Autocompile user-init-file
+
+(load "bytecomp")
+
+(add-hook 'kill-buffer-hook (lambda ()
+  (if (and (string= user-init-file (buffer-file-name))
+           (file-newer-than-file-p user-init-file
+                                   (byte-compile-dest-file user-init-file)))
+      (byte-compile-file (buffer-file-name)))))
+
+(add-hook 'kill-emacs-hook (lambda ()
+  (if (file-newer-than-file-p user-init-file
+                              (byte-compile-dest-file user-init-file))
+      (byte-compile-file (expand-file-name user-init-file)))))
+
+;;}}}
+;;{{{ Syntax highlighting
+
+;;{{{ Font lock
+
+(require 'font-lock)
+(global-font-lock-mode t)
+(setq font-lock-verbose nil)          ;no messages
+
+;; Let customize keep config there
+(setq custom-file "~/.emacs.custom")
+(if (file-exists-p custom-file) (load-file custom-file))
+
+;;}}}
+;;{{{ Lazy lock
+
+;; Makes everything work faster with big files
+;(require 'lazy-lock)
+;(setq font-lock-support-mode 'lazy-lock-mode)
+;(setq lazy-lock-minimum-size 16384)   ;use lazy lock only with file >16KB
+;(setq lazy-lock-defer-on-scrolling t) ;delay fontyfing on scrolling
+;(setq lazy-lock-defer-time 1)         ;must be 1s idle to refontify
+;(setq lazy-lock-stealth-time 16)      ;fontfy in advance if 20s idle
+;(setq lazy-lock-stealth-lines 64)     ;fontify 50 lines when idle
+;(setq lazy-lock-stealth-verbose nil)  ;not verbouse
+
+;;}}}
+;;{{{ Other
+
+(setq query-replace-highlight t)  ;highlight during query
+(setq search-highlight t)         ;highlight incremental search
+(show-paren-mode t)               ;show matching parenthesis.
+
+;;}}}
+;;{{{ Show blanks, FIXME and PowerDown script faces
+
+;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
+
+(custom-set-faces
+ '(my-tab-face ((((class color))
+   (:background "#555" :foreground "black" :underline t))) t)
+ '(my-big-indent-face ((((class color))
+   (:background "#755" :foreground "black" :underline t))) t)
+ '(my-huge-indent-face ((((class color))
+   (:background "#C55" :foreground "black" :underline t))) t)
+ '(my-fixme-face ((((class color))
+   (:background "red" :foreground "white" :weight bold))) t)
+ )
+
+
+(add-hook 'font-lock-mode-hook (function (lambda ()
+  (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
+    (font-lock-add-keywords nil
+     '(("\t+" 0 'my-tab-face t)
+       ("\t\\{4,\\}" 0 'my-big-indent-face t)
+       ("\t\\{6,\\}" 0 'my-huge-indent-face t)
+       ("!\\{3\\}IMPORTANT!!!.*!!!" 0 'my-fixme-face t)
+       ("\\<\\(FIXME:\\)" 1 'my-fixme-face t)))))))
+
+;;}}}
+
+;;}}}
+;;{{{ Misc small config
+
+;;Save some space
+(menu-bar-mode nil)               ;no menu bar
+(when window-system
+  (tool-bar-mode nil)             ;no tool bar
+  (scroll-bar-mode nil)           ;no scroll bar
+  (require 'fringe)
+  (set-fringe-mode '(1 . 5))      ;small fringe
+  )
+
+;; Modeline, Minibuffer & Frame title
+(setq line-number-mode t)         ;show line number in modeline
+(setq column-number-mode nil)     ;don't show column number in modeline
+(resize-minibuffer-mode nil)      ;dont resize minibuffer      (doesn't work?)
+(setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
+(setq frame-title-format "%b - Emacs") ;frame title format
+
+;; Other
+(setq inhibit-startup-message t)  ;don't show splash screen
+(setq inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
+                                  ; many files               (EMACS 21.4+)
+(setq sentence-end-double-space 1);sentance end with double space
+(setq truncate-lines nil)         ;wrap lines
+(fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
+(setq require-final-newline t)    ;always end file with NL
+(setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
+(setq gc-cons-threshold 4000000)  ;byets before garbage collection
+(setq ange-ftp-ftp-program-name "pftp") ;passive FTP
+(blink-cursor-mode nil)           ;do not blink cursor
+(add-hook 'before-save-hook 'time-stamp) ;install time-stamp
+(setq time-stamp-active nil)      ;but disable by default
+
+;; Saving etc
+(if (fboundp recentf-mode)
+    (recentf-mode nil))           ;no recent files
+(auto-compression-mode 1)         ;automatic compression
+(setq make-backup-files nil)      ;no backup
+;(global-auto-revert-mode 1)       ;automaticly reload buffer when changed
+                                  ; it makes all folds unfload :(
+                                  ; and what's worse - sux with ftp
+
+;; Indention
+(setq indent-tabs-mode t)         ;indent using spaces
+(setq c-basic-offset 4)           ;4 char indent in cc-mode
+(setq tab-width 4)                ;tab width
+(setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60
+                      64 68 72 76 80 84 88 92 96 100 104 108 112
+                      116 120))
+
+;; Regions a.k.a. Selection
+(setq mouse-yank-at-point t)      ;mouse yank at point not at cursor   (X-win)
+(setq kill-read-only-ok t)        ;be silent when killing text from RO buffer
+(delete-selection-mode 1)         ;deleting region by typing or del (like Win)
+;(setq transient-mark-mode 1)      ;highlight selections
+
+;; Scrolling/moving
+(setq scroll-step 1)              ;scroll one line
+;(setq scroll-preserve-screen-position t) ;keep point's position on screen
+(setq hscroll-step 1)             ;scroll one column
+(setq next-line-add-newlines nil) ;no new lines with down arrow key
+
+;; Coding system
+(set-keyboard-coding-system (quote iso-8859-2))
+(set-terminal-coding-system (quote iso-8859-2))
+
+;; Blink Scroll Lock LED instead of beep
+(setq visible-bell nil)           ;no visual bell
+;(setq ring-bell-function (lambda ()
+;  (call-process-shell-command "xset led 3; xset -led 3" nil 0 nil)))
+
+;; Each list element as new paragraph
+;; http://www.emacswiki.org/cgi-bin/wiki/FillParagraph
+(setq paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
+  paragraph-separate "$")
+
+;;}}}
+;;{{{ Modes and stuff
+
+;;{{{ CC Modes family
+
+;; PHP mode
+;; http://sourceforge.net/projects/php-mode
+(autoload 'php-mode "php-mode" "PHP editing mode" t)
+(add-to-list 'auto-mode-alist '("\\.php\\'" . php-mode))
+
+;; JavaScript mode
+;; http://www.brigadoon.de/peter/javascript-mode.el
+;(autoload 'javascript-mode "~/elisp/javascript-mode.elc" "JS editing mode" t)
+;(add-to-list 'auto-mode-alist '("\\.js\\'" . javascript-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . c-mode))
+
+;; Default indenting mode
+;(setq c-default-style "linux")
+
+;; Default compile command
+;; http://www.emacswiki.org/cgi-bin/wiki/CompileCommand
+;(require 'compile)
+;(add-hook 'c-mode-hook (lambda ()
+; (unless (file-exists-p "Makefile")
+;   (set (make-local-variable 'compile-command)
+;(let ((file (file-name-nondirectory buffer-file-name)))
+;  (concat "gcc -O2 -Wall -o " (file-name-sans-extension file)
+;  " " file))))))
+
+;;}}}
+;;{{{ CSS Mode
+
+;; http://www.garshol.priv.no/download/software/css-mode/index.html
+(autoload 'css-mode "css-mode" "CSS editing mode" t)
+(setq cssm-indent-function #'cssm-c-style-indenter) ;C-style indenting in CSS
+(add-to-list 'auto-mode-alist '("\\.css\\'" . css-mode))
+
+;;}}}
+;;{{{ HTML Mode
+
+;; PSGML Mode
+;(require 'psgml)
+
+;; Insert char or entity when pressed 2 times
+;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
+(defmacro rgb-insert-if-double (otherwise)
+  `(lambda (cnt) (interactive "p")
+ (if (equal (preceding-char) last-command-char)
+ (progn
+   (backward-delete-char 1)
+   (insert ,otherwise))
+   (self-insert-command cnt))))
+
+(eval-when-compile (require 'sgml-mode))
+
+(add-hook 'html-mode-hook (lambda ()
+ (define-key html-mode-map [(<)]  (rgb-insert-if-double "&lt;"))
+ (define-key html-mode-map [(>)]  (rgb-insert-if-double "&gt;"))
+ (define-key html-mode-map [(&)]  (rgb-insert-if-double "&amp;"))
+ (define-key html-mode-map [(\")] (rgb-insert-if-double "&quot;"))))
+
+
+;; Generates TOC based on <H?> elements
+;; http://www.emacswiki.org/cgi-bin/wiki/HtmlToc
+;(defun html-show-toc () "Shows a TOC based on headings tags <H[1-6]>"
+;  (interactive)
+;  (if sgml-tags-invisible (error "SGML tags are invisible")
+;    (occur "<h[1-6]>")
+;    (pop-to-buffer "*Occur*") (vc-toggle-read-only)
+;    (goto-char (point-min)) (replace-string "<h1>" " ")
+;    (goto-char (point-min)) (replace-string "<h2>" "  ")
+;    (goto-char (point-min)) (replace-string "<h3>" "   ")
+;    (goto-char (point-min)) (replace-string "<h4>" "    ")
+;    (goto-char (point-min)) (replace-string "<h5>" "     ")
+;    (goto-char (point-min)) (replace-string "<h6>" "      ")
+;    (goto-char (point-min)) (replace-regexp "</h[1-6]>" "")
+;    (goto-char (point-min)) (toggle-read-only 1)))
+
+;;}}}
+;;{{{ MMM Mode
+
+;(require 'mmm-mode)
+;(setq mmm-global-mode 'maybe)
+;(set-face-background 'mmm-default-submode-face nil)
+;
+;(mmm-add-group
+; 'html-php
+; '((html-php-tagged :submode php-mode :front "<\\?php" :back "\\?>")))
+;
+;(add-to-list 'auto-mode-alist '("\\.php\\'" . html-mode))
+;
+;(add-to-list 'mmm-mode-ext-classes-alist '(html-mode nil html-js))
+;(add-to-list 'mmm-mode-ext-classes-alist '(html-mode nil embedded-css))
+;(add-to-list 'mmm-mode-ext-classes-alist '(html-mode "\\.php\\'" html-php))
+
+;;}}}
+;;{{{ Text mode
+
+(add-hook 'text-mode-hook (function (lambda ()
+    (auto-fill-mode t)
+    (set-variable 'tab-width 8)
+    (set-variable 'tab-stop-list
+                  '(8 16 24 32 40 48 56 64 72 80 88 96 104 112 120))
+)))
+(setq auto-mode-alist (append '(("\\.ftf\\'" . text-mode)) auto-mode-alist))
+
+;;}}}
+;;{{{ (La)TeX mode
+
+;; Helper for tex-space
+(defun my-tex-search-back (regexp len &optional suf)
+  (save-excursion
+    (or (re-search-backward (concat "^\\(" regexp "\\)" suf) (- (point) len) t)
+        (re-search-backward (concat "[[:space:]~]\\(" regexp "\\)" suf)
+                            (- (point) len 1) t))))
+
+;; Insert '~' or '\ ' instead of ' ' in LaTeX when needed
+;; Also removes '~' when 2nd space added
+;; http://www.debianusers.pl/article.php?aid=39
+(defun tex-space (arg) (interactive "p")
+  (cond
+   ((re-search-backward "\\~" (- (point) 1) t)
+    (progn (delete-char 1) (self-insert-command arg)))
+   ((> arg 1) (self-insert-command arg))
+   ((or (my-tex-search-back "[a-z]" 1)
+        (my-tex-search-back "do\\|na\\|od\\|po\\|za\\|we" 2))
+    (insert-char ?~ 1))
+   ((or (my-tex-search-back "tj\\|np\\|ew\\|jw\\|in\\|wg" 3 "\\.")
+        (my-tex-search-back "tzw\||tzn" 4 "\\."))
+    (insert-char ?\\ 1) (self-insert-command 1))
+   (t (self-insert-command 1))))
+
+(eval-when-compile (require 'tex-mode))
+
+(defun my-tex-hook () (define-key tex-mode-map " " 'tex-space))
+(add-hook 'tex-mode-hook 'my-tex-hook)
+(add-hook 'TeX-mode-hook 'my-tex-hook)
+(add-hook 'latex-mode-hook 'my-tex-hook)
+(add-hook 'LaTeX-mode-hook 'my-tex-hook)
+
+;;}}}
+;;{{{ Assembler mode
+
+(add-hook 'asm-mode-hook (function (lambda ()
+    (set-variable 'tab-width 8)
+    (set-variable 'tab-stop-list
+                  '(16 24 32 40 48 56 64 72 80 88 96 104 112 120))
+    (set-variable 'comment-column 40)
+)))
+
+;;}}}
+;;{{{ Shell mode
+
+(eval-when-compile (require 'shell))
+
+;; This prevents shell commands from being echoed
+(add-hook 'comint-mode-hook (function (lambda ()
+  (setq comint-process-echoes t))))
+
+;;}}}
+;;{{{ Lisp mode
+
+;; Render lambda as greek letter
+;; http://www.emacswiki.org/cgi-bin/wiki/PrettyLambda
+; Lambdas don't look pretty to be honest ;)
+;(defun pretty-lambdas ()
+;  (font-lock-add-keywords
+;   nil `(("(\\(lambda\\>\\)"
+;          (0 (progn (compose-region (match-beginning 1) (match-end 1)
+;                                    ,(make-char 'greek-iso8859-7 107))
+;                    nil))))))
+;(add-hook 'emacs-lisp-mode-hook 'pretty-lambdas)
+
+;;}}}
+;;{{{ FVWM mode
+
+; http://groups.google.fr/groups?threadm=mailman.2630.1083314129.1061.help-gnu-emacs%40gnu.org
+(autoload 'fvwm-mode "fvwm-mode" "Mode fore editing fvwm's config files" t)
+(add-to-list 'auto-mode-alist '("\\.fv\\(wm2?\\(rc\\)?\\)?$" . fvwm-mode))
+
+;;}}}
+;;{{{ Bison mode
+
+(autoload 'bison-mode "bison-mode.el")
+(add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
+;;(add-to-set! auto-mode-alist '("\\.y$" . bison-mode))
+
+;(setq bison-rule-separator-column    8)
+;(setq bison-rule-enumeration-column 10)
+(setq bison-decl-type-column   8)
+(setq bison-decl-token-column 16)
+
+
+(autoload 'flex-mode "flex-mode")
+(add-to-list 'auto-mode-alist '("\\.l$" . flex-mode))
+;;(add-to-set! auto-mode-alist '("\\.l$" . flex-mode))
+
+;;}}}
+
+;;}}}
+;;{{{ Various features
+
+;;{{{ HTMLize
+
+;; http://fly.srk.fer.hr/~hniksic/emacs/htmlize.el
+(autoload 'htmlize-buffer "htmlize" "Convert buffer to HTML" t)
+(autoload 'htmlize-region "htmlize" "Convert region to HTML" t)
+
+;;}}}
+;;{{{ Replace recent character
+
+;; http://www.emacswiki.org/cgi-bin/wiki/ReplaceRecentCharacter
+(load "rrc")
+
+;;}}}
+;;{{{ Folding
+
+(require 'folding)
+
+(defconst folding-default-keys-function
+  '(folding-bind-backward-compatible-keys))
+
+(define-key folding-mode-map "\C-cf" 'folding-toggle-show-hide)
+(define-key folding-mode-map (kbd "C-c RET") 'folding-shift-in)
+(define-key folding-mode-map (kbd "C-c DEL") 'folding-shift-out)
+(define-key folding-mode-map "\C-c\C-f" 'folding-open-buffer)
+(define-key folding-mode-map "\C-cF" 'folding-whole-buffer)
+
+(folding-add-to-marks-list 'php-mode "// {{{" "// }}}" nil t)
+(folding-add-to-marks-list 'javascript-mode "// {{{" "// }}}" nil t)
+(folding-add-to-marks-list 'css-mode "/* {{{" "/* }}}" " */" t)
+(folding-mode-add-find-file-hook)
+
+;;}}}
+;;{{{ Different cursor color depending on mode
+
+;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
+(defvar hcz-set-cursor-color-color "")
+(defvar hcz-set-cursor-color-buffer "")
+(defun hcz-set-cursor-color-according-to-mode ()
+  "Change cursor color according to some minor modes."
+  ;; set-cursor-color is somewhat costly, so we only call it when needed:
+  (let ((color (cond (buffer-read-only "blue")
+                     (overwrite-mode "red")
+                     (t "yellow"))))
+    (unless (and
+             (string= color hcz-set-cursor-color-color)
+             (string= (buffer-name) hcz-set-cursor-color-buffer))
+      (set-cursor-color (setq hcz-set-cursor-color-color color))
+      (setq hcz-set-cursor-color-buffer (buffer-name)))))
+
+(add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
+
+;;}}}
+;;{{{ wc
+
+;; Based on http://www.emacswiki.org/cgi-bin/wiki/WordCount
+(defun wc (&optional start end)
+  "Prints number of lines, words and characters in region or whole buffer."
+  (interactive)
+  (let ((n 0)
+        (start (if mark-active (region-beginning) (point-min)))
+        (end (if mark-active (region-end) (point-max))))
+    (save-excursion
+      (goto-char start)
+      (while (< (point) end) (if (forward-word 1) (setq n (1+ n)))))
+    (message "%3d %3d %3d" (count-lines start end) n (- end start))))
+
+;;}}}
+
+;; Start server
+(server-start)
+
+;;}}}
+;;{{{ Notes in *scratch*
+
+; Notes in *scratch*  v. 0.2
+; Copyright (c) 2006 by Michal Nazarewicz (mina86@projektcode.org)
+
+(defconst scratch-file (expand-file-name "~/.emacs.scratch")
+  "File where content of *scratch* buffer will be read from and saved to.")
+(defconst scratch-file-autosave (concat scratch-file ".autosave")
+  "File where to autosave content of *scratch* buffer.")
+
+(save-excursion
+  (set-buffer (get-buffer-create "*scratch*"))
+  (if (file-readable-p scratch-file)
+      (if (and (file-readable-p scratch-file-autosave)
+               (file-newer-than-file-p scratch-file-autosave scratch-file)
+               (y-or-n-p "Recover scratch file? "))
+          (insert-file-contents scratch-file-autosave nil nil nil t)
+        (insert-file-contents scratch-file nil nil nil t)
+        (set-buffer-modified-p nil)))
+  (auto-save-mode 1)
+  (setq buffer-auto-save-file-name scratch-file-autosave)
+;  (setq revert-buffer-function 'scratch-revert)
+  (fundamental-mode)
+)
+(add-hook 'kill-buffer-query-functions 'kill-scratch-buffer)
+(add-hook 'kill-emacs-hook 'kill-emacs-scratch-save)
+
+(defun scratch-revert (ignore-auto noconfirm)
+  (if (file-readable-p scratch-file)
+      (progn
+        (insert-file-contents scratch-file nil nil nil t)
+        (set-buffer-modified-p nil))))
+
+(defun kill-scratch-buffer ()
+  (if (not (string-equal (buffer-name (current-buffer)) "*scratch*")) t
+    (delete-region (point-min) (point-max))
+    (set-buffer-modified-p nil)
+    (next-buffer)
+    nil))
+
+(defun kill-emacs-scratch-save ()
+  (if (get-buffer "*scratch*")
+      (save-excursion
+        (set-buffer (get-buffer "*scratch*"))
+        (write-region nil nil scratch-file)
+        (unless (string-equal scratch-file buffer-auto-save-file-name)
+          (delete-auto-save-file-if-necessary t)))))
+
+;;}}}
+;;{{{ Fun stuff ;)
+
+(defconst wq  "This is not vi!  Use C-x C-c instead.")
+(defconst w   "This is not vi!  Use C-x C-s instead.")
+(defconst q!  "This is EMACS not vi!  Use C-x C-c instead.")
+(defconst wq! "This is EMACS not vi!  Use C-x C-c instead.")
+
+;;}}}
+
+;; Clear messages
+;; You may want to comment it out for debuging
+(setq message-log-max nil)        ;disable messages
+(kill-buffer "*Messages*")        ;kill buffer with messages
+
+(load "script-mode")
