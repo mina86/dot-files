@@ -1,3 +1,9 @@
+##                                                      -*- shell-script -*-
+## .bashrc  -- bash configuration file
+## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
+## $Id: bashrc,v 1.3 2006/08/03 13:26:25 mina86 Exp $
+##
+
 # Not interactive?
 [ X"${-#*i}" != X"$-" ] || return
 
@@ -280,6 +286,13 @@ if [ "$_hostname" = Xerwin ]; then
 		esac
 	}
 fi
+
+
+##
+## Source per-host .shellrc
+##
+if [ -r ~/.shellrc-"${_hostname#X}" ]; then . ~/.shellrc-"${_hostname#X}"; fi
+
 
 
 unset _hostname _remote
