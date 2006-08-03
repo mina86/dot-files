@@ -1,8 +1,8 @@
-;;                                -*- mode: lisp; indent-tabs-mode: nil -*-
+;;                                 -*- mode: lisp; indent-tabs-mode: nil -*-
 ;;{{{ Header
 ;;
 ;; RISC Mode  v. 0.3
-;; $Id: risc-mode.el,v 1.1 2006/05/13 14:37:33 mina86 Exp $
+;; $Id: risc-mode.el,v 1.2 2006/08/03 13:26:03 mina86 Exp $
 ;; Copyright (c) 2006 by Michal Nazarewicz (mina86@mina86.com)
 ;;
 ;; This software is OSI Certified Open Source Software.
@@ -300,7 +300,7 @@ disabled however it is much harder to insert any text.
 
 Poor RISC Mode adds a key bindings for RET and ESC ESC which turn
 RISC Mode on as well as binding for C-c C-c which turns Poor RISC
-Mode off (and thoes not enable RISC Mode)."
+Mode off (and does not enable RISC Mode)."
   (interactive (list (or current-prefix-arg nil) nil))
   (if (eq arg 'toggle) (setq arg nil))
   (let ((prm poor-risc-mode) (rm risc-mode))
