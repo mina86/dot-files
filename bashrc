@@ -64,31 +64,34 @@ if [ X"$TERM" = Xdumb ]; then    # EMACS' eshell  (no colors)
 	PS1='[\u@\h $(trunc_pwd 30 {)]\$ '
 elif [ X"$TERM" = Xeterm ]; then # EMACS' term    (ugly line editing)
 	export PS1='\
-\[\e[1;32;44m\]$(trunc_pwd 30 {)\
-\[\e[0;1;33m\]\$\[\e[0m\] '
+\[\033[1;32;44m\]$(trunc_pwd 30 {)\
+\[\033[0;1;33m\]\$\[\033[0m\] '
 else                             # FIXME: I need to check if term sup. colors
 	PS1='\
-\[\e[0;37;44m\][\
-\[\e[1;3$(($UID?2:1));44m\]\u\
-\[\e[1;37;44m\]@'
+\[\033[0;37;44m\][\
+\[\033[1;3$(($UID?2:1));44m\]\u\
+\[\033[1;37;44m\]@'
 	if [ -z "$_remote" ]; then
-		PS1="$PS1"'\[\e[1;36;44m\]\h '
+		PS1="$PS1"'\[\033[1;36;44m\]\h '
 	else
-		PS1="$PS1"'\[\e[1;33;44m\]\h '
+		PS1="$PS1"'\[\033[1;33;44m\]\h '
 	fi
 	PS1="$PS1"'\
-\[\e[1;32;44m\]$(trunc_pwd 30 {)\
-\[\e[0;37;44m\]]\
-\[\e[0;1;3$(($??5:3))m\]\$\[\e[0m\] '
+\[\033[1;32;44m\]$(trunc_pwd 30 {)\
+\[\033[0;37;44m\]]\
+\[\033[0;1;3$(($??5:3))m\]\$\[\033[0m\] '
 fi
 
-if [ X"$TERM" != Xlinux ]; then  # Add title to terminals
+# Add title to terminals
+case "$TERM" in
+xterm*|rxvt*)
 	if [ -z "$_remote" ]; then
-		PS1="$PS1"'\[\e]2;\w\007\]'
+		PS1="$PS1"'\[\033]2;\w\007\]'
 	else
-		PS1="$PS1"'\[\e]2;\h: \w\007\]'
+		PS1="$PS1"'\[\033]2;\h: \w\007\]'
 	fi
-fi
+	;;
+esac
 export PS1
 
 
