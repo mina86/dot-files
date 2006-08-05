@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .bashrc  -- bash configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-## $Id: bashrc,v 1.4 2006/08/05 22:17:06 mina86 Exp $
+## $Id: bashrc,v 1.5 2006/08/05 22:54:38 mina86 Exp $
 ##
 
 # Include ~/.shellrc
@@ -29,7 +29,6 @@ trunc_pwd () {
 ##
 ## Prompt
 ##
-_remote=y; [ -n "$SSH_CLIENT$SSH_CONNECTION" ] || _remote=
 if [ X"$TERM" = Xdumb ]; then    # EMACS' eshell  (no colors)
 	PS1='[\u@\h $(trunc_pwd 30 {)]\$ '
 elif [ X"$TERM" = Xeterm ]; then # EMACS' term    (ugly line editing)
@@ -41,10 +40,9 @@ else                             # FIXME: I need to check if term sup. colors
 \[\033[0;37;44m\][\
 \[\033[1;3$(($UID?2:1));44m\]\u\
 \[\033[1;37;44m\]@'
-	if [ -z "$_remote" ]; then
-		PS1="$PS1"'\[\033[1;36;44m\]\h '
-	else
-		PS1="$PS1"'\[\033[1;33;44m\]\h '
+	if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]
+	then PS1="$PS1"'\[\033[1;36;44m\]\h '
+	else PS1="$PS1"'\[\033[1;33;44m\]\h '
 	fi
 	PS1="$PS1"'\
 \[\033[1;32;44m\]$(trunc_pwd 30 {)\
@@ -53,17 +51,15 @@ else                             # FIXME: I need to check if term sup. colors
 fi
 
 # Add title to terminals
-case "$TERM" in
-xterm*|rxvt*)
-	if [ -z "$_remote" ]; then
-		PS1="$PS1"'\[\033]2;\w\007\]'
-	else
-		PS1="$PS1"'\[\033]2;\h: \w\007\]'
+case "$TERM" in xterm*|rxvt*)
+	if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]
+	then PS1="$PS1"'\[\033]2;\w\007\]'
+	else PS1="$PS1"'\[\033]2;\h: \w\007\]'
 	fi
-	;;
 esac
+
 export PS1
-unset PROMPT_COMMAND _remote
+unset PROMPT_COMMAND
 
 
 
@@ -72,7 +68,7 @@ unset PROMPT_COMMAND _remote
 ## Shell optons and parameters
 ##
 shopt -qu cdable_vars checkhash dotglob execfail extdebug extglob
-shopt -qu force_fignore interactive_comments lithist mailwarn
+shopt -qu force_fignore interactive_comments lithist
 shopt -qu no_empty_cmd_completion nocaseglob shift_verbose
 shopt -qu sourcepath xpg_echo
 
