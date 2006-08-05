@@ -1,0 +1,219 @@
+##                                                      -*- shell-script -*-
+## .shellrc  -- global shell configuration file
+## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
+## $Id: shellrc,v 1.1 2006/08/05 22:17:06 mina86 Exp $
+##
+
+# Not interactive?
+[ X"${-#*i}" != X"$-" ] || return
+
+# Hostname
+_hostname="`hostname|tr ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz`"
+_hostname=X"${_hostname%%.*}"
+if [ "$_hostname" = Xikar ]; then _hostname=Xdedal; fi
+
+
+##
+## make and change directory
+##
+md () {
+	if [ $# -eq 0 ]; then
+		echo usage: 'md dir [ dir ... ]'
+		return 1
+	elif [ $# -eq 1 ]; then
+		mkdir -p -- "$1" && cd -- "$1"
+	else
+		mkdir -p -- "$@"
+	fi
+}
+
+
+##
+## Prompt
+##
+if [ $(id -u) -eq 0 ]
+then export PS1='# '
+else export PS1='$ '
+fi
+
+
+##
+## Variables
+##
+
+# PATH
+if [ -d "$HOME/bin" ] &&
+		! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1
+then PATH="$PATH:$HOME/bin"; fi
+
+if [ -d "$HOME/code/tinyapps" ] &&
+	! echo "$PATH" | grep -F "$HOME/code/tinyapps" >/dev/null 2>&1
+then PATH="$PATH:$HOME/code/tinyapps"; fi
+
+
+# Editor
+if which nano >/dev/null 2>/dev/null
+then export EDITOR=nano VISUAL=nano; fi
+
+
+# less
+if which less >/dev/null 2>/dev/null; then
+	export PAGER=less LESS=-M
+	if [ -x ~/bin/lesspipe ]; then
+		eval $(~/bin/lesspipe --install)
+	fi
+fi
+
+
+# CVS
+export CVS_RSH=ssh
+if [ -d "$HOME/.cvsroot" ]; then
+	export CVSROOT="$HOME/.cvsroot"
+fi
+
+
+# Various
+if [ "$_hostname" = Xerwin ]; then
+	export LANG=pl_PL.ISO8859-2 LC_COLLATE=C LC_MESSAGES=en_GB
+	export __GL_FSAA_MODE=4 __GL_LOG_MAX_ANISO=1 __GL_SYNC_TO_VBLANK=1
+elif [ "$_hostname" = Xtuptus ]; then
+	export LANG=pl_PL.ISO8859-2 LC_COLLATE=C LC_MESSAGES=en_GB
+fi
+
+
+# Temp
+if   [ -d /temp ] && [ -w /temp ]
+then export TMP=/temp TEMP=/temp TMPDIR=/temp
+elif [ -d /tmp2 ] && [ -w /tmp2 ]
+then export TMP=/tmp2 TEMP=/tmp2 TMPDIR=/tmp2
+else export TMP=/tmp TEMP=/tmp TMPDIR=/tmp
+fi
+
+
+# Shell config
+FIGNORE=".o:~:.bak"
+if [ "$_hostname" = Xerwin ] || [ "$_hostname" = Xtuptus ; then
+	unset MAILCHECK
+fi
+
+
+# Compilation
+export CC=gcc CXX=g++
+
+if [ "$_hostname" = Xerwin ]; then   # My home workstation
+	export ARCH="i686"
+	export HOST="${ARCH}-slackware-linux-gnu"
+	#export ARCH="x86_64"
+	#export HOST="${ARCH}-pc-linux-gnu"
+
+	FLAGS="-march=athlon64 -pipe -DNDEBUG -DG_DISABLE_ASSERT -s"
+	FLAGS="$FLAGS -O3 -falign-loops=1 -falign-labels=1 -frename-registers"
+	FLAGS="$FLAGS -funit-at-a-time"
+	export LDFLAGS="-s -z combreloc"
+
+elif [ "$_hostname" = Xtuptus ]; then   # My notebook
+	export ARCH="i686"
+	export HOST="${ARCH}-slackware-linux-gnu"
+
+	FLAGS="-march=athlon-4 -pipe -DNDEBUG -DG_DISABLE_ASSERT -s"
+	FLAGS="$FLAGS -O3 -falign-loops=1 -falign-labels=1 -frename-registers"
+	FLAGS="$FLAGS -funit-at-a-timeb"
+	export LDFLAGS="-s -z combreloc"
+fi
+
+# Export FLAGS
+if [ -n "$FLAGS" ]; then
+	for L in C CPP CXX; do
+		export ${L}ARCH="$ARCH"
+		export ${L}HOST="$HOST"
+		export ${L}FLAGS="$FLAGS"
+	done
+
+	CFLAGS="$FLAGS -fomit-frame-pointer"
+	unset FLAGS
+fi
+
+
+
+##
+## Aliases
+##
+
+# LS
+if [ -z "$LS_COLORS" ]; then
+	if which dircolors >/dev/null 2>&1; then
+		if [ -f ~/.dir_colors     ]; then eval `dircolors -b ~/.dir_colors`
+		elif [ -f /etc/DIR_COLORS ]; then eval `dircolors -b /etc/DIR_COLORS`
+		else                              eval `dircolors -b`
+		fi
+	elif [ -x ~/bin/dircolors ]; then
+		. ~/bin/dircolors
+	fi
+fi
+if [ -z "$LS_OPTIONS" ]; then
+	export LS_OPTIONS="-FbT0 --color=auto"
+fi
+
+
+# Ikar, Dedal & Mion keep GNU ls in /usr/local/bin/ls
+if [ -x /usr/local/bin/ls ]; then
+	alias ls='LANG=C /usr/local/bin/ls $LS_OPTIONS'
+else
+	alias ls="LANG=C '$(which ls)' $LS_OPTIONS"
+fi
+
+
+# Other
+if which run-emacs >/dev/null 2>&1; then
+	alias e="run-emacs"
+fi
+alias mb=mv      # common typo
+alias rmd=rmdir
+if [ "$_hostname" = Xerwin ] || [ "X$_hostname" = Xtuptus ]; then
+	alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
+fi
+
+
+# Links and ELinks
+ELINKS=`which elinks 2>/dev/null`
+LINKS=`which links 2>/dev/null`
+if [ -n "$ELINKS" ]; then
+	alias links="$ELINKS"
+elif [ -n "$LINKS" ]; then
+	alias elinks="$LINKS"
+fi
+unset ELINKS LINKS
+
+
+# Perl stuff
+if which perldoc >/dev/null 2>&1; then
+	alias pf='perldoc -f '
+	pd () {
+		perldoc perl"$1"
+	}
+fi
+
+
+
+##
+## TODO List
+##
+if [ "$_hostname" = Xerwin ]; then
+	todo () {
+		case "${1-view}" in
+		(-c|clearview) clear; todo -v; ;;
+		(-v|view)
+			if [ -s ~/.todo ]
+			then cat ~/.todo
+			else echo Nothing to do
+			fi; ;;
+		(-e|edit) "${EDITOR-${VISUAL-vi}}" ~/.todo; ;;
+		(-d|delete) rm -i ~/.todo; ;;
+		esac
+	}
+	_todo=defined
+fi
+
+
+
+unset _hostname
