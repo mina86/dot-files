@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .shellrc  -- global shell configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-## $Id: shellrc,v 1.1 2006/08/05 22:17:06 mina86 Exp $
+## $Id: shellrc,v 1.2 2006/08/05 22:56:33 mina86 Exp $
 ##
 
 # Not interactive?
@@ -17,13 +17,11 @@ if [ "$_hostname" = Xikar ]; then _hostname=Xdedal; fi
 ## make and change directory
 ##
 md () {
-	if [ $# -eq 0 ]; then
-		echo usage: 'md dir [ dir ... ]'
-		return 1
-	elif [ $# -eq 1 ]; then
-		mkdir -p -- "$1" && cd -- "$1"
-	else
-		mkdir -p -- "$@"
+	if [ $# -eq 0 ]
+	then echo usage: 'md dir [ dir ... ]'; return 1
+	elif [ $# -eq 1 ]
+	then mkdir -p -- "$1" && cd -- "$1"
+	else mkdir -p -- "$@"
 	fi
 }
 
@@ -31,10 +29,18 @@ md () {
 ##
 ## Prompt
 ##
-if [ $(id -u) -eq 0 ]
-then export PS1='# '
-else export PS1='$ '
-fi
+
+# Default prompt (most likely will be overwritten)
+if [ $(id -u) -eq 0 ]; then PS1='# '; else export PS1='$ '; fi
+if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then PS1="[$(hostname)]$PS1"; fi
+export PS1
+
+# Add title to terminals
+case "$TERM" in xterm*|rxvt*)
+	printf '\33]2;%s@%s\7' "$(id -un)" "$(hostname)"
+esac
+
+
 
 
 ##
@@ -52,7 +58,7 @@ then PATH="$PATH:$HOME/code/tinyapps"; fi
 
 
 # Editor
-if which nano >/dev/null 2>/dev/null
+if [ -z "$EDITOR" ] && which nano >/dev/null 2>/dev/null
 then export EDITOR=nano VISUAL=nano; fi
 
 
@@ -81,7 +87,7 @@ elif [ "$_hostname" = Xtuptus ]; then
 fi
 
 
-# Temp
+# Temp  (wierd config for ikar/dedal and mion)
 if   [ -d /temp ] && [ -w /temp ]
 then export TMP=/temp TEMP=/temp TMPDIR=/temp
 elif [ -d /tmp2 ] && [ -w /tmp2 ]
@@ -93,7 +99,7 @@ fi
 # Shell config
 FIGNORE=".o:~:.bak"
 if [ "$_hostname" = Xerwin ] || [ "$_hostname" = Xtuptus ; then
-	unset MAILCHECK
+	unset MAILCHECK MAIL
 fi
 
 
@@ -169,7 +175,7 @@ if which run-emacs >/dev/null 2>&1; then
 fi
 alias mb=mv      # common typo
 alias rmd=rmdir
-if [ "$_hostname" = Xerwin ] || [ "X$_hostname" = Xtuptus ]; then
+if which mpc >/dev/null 2>/dev/null; then
 	alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
 fi
 
@@ -198,17 +204,13 @@ fi
 ##
 ## TODO List
 ##
-if [ "$_hostname" = Xerwin ]; then
+if [ -f .todo ]; then
 	todo () {
 		case "${1-view}" in
-		(-c|clearview) clear; todo -v; ;;
-		(-v|view)
-			if [ -s ~/.todo ]
-			then cat ~/.todo
-			else echo Nothing to do
-			fi; ;;
-		(-e|edit) "${EDITOR-${VISUAL-vi}}" ~/.todo; ;;
-		(-d|delete) rm -i ~/.todo; ;;
+		(-c|clearview) clear; todo -v ;;
+		(-v|view) cat ~/.todo ;;
+		(-e|edit) "${EDITOR-${VISUAL-vi}}" ~/.todo ;;
+		(-d|delete) : >~/.todo ;;
 		esac
 	}
 	_todo=defined
