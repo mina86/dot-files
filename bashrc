@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .bashrc  -- bash configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: bashrc,v 1.5 2006/08/05 22:54:38 mina86 Exp $
+## $Id: bashrc,v 1.6 2006/08/06 02:07:37 mina86 Exp $
 ##
 
 # Include ~/.shellrc
@@ -17,10 +17,10 @@ fi
 ## Truncate PWD
 ##
 trunc_pwd () {
-	set -- "${1-30}" "${2-...}" "$3" "${PWD/#$HOME/~}" "$?"
+	set -- "${1:-30}" "${2-...}" "$3" "${PWD/#$HOME/~}" "$?"
 	if [ ${#4} -le $1 ]
 	then printf %s "$4"
-	else printf %s%s "$2" "${4:$(( ${#4} - $1 + ${3-${#2}} ))}"
+	else printf %s%s "$2" "${4:$(( ${#4} - $1 + ${3:-${#2}} ))}"
 	fi
 	return $5
 }
