@@ -1,15 +1,26 @@
 ;;                                 -*- mode: lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- EMACS configuration file
 ;; Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-emacs,v 1.4 2006/08/03 12:57:58 mina86 Exp $
+;; $Id: dot-emacs,v 1.5 2006/09/10 10:50:42 mina86 Exp $
 ;;
 ;;{{{ System dependend data
 
 ;; Add  ~/elisp  to load path
-(setq load-path (cons (expand-file-name "~/elisp") load-path))
+(if (file-directory-p (expand-file-name "~/elisp"))
+    (setq load-path (cons (expand-file-name "~/elisp") load-path)))
 
 ;; Use  aspell  if it exists
 (setq-default ispell-program-name "aspell")
+
+
+; Load GNUS
+(unless (not (file-directory-p (expand-file-name "~/.gnus")))
+  (setq load-path (cons (expand-file-name "~/gnus/lisp") load-path))
+  (require 'gnus-load)
+
+  (require 'info)
+  (setq Info-default-directory-list
+        (cons (expand-file-name "~/gnus/texi") Info-default-directory-list)))
 
 ;;}}}
 ;;{{{ Bindings
@@ -189,8 +200,8 @@ and `indent-for-tab-command' when indenting"
       (funcall indent-or-complete-complete-function nil)
     (indent-for-tab-command)))
 
-(add-hook 'find-file-hooks (function (lambda ()
-  (local-set-key (kbd "<tab>") 'indent-or-complete))))
+(add-hook 'find-file-hooks (lambda ()
+  (local-set-key (kbd "<tab>") 'indent-or-complete)))
 
 
 ;; fill-paragraph-or-region
@@ -289,6 +300,11 @@ start to `point-max' if only start is present."
 
 ;;}}}
 
+(setenv "CFLAGS"   "-Wall -pedantic -std=c99 -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
+(setenv "CXXFLAGS" "-Wall -pedantic          -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
+(setenv "CPPFLAGS" "-Wall -pedantic -std=c99")
+(setenv "LDFLAGS"  nil)
+
 (global-set-key "\e\e[[20~" 'compile)                  ; F9    compile
 (global-set-key [f9]        'compile)
 (global-set-key [C-f9]      'recompile)                ; C-F9  recompile
@@ -316,20 +332,76 @@ start to `point-max' if only start is present."
 ;;}}}
 
 ;;}}}
-;;{{{ Autocompile user-init-file
+;;{{{ Auto-byte-compile
 
-(load "bytecomp")
+(require 'bytecomp)
 
-(add-hook 'kill-buffer-hook (lambda ()
-  (if (and (string= user-init-file (buffer-file-name))
-           (file-newer-than-file-p user-init-file
-                                   (byte-compile-dest-file user-init-file)))
-      (byte-compile-file (buffer-file-name)))))
+(defvar auto-byte-compile-files-list
+  (list user-init-file
+;        gnus-init-file (concat gnus-init-file ".el")
+        "~/.gnus" "~/.gnus.el"
+        )
+  "List of files to auto compile")
 
-(add-hook 'kill-emacs-hook (lambda ()
-  (if (file-newer-than-file-p user-init-file
-                              (byte-compile-dest-file user-init-file))
-      (byte-compile-file (expand-file-name user-init-file)))))
+(defun auto-byte-compile-file (&optional file match)
+  "file can be
+- a string representing file name;
+- a list of strings representing file names;
+- nil in which case value returned by `buffer-file-name' will be used
+  unless it returns nil in which case no action will be taken; or
+- anything else in which case value of `auto-byte-compile-files-list'
+  will be taken.
+
+match can be
+- nil which is equivalent to passing `auto-byte-compile-files-list';
+- a string which is equivalent to passing list with that string as the
+  only element;
+- a list in which case file have to be in that list to be processed; or
+- anything else in which case file will be processed regardles of name.
+
+So the default is to auto-compile the current file iff it exists
+in `auto-byte-compile-files-list'.
+
+Non-string elements in list will be ignored.
+
+Auto-compilation means that file will be byte-compiled iff the
+compiled version does not exits or is older then the file
+itself."
+
+  ; Arguments
+  (if (not file) (setq file (buffer-file-name)))
+  (setq file (cond ((stringp file) (list file))
+                   ((listp   file) file)
+                   (t              auto-byte-compile-files-list))
+        match (cond ((not match)     auto-byte-compile-files-list)
+                    ((stringp match) (list match))
+                    ((listp match)   match)
+                    (t               nil)))
+
+  ; Loop
+  (let (f ok m str (n 0))
+    (while (setq f (pop file))
+      (unless (not (stringp f))
+        (setq f (expand-file-name f))
+
+        ; Directory
+        (if (file-directory-p f)
+            (setq file (append (directory-files f t nil t) file))
+
+          ; Search if maches
+          (setq ok (not (setq m match)))
+          (while (and (not ok) (setq str (pop m)))
+            (if (stringp str) (setq ok (string= f (expand-file-name str)))))
+
+          ; Auto compile
+          (if (and ok (file-newer-than-file-p f (byte-compile-dest-file f)))
+              (progn
+                (byte-compile-file f)
+                (setq n (1+ n)))))))
+    n))
+
+(add-hook 'kill-buffer-hook 'auto-byte-compile-file)
+(add-hook 'kill-emacs-hook (lambda () (auto-byte-compile-file t)))
 
 ;;}}}
 ;;{{{ Syntax highlighting
@@ -663,6 +735,9 @@ start to `point-max' if only start is present."
 ;                                    ,(make-char 'greek-iso8859-7 107))
 ;                    nil))))))
 ;(add-hook 'emacs-lisp-mode-hook 'pretty-lambdas)
+
+; No tabs!
+(add-hook 'emacs-lisp-mode-hook (lambda () (setq indent-tabs-mode ())))
 
 ;;}}}
 ;;{{{ FVWM mode
