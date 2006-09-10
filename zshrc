@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .zshrc  -- zsh configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: zshrc,v 1.1 2006/08/05 22:17:06 mina86 Exp $
+## $Id: zshrc,v 1.2 2006/09/10 11:23:54 mina86 Exp $
 ##
 
 # Include ~/.shellrc
@@ -13,32 +13,43 @@ fi
 [ X"${-#*i}" != X"$-" ] || return
 
 
+
 ##
 ## Prompt
 ##
 if [ "$TERM" = 'dumb' ]; then    # EMACS' eshell  (no colors)
-	PS1="[%n@$(hostname) %30<{<%~]%(\!.#.\$) "
+	PS1="[%n@%m %30<{<%~]%(!.#.\$) "
 elif [ "$TERM" = 'eterm' ]; then # EMACS' term    (ugly line editing)
 	E=$'\33['
 	PS1="\
 %{${E}0;37;44m%}[%{${E}1;32;44m%}%30<{<%~%{${E}0;37;44m%}]\
-%{${E}0;1;3%0(?.3.5)m%}%(\!.#.\$)%{${E}0m%}%E "
+%{${E}0;1;3%0(?.3.5)m%}%(!.#.\$)%{${E}0m%}%E "
+	unset E
 else                             # FIXME: I need to check if term sup. colors
 	E=$'\33['
-	PS1="\
-%{${E}0;37;44m%}[\
-%{${E}1;3%(\!.1.2);44m%}%n\
-%{${E}1;37;44m%}@\
-%{${E}1;36;44m%}$(hostname) \
-%{${E}1;32;44m%}%50<{<%~\
-%{${E}0;37;44m%}]\
-%{${E}0;1;3%0(?.3.5)m%}%(\!.#.\$)%{${E}0m%} "
+	PS1=
+	PS1="$PS1%{${E}0;37;44m%}["
+	PS1="$PS1%{${E}1;3%(!.1.2);44m%}%n"
+	PS1="$PS1%{${E}1;37;44m%}@"
+	if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]
+	then PS1="$PS1%{${E}1;36;44m%}%m "
+	else PS1="$PS1%{${E}1;33;44m%}%m "
+	fi
+	PS1="$PS1%{${E}1;32;44m%}%50<{<%~"
+	PS1="$PS1%{${E}0;37;44m%}]"
+	PS1="$PS1%{${E}0;1;3%0(?.3.5)m%}%(!.#.\$)%{${E}0m%} "
+	unset E
 fi
 
-if [ "$TERM" != "linux" ]; then  # Add title to terminals
-	PS1="${PS1}"$'%{\33]2;$~\007%}'
-fi
+# Add title to terminals
+case "$TERM" in xterm*|rxvt*)
+	if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]
+	then PS1="$PS1"$'%{\33]2;%~\007%}'
+	else PS1="$PS1"$'%{\33]2;%m: %~\007%}'
+	fi
+esac
 export PS1
+
 
 
 ##
@@ -49,7 +60,6 @@ export PS1
 SAVEHIST=500
 TMPPREFIX="$TMP/zsh"
 HISTFILE="$HOME/.zhistory"
-if [ -n "$FIGNORE" ]; then FIGNORE="$(echo "$FIGNORE" | tr : ,)"; fi
 unset NULLCMD
 
 
