@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .bashrc  -- bash configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: bashrc,v 1.6 2006/08/06 02:07:37 mina86 Exp $
+## $Id: bashrc,v 1.7 2006/09/10 10:43:44 mina86 Exp $
 ##
 
 # Include ~/.shellrc
@@ -14,26 +14,25 @@ fi
 
 
 ##
-## Truncate PWD
-##
-trunc_pwd () {
-	set -- "${1:-30}" "${2-...}" "$3" "${PWD/#$HOME/~}" "$?"
-	if [ ${#4} -le $1 ]
-	then printf %s "$4"
-	else printf %s%s "$2" "${4:$(( ${#4} - $1 + ${3:-${#2}} ))}"
-	fi
-	return $5
-}
-
-
-##
 ## Prompt
 ##
+
+# tpwd
+if declare -f tpwd >/dev/null 2>&1; then
+	P='$(tpwd -n 30 {)'
+elif P="$(which tpwd 2>/dev/null)"; then
+	eval "$("$P" --bash)"
+	P='$(tpwd -n 30 {)'
+else
+	P='\w'
+fi
+
+
 if [ X"$TERM" = Xdumb ]; then    # EMACS' eshell  (no colors)
-	PS1='[\u@\h $(trunc_pwd 30 {)]\$ '
+	PS1='[\u@\h '"$P"']\$ '
 elif [ X"$TERM" = Xeterm ]; then # EMACS' term    (ugly line editing)
-	export PS1='\
-\[\033[1;32;44m\]$(trunc_pwd 30 {)\
+	PS1='\
+\[\033[1;32;44m\]'"$P"'\
 \[\033[0;1;33m\]\$\[\033[0m\] '
 else                             # FIXME: I need to check if term sup. colors
 	PS1='\
@@ -45,7 +44,7 @@ else                             # FIXME: I need to check if term sup. colors
 	else PS1="$PS1"'\[\033[1;33;44m\]\h '
 	fi
 	PS1="$PS1"'\
-\[\033[1;32;44m\]$(trunc_pwd 30 {)\
+\[\033[1;32;44m\]'"$P"'\
 \[\033[0;37;44m\]]\
 \[\033[0;1;3$(($??5:3))m\]\$\[\033[0m\] '
 fi
@@ -59,7 +58,7 @@ case "$TERM" in xterm*|rxvt*)
 esac
 
 export PS1
-unset PROMPT_COMMAND
+unset PROMPT_COMMAND P
 
 
 
