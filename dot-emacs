@@ -1,29 +1,157 @@
-;;                                 -*- mode: lisp; indent-tabs-mode: nil -*-
+;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- EMACS configuration file
 ;; Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.5 2006/09/10 10:50:42 mina86 Exp $
+;; $Id: dot-emacs,v 1.6 2006/09/23 23:15:29 mina86 Exp $
 ;;
-;;{{{ System dependend data
+;;{{{ System dependend data and directories
+
+;; Gnus
+(setq gnus-home-directory (expand-file-name "~/.gnus"))
+(when (file-directory-p gnus-home-directory)
+  (setq load-path (cons (concat gnus-home-directory "/gnus/lisp") load-path))
+  (setq message-directory (concat gnus-home-directory "/Mail"))
+
+  (eval-after-load "info"
+    '(if (load "gnus-load")
+         (setq Info-default-directory-list
+               (cons (concat gnus-home-directory "/gnus/texi")
+                     Info-default-directory-list)))))
+
 
 ;; Add  ~/elisp  to load path
 (if (file-directory-p (expand-file-name "~/elisp"))
     (setq load-path (cons (expand-file-name "~/elisp") load-path)))
 
-;; Use  aspell  if it exists
+;; Use  aspell
 (setq-default ispell-program-name "aspell")
 
+;;}}}
+;;{{{ Auto-byte-compile
 
-; Load GNUS
-(unless (not (file-directory-p (expand-file-name "~/.gnus")))
-  (setq load-path (cons (expand-file-name "~/gnus/lisp") load-path))
-  (require 'gnus-load)
+(require 'bytecomp)
 
-  (require 'info)
-  (setq Info-default-directory-list
-        (cons (expand-file-name "~/gnus/texi") Info-default-directory-list)))
+(defvar auto-byte-compile-files-list
+  (let ((ghd (or (and (boundp 'gnus-home-directory) gnus-home-directory)
+                 (expand-file-name "~"))))
+    (cond
+     ((string-match "\\.elc$" user-init-file)
+      (list (substring user-init-file 0 -4)
+            (substring user-init-file 0 -1)
+            (concat ghd "/.gnus")
+            (concat ghd "/.gnus.el")))
+     (t
+      (list user-init-file
+            (concat ghd "/.gnus")
+            (concat ghd "/.gnus.el")))))
+  "List of files to auto compile")
+
+(defun auto-byte-compile-file (&optional file match regexp)
+  "file can be
+- nil in which case value returned by `buffer-file-name' will be used
+  unless it returns nil in which case no action will be taken;
+- a string which is equivalent to passing list with that string as the
+  only element;
+- a list of strings representing file names; or
+- anything else which is equivalent to passing
+  `auto-byte-compile-files-list'.
+
+Entries equal to \".\", \"..\" or ending with \"/.\" or \"/..\"
+are ignored.  If element is a directory it will be processed
+recursively but if regexp is nil only files ending with \".el\"
+will be processed.
+
+match can be
+- nil which is equivalent to passing `auto-byte-compile-files-list';
+- a string which is equivalent to passing list with that string as the
+  only element;
+- a list in which case file have to be in that list to be processed; or
+- anything else in which case file will be processed regardless of name.
+
+If any element of match is a string ending with a slash ('/') it
+is treated as directory name (no checking is done if it is really
+a directory or even if it exists) and file is sad to match such
+entry if it begins with it thus all files in given directory will
+match.
+
+If called interacivelly without prefix arg will behave as with
+match equal t.  With prefix arg will behave as with match equal
+nil.
+
+regexp must be nil which is equivalent with passing a list
+containing only empty string or a list of regular expressions
+which file have to match to be processed.
+
+So the default is to auto-compile the current file iff it exists
+in `auto-byte-compile-files-list'.
+
+Non-string elements in list will be ignored.
+
+Auto-compilation means that file will be byte-compiled iff the
+compiled version does not exits or is older then the file
+itself."
+  (interactive (list (read-file-name "Auto byte compile file:" nil nil t)
+                     (not current-prefix-arg)))
+
+  (if (not (or file (setq file (buffer-file-name))))
+      0
+    (setq file  (cond ((stringp file)  (list file))
+                      ((listp   file)  file)
+                      (t               auto-byte-compile-files-list))
+          match (mapcar (function (lambda (i) (expand-file-name i)))
+                        (cond ((not match)     auto-byte-compile-files-list)
+                              ((stringp match) (list match))
+                              ((listp match)   match)
+                              (t               nil))))
+
+    (let (f (n 0))
+      (while (setq f (car file))
+        (setq file (cdr file) f (expand-file-name f))
+        (cond
+         ((string-match f "\\(^\\|/\\)\\.\\.?$"))
+         ((file-directory-p f)
+          (if regexp
+              (setq file (append (directory-files f t nil t) file))
+            (setq n (+ n (auto-byte-compile-file (directory-files f t nil t)
+                                                 (or match t) '("\\.el$"))))))
+         ((and (file-newer-than-file-p f (byte-compile-dest-file f))
+               (or (not match)
+                   (catch 'found
+                     (dolist (m match)
+                       (if (string= m (if (string-match "/$" m)
+                                          (substring f 0 (length m)) f))
+                           (throw 'found t)))))
+               (or (not regexp)
+                   (catch 'found (dolist (r regexp)
+                                   (if (string-match r f) (throw 'found t)))))
+               (byte-compile-file f)
+               (setq n (1+ n))))))
+      n)))
+
+(defun auto-byte-compile-buffer (&optional match buffer)
+  "Auto compiles file in given buffer (if buffer is nil current
+buffer is used) providing that major mode of the buffer is
+lisp-mode or emacs-lisp-mode.  match has the same meaning as in
+`auto-byte-compile-file'.
+
+If called interacivelly will behave as with match equal t and
+buffer equal nil unless prefix argument was given in which case
+match will equal nil."
+  (interactive (list (not current-prefix-arg) nil))
+  (and (buffer-file-name buffer)
+       (member (if buffer (save-current-buffer (set-buffer buffer)
+                                               major-mode) major-mode)
+               '(lisp-mode emacs-lisp-mode))
+       (auto-byte-compile-file (buffer-file-name buffer) match)))
+
+
+(add-hook 'kill-buffer-hook 'auto-byte-compile-buffer)
+(add-hook 'kill-emacs-hook (function (lambda () (auto-byte-compile-file t))))
 
 ;;}}}
 ;;{{{ Bindings
+
+(defmacro set-key-lambda (key &rest body)
+  `(global-set-key ,key (function (lambda () (interactive) ,@body))))
 
 ;;{{{ Sequence commands
 
@@ -104,12 +232,12 @@ three times - beginning of buffer; four times - back to where it was."
 (global-set-key [next]          'pager-page-down)
 (global-set-key [f35]           'pager-page-down)
 
-(global-set-key '[M-up]     (lambda () (interactive) (scroll-down 1))) ; Alt+Up
-(global-set-key '[M-kp-8]   (lambda () (interactive) (scroll-down 1)))
-(global-set-key "\M-p"      (lambda () (interactive) (scroll-down 1)))
-(global-set-key '[M-down]   (lambda () (interactive) (scroll-up   1))) ; Alt=Dn
-(global-set-key '[M-kp-2]   (lambda () (interactive) (scroll-up   1)))
-(global-set-key "\M-n"      (lambda () (interactive) (scroll-up   1)))
+(set-key-lambda '[M-up]         (scroll-down 1))    ; Alt+Up
+(set-key-lambda '[M-kp-8]       (scroll-down 1))
+(set-key-lambda "\M-p"          (scroll-down 1))
+(set-key-lambda '[M-down]       (scroll-up   1))    ; Alt+Dn
+(set-key-lambda '[M-kp-2]       (scroll-up   1))
+(set-key-lambda "\M-n"          (scroll-up   1))
 
 (global-set-key '[M-S-up]       'pager-row-up)      ; Alt+Shift+Up
 (global-set-key '[M-S-kp-8]     'pager-row-up)
@@ -134,7 +262,8 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{ Misc
 
-(global-set-key "\C-h"          'delete-backward-char)
+(unless window-system
+  (global-set-key "\C-h"          'delete-backward-char))
 (global-set-key [backspace]     'delete-backward-char)
 (global-set-key [delete]        'delete-char)
 
@@ -143,15 +272,14 @@ three times - beginning of buffer; four times - back to where it was."
 (global-set-key "\C-xk"         'kill-this-buffer)      ; don't ask which
                                                         ; buffer to kill
 (global-set-key "\C-cr"         'revert-buffer)         ; Reload buffer
-(global-set-key "\C-x\C-b"      (lambda () (interactive); C-x C-b switch
-  (switch-to-buffer (other-buffer))))
+(set-key-lambda "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
 
 ;(autotoload 'goto-last-change "goto-last-change"
 ;  "Set point to the position of the last change." t)
 ;(global-set-key "\C-x\C-\\" 'goto-last-change)
 
-(eval-when-compile (require 'imenu))
-(global-set-key [S-mouse-3] 'imenu)
+(require 'imenu)
+(global-set-key [S-mouse-3]     'imenu)
 (setq imenu-sort-function 'imenu--sort-by-name)
 
 ;; Mouse gestures (a.k.a. strokes)
@@ -160,15 +288,14 @@ three times - beginning of buffer; four times - back to where it was."
 
 
 ;; Centering
-;; This defun is insane!!! I cannot believe I wrote it...
 (defun centerer ()
    "Repositions current line: once - middle, twice - top, three
 and four times - `reposition-window', five times - bottom, six
 times - where it was at the beginning."
    (interactive)
-   (let ((n (seq-times 6)) (i 0) (old (window-start)))
+   (let (n (i 0) (old (window-start)))
      (while (and (< i 6) (equal (window-start) old))
-       (unless (= (setq i (1+ i)) 1) (setq n (seq-times "" 6)))
+       (setq i (1+ i) n (seq-times "" 6))
        (cond ((= n 0) (recenter))
              ((= n 1) (recenter 0))
              ((< n 4) (reposition-window))
@@ -181,7 +308,6 @@ times - where it was at the beginning."
 
 ;; Tab - indent or complete
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
-
 (defvar indent-or-complete-complete-function 'dabbrev-expand
   "Function to complete the word when using `indent-or-complete'
 It is called with one argument - nil")
@@ -200,11 +326,14 @@ and `indent-for-tab-command' when indenting"
       (funcall indent-or-complete-complete-function nil)
     (indent-for-tab-command)))
 
-(add-hook 'find-file-hooks (lambda ()
-  (local-set-key (kbd "<tab>") 'indent-or-complete)))
+(add-hook 'find-file-hooks (function (lambda ()
+  (local-set-key (kbd "<tab>") 'indent-or-complete))))
+(save-current-buffer
+  (set-buffer "*scratch*")
+  (local-set-key (kbd "<tab>") 'indent-or-complete))
 
 
-;; fill-paragraph-or-region
+;; Alt+q - Filling
 (defun fill-paragraph-or-region (&optional arg)
   "Runs `fill-region' if `mark-active', `fill-paragraph' otherwise."
   (interactive (progn (barf-if-buffer-read-only)
@@ -220,17 +349,18 @@ and `indent-for-tab-command' when indenting"
 
 ;; Do not break line after single character when filling
 (defun fill-single-char-nobreak-p ()
-  "Don't break a line after a single character."
+  "Don't break line after a single character."
   (save-excursion
     (skip-chars-backward " \t") (backward-char 2)
-    (looking-at "[ \t\n][a-zA-Z]")))
+    (looking-at "[[:space:]]][a-zA-Z]")))
 
 (add-to-list 'fill-nobreak-predicate 'fill-single-char-nobreak-p)
 
 ;; Do not break at '\ '
+; not tested
 (defun fill-nroff-slash-space-nobreak-p ()
-  "Don't break a line after a '\ ' sequence if in `nroff-mode'."
-  (and (string= major-mode "nroff-mode")
+  "Don't break line after a '\ ' sequence if in `nroff-mode'."
+  (and (equal major-mode 'nroff-mode)
        (save-excursion (backward-char 2) (looking-at "\\\\ \\|.\\\\"))))
 
 (add-to-list 'fill-nobreak-predicate 'fill-nroff-slash-space-nobreak-p)
@@ -244,8 +374,107 @@ and `indent-for-tab-command' when indenting"
 (global-set-key [C-return] 'my-jump)
 (global-set-key [C-S-mouse-3] 'ffap-at-mouse)
 
+
+;; Make l behave as it should in help-mode
+;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
+(add-hook 'help-mode-hook
+          (function (lambda () (define-key help-mode-map "l" 'help-go-back))))
+
 ;;}}}
 ;;{{{ Fkeys
+
+;;{{{ Key sequences
+
+(global-set-key "\eOP"       [f1])
+(global-set-key "\e[[A"      [f1])
+(global-set-key "\eOQ"       [f2])
+(global-set-key "\e[[B"      [f2])
+(global-set-key "\eOR"       [f3])
+(global-set-key "\e[[C"      [f3])
+(global-set-key "\eOS"       [f4])
+(global-set-key "\e[[D"      [f4])
+(global-set-key "\e[15~"     [f5])
+(global-set-key "\e[[E"      [f5])
+(global-set-key "\e[17~"     [f6])
+(global-set-key "\e[18~"     [f7])
+(global-set-key "\e[19~"     [f8])
+(global-set-key "\e[20~"     [f9])
+(global-set-key "\e[21~"     [f10])
+(global-set-key "\e[23~"     [f11])
+(global-set-key "\e[24~"     [f12])
+(global-set-key "\eO5P"      [C-f1])
+(global-set-key "\eO5Q"      [C-f2])
+(global-set-key "\eO5R"      [C-f3])
+(global-set-key "\eO5S"      [C-f4])
+(global-set-key "\e[15;5~"   [C-f5])
+(global-set-key "\e[17;5~"   [C-f6])
+(global-set-key "\e[18;5~"   [C-f7])
+(global-set-key "\e[19;5~"   [C-f8])
+(global-set-key "\e[20;5~"   [C-f9])
+(global-set-key "\e[21;5~"   [C-f10])
+(global-set-key "\e[23;5~"   [C-f11])
+(global-set-key "\e[24;5~"   [C-f12])
+(global-set-key "\eO6P"      [C-S-f1])
+(global-set-key "\eO6Q"      [C-S-f2])
+(global-set-key "\eO6R"      [C-S-f3])
+(global-set-key "\eO6S"      [C-S-f4])
+(global-set-key "\e[15;6~"   [C-S-f5])
+(global-set-key "\e[17;6~"   [C-S-f6])
+(global-set-key "\e[18;6~"   [C-S-f7])
+(global-set-key "\e[19;6~"   [C-S-f8])
+(global-set-key "\e[20;6~"   [C-S-f9])
+(global-set-key "\e[21;6~"   [C-S-f10])
+(global-set-key "\e[23;6~"   [C-S-f11])
+(global-set-key "\e[24;6~"   [C-S-f12])
+(global-set-key "\eO3P"      [M-f1])
+(global-set-key "\eO3Q"      [M-f2])
+(global-set-key "\eO3R"      [M-f3])
+(global-set-key "\eO3S"      [M-f4])
+(global-set-key "\e[15;3~"   [M-f5])
+(global-set-key "\e[17;3~"   [M-f6])
+(global-set-key "\e[18;3~"   [M-f7])
+(global-set-key "\e[19;3~"   [M-f8])
+(global-set-key "\e[20;3~"   [M-f9])
+(global-set-key "\e[21;3~"   [M-f10])
+(global-set-key "\e[23;3~"   [M-f11])
+(global-set-key "\e[24;3~"   [M-f12])
+(global-set-key "\eO4P"      [M-S-f1])
+(global-set-key "\eO4Q"      [M-S-f2])
+(global-set-key "\eO4R"      [M-S-f3])
+(global-set-key "\eO4S"      [M-S-f4])
+(global-set-key "\e[15;4~"   [M-S-f5])
+(global-set-key "\e[17;4~"   [M-S-f6])
+(global-set-key "\e[18;4~"   [M-S-f7])
+(global-set-key "\e[19;4~"   [M-S-f8])
+(global-set-key "\e[20;4~"   [M-S-f9])
+(global-set-key "\e[21;4~"   [M-S-f10])
+(global-set-key "\e[23;4~"   [M-S-f11])
+(global-set-key "\e[24;4~"   [M-S-f12])
+(global-set-key "\eO2P"      [S-f1])
+(global-set-key "\e[23~"     [S-f1])
+(global-set-key "\eO2Q"      [S-f2])
+(global-set-key "\e[24~"     [S-f2])
+(global-set-key "\eO2R"      [S-f3])
+(global-set-key "\e[25~"     [S-f3])
+(global-set-key "\eO2S"      [S-f4])
+(global-set-key "\e[26~"     [S-f4])
+(global-set-key "\e[15;2~"   [S-f5])
+(global-set-key "\e[28~"     [S-f5])
+(global-set-key "\e[17;2~"   [S-f6])
+(global-set-key "\e[29~"     [S-f6])
+(global-set-key "\e[18;2~"   [S-f7])
+(global-set-key "\e[31~"     [S-f7])
+(global-set-key "\e[19;2~"   [S-f8])
+(global-set-key "\e[32~"     [S-f8])
+(global-set-key "\e[20;2~"   [S-f9])
+(global-set-key "\e[33~"     [S-f9])
+(global-set-key "\e[21;2~"   [S-f10])
+(global-set-key "\e[34~"     [S-f10])
+(global-set-key "\e[23;2~"   [S-f11])
+(global-set-key "\e[24;2~"   [S-f12])
+
+;;}}}
+;;{{{ F1 - Help
 
 (defun my-help ()
   "If function given tries to `describe-function' otherwise uses
@@ -256,58 +485,205 @@ and `indent-for-tab-command' when indenting"
          (describe-function fn)
        (manual-entry (current-word)))))
 
-(global-set-key "\e[OP"     "\e[[A")
-(global-set-key [f1]        "\e[[A")
-(global-set-key "\e[[A"     'my-help)
+(global-set-key [f1]        'my-help)
 
+;;}}}
+;;{{{ F2 - find configuration file s
 
-(global-set-key "\e[OQ"     "\e[[B")
-(global-set-key [f2]        "\e[[B")
-(global-set-key "\e[[B"     '(lambda () (interactive) (find-file "~/.emacs")))
-(global-set-key [M-f2]      "\eO3Q")
-(global-set-key "\eO3Q"     '(lambda () (interactive) (find-file "~/.emacs.custom")))
+(defmacro mn-kbd-find-file (file)
+  `(function (lambda () (interactive) (find-file ,file))))
 
-(global-set-key "\e[OR"     "\e[[C")
-(global-set-key [f3]        "\e[[C")
-(global-set-key "\e[[C"     '(lambda () (interactive) (find-file "~/.bashrc")))
+(global-set-key [f2]        (mn-kbd-find-file "~/.emacs"))
+(global-set-key [C-f2]      (mn-kbd-find-file "~/.gnus/.gnus.el"))
+(global-set-key [M-f2]      (mn-kbd-find-file "~/.emacs.custom"))
+(global-set-key [S-f2]      (mn-kbd-find-file "~/.bashrc"))
 
+;;}}}
+;;{{{ F5 - Gnus
 
-(defun my-spell (lang &optional start end)
-  "Sets ispell dictionary to lang and checks the whole document
-if args are missing, the selected region if args are missing and
-`mark-active', from start to end if both args are present, from
-start to `point-max' if only start is present."
-  (ispell-change-dictionary lang)
-  (if start (ispell-region start (or end (point-max))) (ispell)))
+;; http://www.emacswiki.org/cgi-bin/wiki/SwitchToGnus
+(defun switch-to-gnus-or-get-new-news (&optional arg)
+  "If already in Gnus group retrive new news otherwise, if Gnus
+is running, switch to Gnus group buffer, otherwise start gnus"
+  (interactive "p")
+  (cond
+   ((string= (buffer-name) "*Group*") (gnus-group-get-new-news arg))
+   ((and (fboundp 'gnus-alive-p) (gnus-alive-p)) (switch-to-buffer "*Group*"))
+   (t (gnus))))
 
-(global-set-key [f7]        '(lambda () (interactive) (my-spell "pl")))
-(global-set-key [C-f7]      '(lambda () (interactive) (my-spell "pl" (point))))
-(global-set-key [M-f7]      '(lambda () (interactive) (my-spell "en")))
-(global-set-key [C-M-f7]    '(lambda () (interactive) (my-spell "en" (point))))
+(global-set-key [f5]        'switch-to-gnus-or-get-new-news)
 
-;;{{{ Keyboard macros
+;;}}}
+;;{{{ F7 - spell checking
 
-;; http://www.emacswiki.org/cgi-bin/wiki/MacroKey
-(defun ted-macro-dwim (arg)
-  "DWIM keyboard macro recording and executing."
-  (interactive "P")
-  (if defining-kbd-macro (if arg (end-kbd-macro arg) (end-kbd-macro))
-    (if last-kbd-macro (call-last-kbd-macro arg) (start-kbd-macro arg))))
+(require 'ispell)
 
-(global-set-key [f8]        'ted-macro-dwim)
-(global-set-key [\M-f8]     (lambda () (interactive) (setq last-kbd-macro ())))
-(global-set-key [\C-f8]     'kmacro-start-macro-or-insert-counter)
+;;{{{ ispell-change-dictionary bugfix
+
+(defun ispell-change-dictionary (dict &optional arg)
+  "Change to dictionary DICT for Ispell.
+With a prefix arg, set it \"globally\", for all buffers.
+Without a prefix arg, set it \"locally\", just for this buffer.
+
+By just answering RET you can find out what the current dictionary is."
+  (interactive
+   (list (completing-read
+          "Use new dictionary (RET for current, SPC to complete): "
+          (and (fboundp 'ispell-valid-dictionary-list)
+               (mapcar 'list (ispell-valid-dictionary-list)))
+          nil t)
+         current-prefix-arg))
+  (unless arg (ispell-buffer-local-dict 'no-reload))
+  (if (equal dict "default") (setq dict nil))
+  ;; This relies on completing-read's bug of returning "" for no match
+  (cond
+   ((equal dict "")
+    (ispell-internal-change-dictionary)
+    (message "Using %s dictionary"
+             (or (and (not arg) ispell-local-dictionary)
+                 ispell-dictionary "default")))
+   ((equal dict (or (and (not arg) ispell-local-dictionary)
+                    ispell-dictionary "default"))
+    ;; Specified dictionary is the default already. Could reload
+    ;; the dictionaries if needed.
+    (ispell-internal-change-dictionary)
+    (if (interactive-p) (message "No change, using %s dictionary" dict)))
+   (t ; reset dictionary!
+    (if (or (assoc dict ispell-local-dictionary-alist)
+            (assoc dict ispell-dictionary-alist))
+        (if arg
+            ;; set default dictionary
+            (setq ispell-dictionary dict)
+          ;; set local dictionary
+          (setq ispell-local-dictionary dict)
+          (setq ispell-local-dictionary-overridden t))
+      (error "Undefined dictionary: %s" dict))
+    (ispell-internal-change-dictionary)
+    (message "%s Ispell dictionary set to %s"
+             (if arg "Global" "Local")
+             dict))))
 
 ;;}}}
 
-(setenv "CFLAGS"   "-Wall -pedantic -std=c99 -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
-(setenv "CXXFLAGS" "-Wall -pedantic          -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
-(setenv "CPPFLAGS" "-Wall -pedantic -std=c99")
-(setenv "LDFLAGS"  nil)
+(defvar mn-spell-dictionaries '("polish" "british")
+  "List of dictionaries to cycle through with `mn-spell-switch-dictionary'.")
 
-(global-set-key "\e\e[[20~" 'compile)                  ; F9    compile
-(global-set-key [f9]        'compile)
-(global-set-key [C-f9]      'recompile)                ; C-F9  recompile
+(eval-after-load "ispell"
+  (ispell-change-dictionary "polish" t))
+
+(defun mn-spell (&optional lang start end)
+  "If LANG is not-nil sets ispell dictionary to lang, then checks
+region from START to END for spelling errors.  The default values
+for START and END are `region-beginning' and `region-end' if
+`transient-mark-mode' is on and `mark-active' or `point-min' and
+`point-max' otherwise.
+
+However, if START is nil, END is not and `region-beginning' falls
+after END START will get value of `point-min'.  And the other way
+around: if END is nil, START is not and `region-end' falls before
+START END will get value of `point-max'.
+
+If LANG is an empty string local dictionary is set to
+nil (ie. the global dictionary is used).
+
+If START >= END this function only sets the dictionary and
+returns nil.  Otherwise it returns whatever `ispell-region'
+returned."
+  (interactive
+   (list (completing-read
+          "Use new dictionary (RET for current, SPC to complete): "
+          (and (fboundp 'ispell-valid-dictionary-list)
+               (mapcar 'list (ispell-valid-dictionary-list)))
+          nil t)))
+  (if lang (ispell-change-dictionary (if (string= lang "") nil lang)))
+  (cond
+   ((not (and (boundp 'transient-mark-mode) transient-mark-mode
+              (boundp 'mark-active) mark-active))
+    (if (not start) (setq start (point-min)))
+    (if (not end)   (setq end   (point-max))))
+   ((not (or start end))
+    (let ((s (region-beginning)) (e (region-end)))
+      (if (and end   (>= s end  )) (setq s (point-min)))
+      (if (and start (<= e start)) (setq e (point-max))))))
+  (if (< start end) (ispell-region start end)))
+
+(defun mn-spell-switch-dictionary (&optional arg)
+  "Switches dictionary to the next dictionary from `mn-spell-dictionaries'.
+With a prefix arg sets global dictionary."
+  (interactive "P")
+  (ispell-change-dictionary
+   (let ((dic (or (and (not arg) ispell-local-dictionary) ispell-dictionary))
+         (list mn-spell-dictionaries))
+     (while (and list (not (string= (car list) dic))) (setq list (cdr list)))
+     (setq dic (or (car list) (car mn-spell-dictionaries)))
+     (message "%s" dic)
+     dic
+   arg)))
+
+
+(set-key-lambda [f7]        (mn-spell))
+(set-key-lambda [C-f7]      (mn-spell nil (point)))
+
+(global-set-key [M-f7]      'mn-spell-switch-dictionary)
+
+;;}}}
+;;{{{ F8 - Keyboard macros
+
+(global-set-key [f8]        'kmacro-end-or-call-macro)
+(global-set-key [C-f8]      'kmacro-start-macro-or-insert-counter)
+
+;;}}}
+;;{{{ F9 - Compilation
+
+(defvar mn-compile-vars
+  '((("CFLAGS"   "-Wall -pedantic -std=c99   -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
+     ("CXXFLAGS" "-Wall -pedantic -std=c++98 -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
+     ("CPPFLAGS" "-Wall -pedantic -std=c99")
+     ("LDFLAGS"  nil))
+
+    (("CFLAGS"   "-Wall -pedantic -std=c89   -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
+     ("CXXFLAGS" "-Wall -pedantic -std=c++98 -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
+     ("CPPFLAGS" "-Wall -pedantic -std=c89")
+     ("LDFLAGS"  nil)))
+
+  "List of enviroment variables set by `mn-compile' priory to
+compilation.  The car of the list is a list of default enviroment
+variables to be set and cadr is a list is a list of alternative
+enviroment variables.  Each list is a list of two element lists
+which car is a enviroment variables name and cadr is value.")
+
+
+(defun mn-compile (&optional alt recompile touch)
+  "If alt is omited or nil sets CFLAGS, CXXFLAGS, CPPFLAGS and
+LDFLAGS enviroment variables to `mn-cflags', `mn-cxxflags',
+`mn-cppflags', `mn-ldflags' respectively.
+
+If alt is non-nil (or when called interactive with any prefix
+argument) sets CFLAGS, CXXFLAGS, CPPFLAGS and LDFLAGS enviroment
+variables to `mn-alt-cflags', `mn-alt-cxxflags',
+`mn-alt-cppflags', `mn-alt-ldflags' respectively.
+
+Afterwards, if touch is non-nil marks buffer as modified.  Saves
+buffer (`save-buffer') and executes `recompile' if recompile is
+non-nill or `compile' otherwise."
+
+  (interactive "P")
+  (if touch (set-buffer-modified-p t))
+  (save-buffer)
+  (if (or (equal major-mode 'lisp-mode) (equal major-mode 'emacs-lisp-mode))
+      (auto-byte-compile-file nil t)
+    (let (v (vars (if alt (cadr mn-compile-vars) (car mn-compile-vars))))
+      (while (set 'v (pop vars)) (setenv (car v) (cadr v))))
+    (if recompile (recompile) (call-interactively 'compile))))
+
+
+(global-set-key [f9]        'mn-compile)               ; F9    compile
+(global-set-key [C-f9]                                 ; C-F9  recompile
+                (function (lambda (a) (interactive "P") (mn-compile a t))))
+(global-set-key [M-f9]                                 ; M-F9  force alt comp.
+                (function (lambda (a) (interactive "P") (mn-compile (not a) t t))))
+
+;;}}}
 
 ;;}}}
 ;;{{{ ISearch mode
@@ -332,78 +708,6 @@ start to `point-max' if only start is present."
 ;;}}}
 
 ;;}}}
-;;{{{ Auto-byte-compile
-
-(require 'bytecomp)
-
-(defvar auto-byte-compile-files-list
-  (list user-init-file
-;        gnus-init-file (concat gnus-init-file ".el")
-        "~/.gnus" "~/.gnus.el"
-        )
-  "List of files to auto compile")
-
-(defun auto-byte-compile-file (&optional file match)
-  "file can be
-- a string representing file name;
-- a list of strings representing file names;
-- nil in which case value returned by `buffer-file-name' will be used
-  unless it returns nil in which case no action will be taken; or
-- anything else in which case value of `auto-byte-compile-files-list'
-  will be taken.
-
-match can be
-- nil which is equivalent to passing `auto-byte-compile-files-list';
-- a string which is equivalent to passing list with that string as the
-  only element;
-- a list in which case file have to be in that list to be processed; or
-- anything else in which case file will be processed regardles of name.
-
-So the default is to auto-compile the current file iff it exists
-in `auto-byte-compile-files-list'.
-
-Non-string elements in list will be ignored.
-
-Auto-compilation means that file will be byte-compiled iff the
-compiled version does not exits or is older then the file
-itself."
-
-  ; Arguments
-  (if (not file) (setq file (buffer-file-name)))
-  (setq file (cond ((stringp file) (list file))
-                   ((listp   file) file)
-                   (t              auto-byte-compile-files-list))
-        match (cond ((not match)     auto-byte-compile-files-list)
-                    ((stringp match) (list match))
-                    ((listp match)   match)
-                    (t               nil)))
-
-  ; Loop
-  (let (f ok m str (n 0))
-    (while (setq f (pop file))
-      (unless (not (stringp f))
-        (setq f (expand-file-name f))
-
-        ; Directory
-        (if (file-directory-p f)
-            (setq file (append (directory-files f t nil t) file))
-
-          ; Search if maches
-          (setq ok (not (setq m match)))
-          (while (and (not ok) (setq str (pop m)))
-            (if (stringp str) (setq ok (string= f (expand-file-name str)))))
-
-          ; Auto compile
-          (if (and ok (file-newer-than-file-p f (byte-compile-dest-file f)))
-              (progn
-                (byte-compile-file f)
-                (setq n (1+ n)))))))
-    n))
-
-(add-hook 'kill-buffer-hook 'auto-byte-compile-file)
-(add-hook 'kill-emacs-hook (lambda () (auto-byte-compile-file t)))
-
-;;}}}
 ;;{{{ Syntax highlighting
 
 ;;{{{ Font lock
@@ -413,8 +717,11 @@ itself."
 (setq font-lock-verbose nil)          ;no messages
 
 ;; Let customize keep config there
-(setq custom-file "~/.emacs.custom")
+(setq custom-file (expand-file-name "~/.emacs.custom"))
 (if (file-exists-p custom-file) (load-file custom-file))
+(if (boundp 'auto-byte-compile-files-list)
+    (setq auto-byte-compile-files-list
+          (cons custom-file auto-byte-compile-files-list)))
 
 ;;}}}
 ;;{{{ Lazy lock
@@ -437,7 +744,7 @@ itself."
 (show-paren-mode t)               ;show matching parenthesis.
 
 ;;}}}
-;;{{{ Show blanks, FIXME and PowerDown script faces
+;;{{{ Show blanks and FIXME
 
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
 
@@ -468,13 +775,12 @@ itself."
 ;;{{{ Misc small config
 
 ;;Save some space
-(menu-bar-mode nil)               ;no menu bar
+(menu-bar-mode -1)                ;no menu bar
 (when window-system
-  (tool-bar-mode nil)             ;no tool bar
-  (scroll-bar-mode nil)           ;no scroll bar
+  (tool-bar-mode -1)              ;no tool bar
+  (scroll-bar-mode -1)            ;no scroll bar
   (require 'fringe)
-  (set-fringe-mode '(1 . 5))      ;small fringe
-  )
+  (set-fringe-mode '(2 . 4)))     ;small fringe
 
 ;; Modeline, Minibuffer & Frame title
 (setq line-number-mode t)         ;show line number in modeline
@@ -492,11 +798,11 @@ itself."
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
 (setq require-final-newline t)    ;always end file with NL
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
-(setq gc-cons-threshold 4000000)  ;byets before garbage collection
+(setq gc-cons-threshold 4000000)  ;bytes before garbage collection
 (setq ange-ftp-ftp-program-name "pftp") ;passive FTP
 (blink-cursor-mode nil)           ;do not blink cursor
-(add-hook 'before-save-hook 'time-stamp) ;install time-stamp
-(setq time-stamp-active nil)      ;but disable by default
+;(add-hook 'before-save-hook 'time-stamp) ;install time-stamp
+;(setq time-stamp-active nil)      ;but disable by default
 
 ;; Saving etc
 (if (fboundp recentf-mode)
@@ -508,12 +814,22 @@ itself."
                                   ; and what's worse - sux with ftp
 
 ;; Indention
-(setq indent-tabs-mode t)         ;indent using spaces
+(defun tab-stop-list (&optional width columns)
+  "Returns list of all positive integers ordered rom smallest to
+largest which are multiplications of WIDTH and are lower or equal
+COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
+  (if (not width) (setq width tab-width))
+  (when (<= width (or columns 120))
+    (let* (l (n (/ (or columns 120) width )))
+      (while (> (setq l (cons (* n width) l) n (1- n)) 0)) l)))
+
+(setq indent-tabs-mode t)         ;indent using tabs
 (setq c-basic-offset 4)           ;4 char indent in cc-mode
 (setq tab-width 4)                ;tab width
-(setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60
-                      64 68 72 76 80 84 88 92 96 100 104 108 112
-                      116 120))
+(setq tab-stop-list (eval-when-compile (tab-stop-list 4)))
+;; One could add this to check if tab-width and c-basic-offset correspond
+;(if (not (= 0 (% c-basic-offset tab-width)))
+;    (warn "`tab-width' does not divide `c-basic-offset'"))
 
 ;; Regions a.k.a. Selection
 (setq mouse-yank-at-point t)      ;mouse yank at point not at cursor   (X-win)
@@ -528,18 +844,18 @@ itself."
 (setq next-line-add-newlines nil) ;no new lines with down arrow key
 
 ;; Coding system
-(set-keyboard-coding-system (quote iso-8859-2))
-(set-terminal-coding-system (quote iso-8859-2))
+(set-keyboard-coding-system 'iso-8859-2)
+(set-terminal-coding-system 'iso-8859-2)
 
 ;; Blink Scroll Lock LED instead of beep
 (setq visible-bell nil)           ;no visual bell
-;(setq ring-bell-function (lambda ()
-;  (call-process-shell-command "xset led 3; xset -led 3" nil 0 nil)))
+(setq ring-bell-function (function (lambda ()
+  (call-process-shell-command "xset led 3; xset -led 3" nil 0 nil))))
 
 ;; Each list element as new paragraph
 ;; http://www.emacswiki.org/cgi-bin/wiki/FillParagraph
 (setq paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
-  paragraph-separate "$")
+      paragraph-separate "$")
 
 ;;}}}
 ;;{{{ Modes and stuff
@@ -561,14 +877,13 @@ itself."
 ;(setq c-default-style "linux")
 
 ;; Default compile command
-;; http://www.emacswiki.org/cgi-bin/wiki/CompileCommand
-;(require 'compile)
-;(add-hook 'c-mode-hook (lambda ()
-; (unless (file-exists-p "Makefile")
-;   (set (make-local-variable 'compile-command)
-;(let ((file (file-name-nondirectory buffer-file-name)))
-;  (concat "gcc -O2 -Wall -o " (file-name-sans-extension file)
-;  " " file))))))
+(eval-after-load "compile"
+  (add-hook 'c-mode-hook
+            (lambda ()
+              (if buffer-file-name
+                  (set (make-local-variable 'compile-command)
+                       (let ((file (file-name-nondirectory buffer-file-name)))
+                         (concat "make -k " file)))))))
 
 ;;}}}
 ;;{{{ CSS Mode
@@ -586,22 +901,20 @@ itself."
 
 ;; Insert char or entity when pressed 2 times
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
-(defmacro rgb-insert-if-double (otherwise)
-  `(lambda (cnt) (interactive "p")
- (if (equal (preceding-char) last-command-char)
- (progn
-   (backward-delete-char 1)
-   (insert ,otherwise))
-   (self-insert-command cnt))))
+(eval-after-load "sgml-mode"
+  (progn
+    (defmacro rgb-insert-if-double (otherwise)
+      `(function (lambda (arg) (interactive "P")
+                   (if (or arg (not (equal (preceding-char) last-command-char)))
+                       (self-insert-command (prefix-numeric-value arg))
+                     (backward-delete-char 1)
+                     (insert ,otherwise)))))
 
-(eval-when-compile (require 'sgml-mode))
-
-(add-hook 'html-mode-hook (lambda ()
- (define-key html-mode-map [(<)]  (rgb-insert-if-double "&lt;"))
- (define-key html-mode-map [(>)]  (rgb-insert-if-double "&gt;"))
- (define-key html-mode-map [(&)]  (rgb-insert-if-double "&amp;"))
- (define-key html-mode-map [(\")] (rgb-insert-if-double "&quot;"))))
-
+    (add-hook 'html-mode-hook (function (lambda ()
+      (define-key html-mode-map [(<)]  (rgb-insert-if-double "&lt;"))
+      (define-key html-mode-map [(>)]  (rgb-insert-if-double "&gt;"))
+      (define-key html-mode-map [(&)]  (rgb-insert-if-double "&amp;"))
+      (define-key html-mode-map [(\")] (rgb-insert-if-double "&quot;")))))))
 
 ;; Generates TOC based on <H?> elements
 ;; http://www.emacswiki.org/cgi-bin/wiki/HtmlToc
@@ -641,37 +954,39 @@ itself."
 
 (add-hook 'text-mode-hook (function (lambda ()
     (auto-fill-mode t)
-    (set-variable 'tab-width 8)
-    (set-variable 'tab-stop-list
-                  '(8 16 24 32 40 48 56 64 72 80 88 96 104 112 120))
-)))
+    (setq tab-width 8)
+    (setq tab-stop-list
+    (set (make-local-variable 'tab-stop-list)
+         (eval-when-compile (tab-stop-list 8)))))))
 (setq auto-mode-alist (append '(("\\.ftf\\'" . text-mode)) auto-mode-alist))
 
 ;;}}}
 ;;{{{ (La)TeX mode
 
 ;; Helper for tex-space
-(defun my-tex-search-back (regexp len &optional suf)
+(defun my-tex-looking-back (regexp len)
+  "Returns non-nil if text LEN chars backward matches REGEXP and
+is at the beginning of line or preceded by white space."
   (save-excursion
-    (or (re-search-backward (concat "^\\(" regexp "\\)" suf) (- (point) len) t)
-        (re-search-backward (concat "[[:space:]~]\\(" regexp "\\)" suf)
-                            (- (point) len 1) t))))
+    (backward-char len)
+    (if (looking-at regexp)
+        (or (looking-at "^")
+            (progn (backward-char 1) (looking-at "[[:space:]]"))))))
 
 ;; Insert '~' or '\ ' instead of ' ' in LaTeX when needed
 ;; Also removes '~' when 2nd space added
 ;; http://www.debianusers.pl/article.php?aid=39
-(defun tex-space (arg) (interactive "p")
+(defun tex-space (arg) (interactive "P")
   (cond
    ((re-search-backward "\\~" (- (point) 1) t)
-    (progn (delete-char 1) (self-insert-command arg)))
-   ((> arg 1) (self-insert-command arg))
-   ((or (my-tex-search-back "[a-z]" 1)
-        (my-tex-search-back "[a-z][a-z]" 2))
-;        (my-tex-search-back "do\\|na\\|od\\|po\\|za\\|we\\|to\\|co" 2))
+    (delete-char 1) (self-insert-command (prefix-numeric-value arg)))
+   (arg (self-insert-command (prefix-numeric-value arg)))
+   ((or (my-tex-looking-back "[a-z]" 1)
+        (my-tex-looking-back "[a-z][a-z]" 2))
     (insert-char ?~ 1))
-   ((or (my-tex-search-back "tj\\|np\\|ew\\|jw\\|in\\|wg" 3 "\\.")
-        (my-tex-search-back "tzw\||tzn" 4 "\\."))
-    (insert-char ?\\ 1) (self-insert-command 1))
+   ((or (my-tex-looking-back "\\(?:tj\\|np\\|ew\\|jw\\|in\\|wg\\)\\." 3)
+        (my-tex-looking-back "\\(?:tzw\||tzn\\)\\." 4))
+    (insert "\\ "))
    (t (self-insert-command 1))))
 
 (eval-when-compile (require 'tex-mode))
@@ -906,4 +1221,8 @@ itself."
 ;; Clear messages
 ;; You may want to comment it out for debuging
 (setq message-log-max nil)        ;disable messages
+
 (kill-buffer "*Messages*")        ;kill buffer with messages
+
+(when (file-directory-p gnus-home-directory)
+  (gnus))
