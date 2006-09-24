@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- EMACS configuration file
 ;; Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-emacs,v 1.6 2006/09/23 23:15:29 mina86 Exp $
+;; $Id: dot-emacs,v 1.7 2006/09/24 00:41:47 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
@@ -138,8 +138,8 @@ buffer equal nil unless prefix argument was given in which case
 match will equal nil."
   (interactive (list (not current-prefix-arg) nil))
   (and (buffer-file-name buffer)
-       (member (if buffer (save-current-buffer (set-buffer buffer)
-                                               major-mode) major-mode)
+       (memq (if buffer (save-current-buffer (set-buffer buffer)
+                                             major-mode) major-mode)
                '(lisp-mode emacs-lisp-mode))
        (auto-byte-compile-file (buffer-file-name buffer) match)))
 
@@ -360,7 +360,7 @@ and `indent-for-tab-command' when indenting"
 ; not tested
 (defun fill-nroff-slash-space-nobreak-p ()
   "Don't break line after a '\ ' sequence if in `nroff-mode'."
-  (and (equal major-mode 'nroff-mode)
+  (and (eq major-mode 'nroff-mode)
        (save-excursion (backward-char 2) (looking-at "\\\\ \\|.\\\\"))))
 
 (add-to-list 'fill-nobreak-predicate 'fill-nroff-slash-space-nobreak-p)
@@ -502,14 +502,16 @@ and `indent-for-tab-command' when indenting"
 ;;{{{ F5 - Gnus
 
 ;; http://www.emacswiki.org/cgi-bin/wiki/SwitchToGnus
+
 (defun switch-to-gnus-or-get-new-news (&optional arg)
   "If already in Gnus group retrive new news otherwise, if Gnus
-is running, switch to Gnus group buffer, otherwise start gnus"
+is running, switch to Gnus group buffer, otherwise start Gnus"
   (interactive "p")
   (cond
-   ((string= (buffer-name) "*Group*") (gnus-group-get-new-news arg))
-   ((and (fboundp 'gnus-alive-p) (gnus-alive-p)) (switch-to-buffer "*Group*"))
-   (t (gnus))))
+   ((eq major-mode 'gnus-group-mode) (gnus-group-get-new-news arg))
+   ((and (boundp 'gnus-group-buffer) (fboundp 'gnus-alive-p) (gnus-alive-p))
+    (switch-to-buffer gnus-group-buffer))
+   ((gnus))))
 
 (global-set-key [f5]        'switch-to-gnus-or-get-new-news)
 
@@ -592,8 +594,8 @@ returned."
   (interactive
    (list (completing-read
           "Use new dictionary (RET for current, SPC to complete): "
-          (and (fboundp 'ispell-valid-dictionary-list)
-               (mapcar 'list (ispell-valid-dictionary-list)))
+          (if (fboundp 'ispell-valid-dictionary-list)
+              (mapcar 'list (ispell-valid-dictionary-list)))
           nil t)))
   (if lang (ispell-change-dictionary (if (string= lang "") nil lang)))
   (cond
@@ -601,10 +603,9 @@ returned."
               (boundp 'mark-active) mark-active))
     (if (not start) (setq start (point-min)))
     (if (not end)   (setq end   (point-max))))
-   ((not (or start end))
-    (let ((s (region-beginning)) (e (region-end)))
-      (if (and end   (>= s end  )) (setq s (point-min)))
-      (if (and start (<= e start)) (setq e (point-max))))))
+   ((not (or start end)) (setq start (region-beginning) end (region-end)))
+   ((not start) (setq start (min (region-beginning) end  )))
+   ((not end  ) (setq end   (max (region-end)       start))))
   (if (< start end) (ispell-region start end)))
 
 (defun mn-spell-switch-dictionary (&optional arg)
@@ -615,10 +616,8 @@ With a prefix arg sets global dictionary."
    (let ((dic (or (and (not arg) ispell-local-dictionary) ispell-dictionary))
          (list mn-spell-dictionaries))
      (while (and list (not (string= (car list) dic))) (setq list (cdr list)))
-     (setq dic (or (car list) (car mn-spell-dictionaries)))
-     (message "%s" dic)
-     dic
-   arg)))
+     (or (cadr list) (car mn-spell-dictionaries)))
+   arg))
 
 
 (set-key-lambda [f7]        (mn-spell))
@@ -670,7 +669,7 @@ non-nill or `compile' otherwise."
   (interactive "P")
   (if touch (set-buffer-modified-p t))
   (save-buffer)
-  (if (or (equal major-mode 'lisp-mode) (equal major-mode 'emacs-lisp-mode))
+  (if (or (eq major-mode 'lisp-mode) (eq major-mode 'emacs-lisp-mode))
       (auto-byte-compile-file nil t)
     (let (v (vars (if alt (cadr mn-compile-vars) (car mn-compile-vars))))
       (while (set 'v (pop vars)) (setenv (car v) (cadr v))))
@@ -776,6 +775,7 @@ non-nill or `compile' otherwise."
 
 ;;Save some space
 (menu-bar-mode -1)                ;no menu bar
+(setq use-dialog-box nil)         ;never use dialog boxes
 (when window-system
   (tool-bar-mode -1)              ;no tool bar
   (scroll-bar-mode -1)            ;no scroll bar
@@ -901,6 +901,8 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 
 ;; Insert char or entity when pressed 2 times
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
+
+(eval-when-compile (require 'sgml-mode))
 (eval-after-load "sgml-mode"
   (progn
     (defmacro rgb-insert-if-double (otherwise)
@@ -990,12 +992,10 @@ is at the beginning of line or preceded by white space."
    (t (self-insert-command 1))))
 
 (eval-when-compile (require 'tex-mode))
-
-(defun my-tex-hook () (define-key tex-mode-map " " 'tex-space))
-(add-hook 'tex-mode-hook 'my-tex-hook)
-(add-hook 'TeX-mode-hook 'my-tex-hook)
-(add-hook 'latex-mode-hook 'my-tex-hook)
-(add-hook 'LaTeX-mode-hook 'my-tex-hook)
+(add-hook 'tex-mode-hook
+          (function (lambda () (define-key tex-mode-map " " 'tex-space))))
+(add-hook 'latex-mode-hook
+          (function (lambda () (define-key tex-mode-map " " 'tex-space))))
 
 ;;}}}
 ;;{{{ Nroff mode
@@ -1007,16 +1007,16 @@ is at the beginning of line or preceded by white space."
    ((re-search-backward "\\\\ " (- (point) 2) t)
     (delete-char 1) (forward-char) (self-insert-command arg))
    ((> arg 1) (self-insert-command arg))
-   ((or (my-tex-search-back "[a-z]" 1)
-        (my-tex-search-back "[a-z][a-z]" 2))
+   ((or (my-tex-looking-back "[a-z]" 1)
+        (my-tex-looking-back "[a-z][a-z]" 2))
 ;        (my-tex-search-back "do\\|na\\|od\\|po\\|za\\|we\\|to\\|co" 2))
     (insert-char ?\\ 1) (self-insert-command 1))
    (t (self-insert-command 1))))
 
 (eval-when-compile (require 'nroff-mode))
 
-(defun my-nroff-hook () (define-key nroff-mode-map " " 'nroff-space))
-(add-hook 'nroff-mode-hook 'my-tex-hook)
+(add-hook 'nroff-mode-hook
+          (function (lambda () (define-key nroff-mode-map " " 'nroff-space))))
 
 ;;}}}
 ;;{{{ Assembler mode
@@ -1221,8 +1221,6 @@ is at the beginning of line or preceded by white space."
 ;; Clear messages
 ;; You may want to comment it out for debuging
 (setq message-log-max nil)        ;disable messages
-
 (kill-buffer "*Messages*")        ;kill buffer with messages
 
-(when (file-directory-p gnus-home-directory)
-  (gnus))
+;(when (file-directory-p gnus-home-directory) (gnus))
