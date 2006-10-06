@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- EMACS configuration file
 ;; Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.7 2006/09/24 00:41:47 mina86 Exp $
+;; $Id: dot-emacs,v 1.8 2006/10/06 09:40:45 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
@@ -508,64 +508,23 @@ and `indent-for-tab-command' when indenting"
 is running, switch to Gnus group buffer, otherwise start Gnus"
   (interactive "p")
   (cond
-   ((eq major-mode 'gnus-group-mode) (gnus-group-get-new-news arg))
+   ((eq major-mode 'gnus-group-mode) (gnus-group-get-new-news))
    ((and (boundp 'gnus-group-buffer) (fboundp 'gnus-alive-p) (gnus-alive-p))
     (switch-to-buffer gnus-group-buffer))
    ((gnus))))
 
 (global-set-key [f5]        'switch-to-gnus-or-get-new-news)
+(set-key-lambda [C-f5]      (let ((b (current-buffer)))
+                              (switch-to-buffer (other-buffer))
+                              (bury-buffer b)))
 
 ;;}}}
 ;;{{{ F7 - spell checking
 
 (require 'ispell)
 
-;;{{{ ispell-change-dictionary bugfix
-
-(defun ispell-change-dictionary (dict &optional arg)
-  "Change to dictionary DICT for Ispell.
-With a prefix arg, set it \"globally\", for all buffers.
-Without a prefix arg, set it \"locally\", just for this buffer.
-
-By just answering RET you can find out what the current dictionary is."
-  (interactive
-   (list (completing-read
-          "Use new dictionary (RET for current, SPC to complete): "
-          (and (fboundp 'ispell-valid-dictionary-list)
-               (mapcar 'list (ispell-valid-dictionary-list)))
-          nil t)
-         current-prefix-arg))
-  (unless arg (ispell-buffer-local-dict 'no-reload))
-  (if (equal dict "default") (setq dict nil))
-  ;; This relies on completing-read's bug of returning "" for no match
-  (cond
-   ((equal dict "")
-    (ispell-internal-change-dictionary)
-    (message "Using %s dictionary"
-             (or (and (not arg) ispell-local-dictionary)
-                 ispell-dictionary "default")))
-   ((equal dict (or (and (not arg) ispell-local-dictionary)
-                    ispell-dictionary "default"))
-    ;; Specified dictionary is the default already. Could reload
-    ;; the dictionaries if needed.
-    (ispell-internal-change-dictionary)
-    (if (interactive-p) (message "No change, using %s dictionary" dict)))
-   (t ; reset dictionary!
-    (if (or (assoc dict ispell-local-dictionary-alist)
-            (assoc dict ispell-dictionary-alist))
-        (if arg
-            ;; set default dictionary
-            (setq ispell-dictionary dict)
-          ;; set local dictionary
-          (setq ispell-local-dictionary dict)
-          (setq ispell-local-dictionary-overridden t))
-      (error "Undefined dictionary: %s" dict))
-    (ispell-internal-change-dictionary)
-    (message "%s Ispell dictionary set to %s"
-             (if arg "Global" "Local")
-             dict))))
-
-;;}}}
+;; my ispell-change-dictionary bugfix now commited to CVS
+;; not need for it here
 
 (defvar mn-spell-dictionaries '("polish" "british")
   "List of dictionaries to cycle through with `mn-spell-switch-dictionary'.")
@@ -878,12 +837,18 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 
 ;; Default compile command
 (eval-after-load "compile"
-  (add-hook 'c-mode-hook
-            (lambda ()
-              (if buffer-file-name
-                  (set (make-local-variable 'compile-command)
-                       (let ((file (file-name-nondirectory buffer-file-name)))
-                         (concat "make -k " file)))))))
+  (progn
+    (defun cc-make-compile-command ()
+      "Sets `compile-command' to \"make -k <file-name-no-ext>\"."
+      (let ((fn buffer-file-name) p)
+        (when fn
+          (setq fn (file-name-nondirectory fn)
+                p (string-match "\\.[^\\.]*$" fn 1))
+          (set (make-local-variable 'compile-command)
+               (concat "make -k " (substring fn 0 p))))))
+
+    (add-hook 'c-mode-hook 'cc-make-compile-command)
+    (add-hook 'c++-mode-hook 'cc-make-compile-command)))
 
 ;;}}}
 ;;{{{ CSS Mode
