@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- EMACS configuration file
 ;; Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.8 2006/10/06 09:40:45 mina86 Exp $
+;; $Id: dot-emacs,v 1.9 2007/04/22 10:43:02 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
@@ -69,7 +69,7 @@ match can be
 
 If any element of match is a string ending with a slash ('/') it
 is treated as directory name (no checking is done if it is really
-a directory or even if it exists) and file is sad to match such
+a directory or even if it exists) and file is said to match such
 entry if it begins with it thus all files in given directory will
 match.
 
@@ -155,65 +155,94 @@ match will equal nil."
 
 ;;{{{ Sequence commands
 
-;; Sequence commands  1.2  by me, Michal Nazarewicz ;)
+;; Sequence commands  1.3  by me, Michal Nazarewicz ;)
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
-(defvar seq-store-times 0)
-(defvar seq-start-point 0
-  "Stores location of pointer when sequence of calls of the same
-function was started. This variable is updated by `seq-times'")
-(defvar seq-start-window-start 0
-  "Stores location at which display started in window when
-sequence of calls of the same function was started. This variable
-is updated by `seq-times'")
+(defvar seq-times 0
+  "Stores number of times command was executed.  It cotnains
+random data before `seq-times' macro is called.")
 
-(defun seq-times (&optional name max)
-  "Returns number of times command `name' was executed. If `name'
-is an empty string won't check if `last-command' matches. If
-`max' is specified the counter will wrap around at the value of
-`max' never reaching it. It also updates `seq-start-point'."
-  (if (numberp name) (setq max name name this-command)
-    (unless name (setq name this-command)))
-  (if (or (equal "" name) (equal last-command name))
-      (if (eq (setq seq-store-times (1+ seq-store-times)) max)
-          (setq seq-store-times 0) seq-store-times)
-    (setq seq-start-point (point) seq-start-window-start (window-start)
-          seq-store-times 0)))
+
+(defmacro seq-times (&optional name max &rest body)
+  "Returns number of times command NAME was executed and updates
+`seq-times' variable accordingly.  If NAME is nil `this-command'
+will be used.  If MAX is specified the counter will wrap around
+at the value of MAX never reaching it.  If body is given it will
+be evaluated if the command is run for the first time in a
+sequence."
+  (declare (indent 2))
+
+  ;; Build incrementation part
+  (setq max (cond ((null max) '(setq seq-times (1+ seq-times)))
+                  ((atom max) (if (and (integerp max) (> max 0))
+                                  `(setq seq-times (% (1+ seq-times) ,max))
+                                '(setq seq-times (1+ seq-times))))
+                  (t          `(let ((max ,max))
+                                 (if (and (integerp max) (> max 0))
+                                     (setq seq-times (% (1+ seq-times) max))
+                                   (setq seq-times (1+ seq-times)))))))
+
+  ;; Make macro
+  (if (eq name 'last-command)
+      max
+    (cond ((null  name) (setq name 'this-command))
+          ((consp name) (setq name `(or ,name this-command))))
+    `(if (eq last-command ,name)
+         ,max
+       ,@body
+       (setq seq-times 0))))
+
+
+(defmacro seq-times-nth (name body &rest list)
+  "Calls `seq-times' with arguments NAME, length and BODY
+and (where length is the number of elements in LIST) then returns
+`seq-times'th element of LIST."
+  (declare (indent 2))
+  `(nth (seq-times ,name ,(length list) ,body) ',list))
+
+
+(defmacro seq-times-do (name body &rest commands)
+  "Calls `seq-times' with arguments NAME, length and BODY (where
+length is the number of COMMANDS) and then runs `seq-times'th
+command from COMMANDS."
+  (declare (indent 2))
+  `(eval (nth (seq-times ,name ,(length commands) ,body) ',commands)))
 
 ;;}}}
 ;;{{{ Home/End
 
 ;; My home
+(defvar my-home-end--point 0)
 (defun my-home ()
    "Depending on how many times it was called moves the point to:
 once - beginning of line; twice - indent;
 three times - beginning of buffer; four times - back to where it was."
    (interactive)
-   (let ((n (seq-times 4)))
-     (cond ((= n 0) (beginning-of-line))
-           ((= n 1) (back-to-indentation))
-           ((= n 2) (goto-char (point-min)))
-           (t (goto-char seq-start-point)))))
+   (seq-times-do nil (setq my-home-end--point (point))
+     (beginning-of-line)
+     (back-to-indentation)
+     (goto-char (point-min))
+     (goto-char my-home-end--point)))
 
 (global-set-key "\C-a"          'my-home)
-(global-set-key [home]          'my-home)
-(global-set-key [kp-home]       'my-home)
-(global-set-key [f27]           'my-home)
+(global-set-key [(home)]        'my-home)
+(global-set-key [(kp-home)]     'my-home)
+(global-set-key [(f27)]         'my-home)
 (global-set-key "\e[1~"         'my-home)
 
 
 ;; My end
 (defun my-end () "Go to end of line or buffer" (interactive)
-  (let ((n (seq-times 4)))
-    (cond ((= n 0) (end-of-line))
-          ((= n 1) (forward-paragraph))
-          ((= n 2) (goto-char (point-max)))
-          (t (goto-char seq-start-point)))))
+  (seq-times-do nil (setq my-home-end--point (point))
+    (if folding-mode (folding-end-of-line) (end-of-line))
+    (forward-paragraph)
+    (goto-char (point-max))
+    (goto-char my-home-end--point)))
 
 (global-set-key "\C-e"          'my-end)
-(global-set-key [end]           'my-end)
-(global-set-key [kp-end]        'my-end)
-(global-set-key [select]        'my-end)
-(global-set-key [f33]           'my-end)
+(global-set-key [(end)]         'my-end)
+(global-set-key [(kp-end)]      'my-end)
+(global-set-key [(select)]      'my-end)
+(global-set-key [(f33)]         'my-end)
 (global-set-key "\e[4~"         'my-end)
 
 ;;}}}
@@ -226,25 +255,25 @@ three times - beginning of buffer; four times - back to where it was."
 (setq pager-goto-edge t)
 
 (global-set-key "\ev"           'pager-page-up)     ; Page Up
-(global-set-key [prior]         'pager-page-up)
-(global-set-key [f29]           'pager-page-up)
+(global-set-key [(prior)]       'pager-page-up)
+(global-set-key [(f29)]         'pager-page-up)
 (global-set-key "\C-v"          'pager-page-down)   ; Page Down
-(global-set-key [next]          'pager-page-down)
-(global-set-key [f35]           'pager-page-down)
+(global-set-key [(next)]        'pager-page-down)
+(global-set-key [(f35)]         'pager-page-down)
 
-(set-key-lambda '[M-up]         (scroll-down 1))    ; Alt+Up
-(set-key-lambda '[M-kp-8]       (scroll-down 1))
+(set-key-lambda [(meta up)]     (scroll-down 1))    ; Alt+Up
+(set-key-lambda [(meta kp-8)]   (scroll-down 1))
 (set-key-lambda "\M-p"          (scroll-down 1))
-(set-key-lambda '[M-down]       (scroll-up   1))    ; Alt+Dn
-(set-key-lambda '[M-kp-2]       (scroll-up   1))
+(set-key-lambda [(meta down)]   (scroll-up   1))    ; Alt+Dn
+(set-key-lambda [(meta kp-2)]   (scroll-up   1))
 (set-key-lambda "\M-n"          (scroll-up   1))
 
-(global-set-key '[M-S-up]       'pager-row-up)      ; Alt+Shift+Up
-(global-set-key '[M-S-kp-8]     'pager-row-up)
-(global-set-key "\M-P"          'pager-row-up)
-(global-set-key '[M-S-down]     'pager-row-down)    ; Alt+Shift+Down
-(global-set-key '[M-S-kp-2]     'pager-row-down)
-(global-set-key "\M-N"          'pager-row-down)
+(global-set-key [(meta shift up)]   'pager-row-up)  ; Alt+Shift+Up
+(global-set-key [(meta shift kp-8)] 'pager-row-up)
+(global-set-key "\M-P"              'pager-row-up)
+(global-set-key [(meta shift down)] 'pager-row-down); Alt+Shift+Down
+(global-set-key [(meta shift kp-2)] 'pager-row-down)
+(global-set-key "\M-N"              'pager-row-down)
 
 ;;}}}
 ;;{{{ Save with no blanks
@@ -264,8 +293,8 @@ three times - beginning of buffer; four times - back to where it was."
 
 (unless window-system
   (global-set-key "\C-h"          'delete-backward-char))
-(global-set-key [backspace]     'delete-backward-char)
-(global-set-key [delete]        'delete-char)
+(global-set-key [(backspace)]   'delete-backward-char)
+(global-set-key [(delete)]      'delete-char)
 
 (global-set-key "\C-xg"         'goto-line)             ; C-x g  goto line
 (global-set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
@@ -279,36 +308,165 @@ three times - beginning of buffer; four times - back to where it was."
 ;(global-set-key "\C-x\C-\\" 'goto-last-change)
 
 (require 'imenu)
-(global-set-key [S-mouse-3]     'imenu)
+(global-set-key [(shift mouse-3)] 'imenu)
 (setq imenu-sort-function 'imenu--sort-by-name)
-
-;; Mouse gestures (a.k.a. strokes)
-;(strokes-mode 1)
-;(global-set-key [down-mouse-3]  'strokes-do-stroke)
 
 
 ;; Centering
+(defvar centerer--window-start nil)
+
 (defun centerer ()
-   "Repositions current line: once - middle, twice - top, three
-and four times - `reposition-window', five times - bottom, six
-times - where it was at the beginning."
+  "Repositions current line: once - middle, twice - top, three and
+four times - `reposition-window', five times - bottom, six times -
+where it was at the beginning.
+   If performing some action doesn't really change position of the
+window function skips to another step."
    (interactive)
-   (let (n (i 0) (old (window-start)))
-     (while (and (< i 6) (equal (window-start) old))
-       (setq i (1+ i) n (seq-times "" 6))
-       (cond ((= n 0) (recenter))
-             ((= n 1) (recenter 0))
-             ((< n 4) (reposition-window))
-             ((= n 4) (recenter -1))
-             (t (set-window-start (selected-window) seq-start-window-start)))
-       )))
+   (let ((i 0) (old (window-start)))
+     (while (and (<= (setq i (1+ i)) 6) (equal (window-start) old))
+       (seq-times-do nil (setq centerer--window-start (window-start))
+         (recenter)
+         (recenter 0)
+         (reposition-window)
+         (reposition-window)
+         (recenter -1)
+         (set-window-start (selected-window) centerer--window-start)))))
 
 (global-set-key "\C-l"     'centerer)
 
 
-;; Tab - indent or complete
+;;{{{ Tab - indent or rotate or complete
+
+;; Rotate Text + indent-or-complete
+;; v0.3 by Michal Nazarewicz <mina86@tlen.pl>
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
-(defvar indent-or-complete-complete-function 'dabbrev-expand
+;; http://www.emacswiki.org/cgi-bin/wiki/RotateText
+
+;; Definition of words
+(defvar rotate-text-rotations
+  '(("mina86" "mina86@tlen.pl" "mina86@mina86.com" "http://mina86.com/")
+    ("max" "min")
+    ("north" "east" "south" "west")
+    ("left" "top" "right" "bottom")
+    ("red" "orange" "yellow" "green" "blue" "indigo" "violet"))
+  "List of lists of words to rotate between.")
+
+
+;; Rotates text
+(defun rotate-text (text &optional rotations)
+  "Rotates given string, ie. find string which follows given
+string in ROTATIONS or nil if there is no such string.  If
+ROTATION is nil `rotate-text-rotations' is used."
+  (rotate-text--in text (or rotations rotate-text-rotations)))
+
+;; Internal rotates text
+(defun rotate-text--in (text rotations)
+  "Similar to `rotate-text' but if ROTATIONS is nil returns nil."
+  (and rotations
+       (or (rotate-text--in-list text (car rotations))
+           (rotate-text--in      text (cdr rotations)))))
+
+;; Internal rotates text in list
+(defun rotate-text--in-list (text list)
+  "Searches for TEXT in LIST and returns string which is follows
+it (or the first string in the list if TEXT is the last one).  If
+string is not found on the list returns nil."
+  (let ((l list))
+    (while (and l (not (string-equal text (car l))))
+      (setq l (cdr l)))
+    (and l (or (cadr l) (car list)))))
+
+
+;; Roatetes text in buffer
+(defun rotate-region (&optional beg end)
+  "Rotates string in buffer between BEG and END.  If string was
+not found in `rotate-text-rotations' returns nil otherwise t.  If
+BEG is nil either `region-beginning' (if `transient-mark-mode'
+and `mark-active') or begining of word is used as the default.
+If END is nil either `region-end' or end of word is used as the
+default.  If function was called interactivly and mark was active
+it lets it active."
+
+  (save-excursion
+    (setq beg
+          (or beg
+              (and transient-mark-mode mark-active (region-beginning))
+              (progn (or (looking-at "\\<") (forward-word -1)) (point))))
+    (setq end
+          (or end
+              (and transient-mark-mode mark-active (region-end))
+              (progn (or (looking-at "\\>") (forward-word  1)) (point)))))
+
+  (let ((do-region (and (interactive-p) transient-mark-mode mark-active))
+        (str (rotate-text (buffer-substring beg end))))
+    (when str
+      (delete-region beg end)
+      (goto-char beg)
+      (insert str)
+      (setq deactivate-mark (not do-region))
+      t)))
+
+;; hippie-expand try function
+(defvar try-rotate-string--rotations)
+(defvar try-rotate-string--num)
+(defvar try-rotate-string--beg)
+(defvar try-rotate-string--text)
+
+(defun try-rotate-string (old)
+  "Try to rotates text.  The argument OLD has to be nil the first
+call of this function, and t for subsequent calls (for further
+possible completions of the same string).  It returns t if a new
+completion is found, nil otherwise.
+
+This function can be added to `hippie-expand-try-functions-list'
+or used interactivly.  To do the former use:
+
+  (setq hippie-expand-try-functions-list
+        (append (list 'try-rotate-string) hippie-expand-try-functions-list))"
+  (interactive (list (eq this-command last-command)))
+  (if old
+      (when (>= (setq try-rotate-string--num (1+ try-rotate-string--num))
+                (length (car try-rotate-string--rotations)))
+        (setq try-rotate-string--rotations (cdr try-rotate-string--rotations)
+              try-rotate-string--num       0))
+    (setq try-rotate-string--rotations rotate-text-rotations
+          try-rotate-string--num       1
+          try-rotate-string--beg (save-excursion (forward-word -1) (point))
+          try-rotate-string--text
+          (buffer-substring try-rotate-string--beg (point))))
+
+  (let ((text (buffer-substring try-rotate-string--beg (point)))
+        replace ret)
+    (while (and (not replace) try-rotate-string--rotations)
+      (unless (setq replace (rotate-text--in-list
+                             text (car try-rotate-string--rotations)))
+        (setq try-rotate-string--rotations (cdr try-rotate-string--rotations)
+              try-rotate-string--num       0
+              text                         try-rotate-string--text)))
+
+    (when (or replace old)
+      (delete-region try-rotate-string--beg (point))
+      (goto-char try-rotate-string--beg)
+      (insert (or replace try-rotate-string--text)))
+    replace))
+
+(setq hippie-expand-try-functions-list
+      '(try-rotate-string
+        try-complete-file-name-partially
+        try-complete-file-name
+;        try-expand-all-abbrevs
+;        try-expand-list
+;        try-expand-line
+        try-expand-dabbrev
+        try-expand-dabbrev-all-buffers
+        try-expand-dabbrev-from-kill
+        try-complete-lisp-symbol-partially
+        try-complete-lisp-symbol)
+      hippie-expand-verbose nil)
+
+
+;; Indent or complete
+(defvar indent-or-complete-complete-function 'hippie-expand
   "Function to complete the word when using `indent-or-complete'
 It is called with one argument - nil")
 
@@ -326,12 +484,16 @@ and `indent-for-tab-command' when indenting"
       (funcall indent-or-complete-complete-function nil)
     (indent-for-tab-command)))
 
+;(global-set-key "\t"    'indent-or-complete)
+;(global-set-key [(tab)] 'indent-or-complete)
+(global-set-key "\M-/" 'hippie-expand)
 (add-hook 'find-file-hooks (function (lambda ()
-  (local-set-key (kbd "<tab>") 'indent-or-complete))))
+  (local-set-key [(tab)] 'indent-or-complete))))
 (save-current-buffer
   (set-buffer "*scratch*")
-  (local-set-key (kbd "<tab>") 'indent-or-complete))
+  (local-set-key [(tab)] 'indent-or-complete))
 
+;;}}}
 
 ;; Alt+q - Filling
 (defun fill-paragraph-or-region (&optional arg)
@@ -339,13 +501,13 @@ and `indent-for-tab-command' when indenting"
   (interactive (progn (barf-if-buffer-read-only)
                       (list (if current-prefix-arg 'full))))
   (if mark-active
-      (fill-region (region-beginning) (region-end) arg) (fill-paragraph arg)))
+      (fill-region (region-beginning) (region-end) arg)
+    (fill-paragraph arg)))
 
 (defun my-fill () "" (interactive)
-   (fill-paragraph-or-region (nth (seq-times 4) '(left full right center))))
+   (fill-paragraph-or-region (seq-times-nth () () left full right center)))
 
 (global-set-key "\M-q"          'my-fill)
-
 
 ;; Do not break line after single character when filling
 (defun fill-single-char-nobreak-p ()
@@ -371,8 +533,8 @@ and `indent-for-tab-command' when indenting"
 (defun my-jump () "Jump to the thing at point." (interactive)
   (let ((thing (ffap-guesser))) (if thing (ffap thing)) t))
 
-(global-set-key [C-return] 'my-jump)
-(global-set-key [C-S-mouse-3] 'ffap-at-mouse)
+(global-set-key [(control return)] 'my-jump)
+(global-set-key [(control shift mouse-3)] 'ffap-at-mouse)
 
 
 ;; Make l behave as it should in help-mode
@@ -385,93 +547,93 @@ and `indent-for-tab-command' when indenting"
 
 ;;{{{ Key sequences
 
-(global-set-key "\eOP"       [f1])
-(global-set-key "\e[[A"      [f1])
-(global-set-key "\eOQ"       [f2])
-(global-set-key "\e[[B"      [f2])
-(global-set-key "\eOR"       [f3])
-(global-set-key "\e[[C"      [f3])
-(global-set-key "\eOS"       [f4])
-(global-set-key "\e[[D"      [f4])
-(global-set-key "\e[15~"     [f5])
-(global-set-key "\e[[E"      [f5])
-(global-set-key "\e[17~"     [f6])
-(global-set-key "\e[18~"     [f7])
-(global-set-key "\e[19~"     [f8])
-(global-set-key "\e[20~"     [f9])
-(global-set-key "\e[21~"     [f10])
-(global-set-key "\e[23~"     [f11])
-(global-set-key "\e[24~"     [f12])
-(global-set-key "\eO5P"      [C-f1])
-(global-set-key "\eO5Q"      [C-f2])
-(global-set-key "\eO5R"      [C-f3])
-(global-set-key "\eO5S"      [C-f4])
-(global-set-key "\e[15;5~"   [C-f5])
-(global-set-key "\e[17;5~"   [C-f6])
-(global-set-key "\e[18;5~"   [C-f7])
-(global-set-key "\e[19;5~"   [C-f8])
-(global-set-key "\e[20;5~"   [C-f9])
-(global-set-key "\e[21;5~"   [C-f10])
-(global-set-key "\e[23;5~"   [C-f11])
-(global-set-key "\e[24;5~"   [C-f12])
-(global-set-key "\eO6P"      [C-S-f1])
-(global-set-key "\eO6Q"      [C-S-f2])
-(global-set-key "\eO6R"      [C-S-f3])
-(global-set-key "\eO6S"      [C-S-f4])
-(global-set-key "\e[15;6~"   [C-S-f5])
-(global-set-key "\e[17;6~"   [C-S-f6])
-(global-set-key "\e[18;6~"   [C-S-f7])
-(global-set-key "\e[19;6~"   [C-S-f8])
-(global-set-key "\e[20;6~"   [C-S-f9])
-(global-set-key "\e[21;6~"   [C-S-f10])
-(global-set-key "\e[23;6~"   [C-S-f11])
-(global-set-key "\e[24;6~"   [C-S-f12])
-(global-set-key "\eO3P"      [M-f1])
-(global-set-key "\eO3Q"      [M-f2])
-(global-set-key "\eO3R"      [M-f3])
-(global-set-key "\eO3S"      [M-f4])
-(global-set-key "\e[15;3~"   [M-f5])
-(global-set-key "\e[17;3~"   [M-f6])
-(global-set-key "\e[18;3~"   [M-f7])
-(global-set-key "\e[19;3~"   [M-f8])
-(global-set-key "\e[20;3~"   [M-f9])
-(global-set-key "\e[21;3~"   [M-f10])
-(global-set-key "\e[23;3~"   [M-f11])
-(global-set-key "\e[24;3~"   [M-f12])
-(global-set-key "\eO4P"      [M-S-f1])
-(global-set-key "\eO4Q"      [M-S-f2])
-(global-set-key "\eO4R"      [M-S-f3])
-(global-set-key "\eO4S"      [M-S-f4])
-(global-set-key "\e[15;4~"   [M-S-f5])
-(global-set-key "\e[17;4~"   [M-S-f6])
-(global-set-key "\e[18;4~"   [M-S-f7])
-(global-set-key "\e[19;4~"   [M-S-f8])
-(global-set-key "\e[20;4~"   [M-S-f9])
-(global-set-key "\e[21;4~"   [M-S-f10])
-(global-set-key "\e[23;4~"   [M-S-f11])
-(global-set-key "\e[24;4~"   [M-S-f12])
-(global-set-key "\eO2P"      [S-f1])
-(global-set-key "\e[23~"     [S-f1])
-(global-set-key "\eO2Q"      [S-f2])
-(global-set-key "\e[24~"     [S-f2])
-(global-set-key "\eO2R"      [S-f3])
-(global-set-key "\e[25~"     [S-f3])
-(global-set-key "\eO2S"      [S-f4])
-(global-set-key "\e[26~"     [S-f4])
-(global-set-key "\e[15;2~"   [S-f5])
-(global-set-key "\e[28~"     [S-f5])
-(global-set-key "\e[17;2~"   [S-f6])
-(global-set-key "\e[29~"     [S-f6])
-(global-set-key "\e[18;2~"   [S-f7])
-(global-set-key "\e[31~"     [S-f7])
-(global-set-key "\e[19;2~"   [S-f8])
-(global-set-key "\e[32~"     [S-f8])
-(global-set-key "\e[20;2~"   [S-f9])
-(global-set-key "\e[33~"     [S-f9])
-(global-set-key "\e[21;2~"   [S-f10])
-(global-set-key "\e[34~"     [S-f10])
-(global-set-key "\e[23;2~"   [S-f11])
-(global-set-key "\e[24;2~"   [S-f12])
+(global-set-key "\eOP"       [(f1)])
+(global-set-key "\e[[A"      [(f1)])
+(global-set-key "\eOQ"       [(f2)])
+(global-set-key "\e[[B"      [(f2)])
+(global-set-key "\eOR"       [(f3)])
+(global-set-key "\e[[C"      [(f3)])
+(global-set-key "\eOS"       [(f4)])
+(global-set-key "\e[[D"      [(f4)])
+(global-set-key "\e[15~"     [(f5)])
+(global-set-key "\e[[E"      [(f5)])
+(global-set-key "\e[17~"     [(f6)])
+(global-set-key "\e[18~"     [(f7)])
+(global-set-key "\e[19~"     [(f8)])
+(global-set-key "\e[20~"     [(f9)])
+(global-set-key "\e[21~"     [(f10)])
+(global-set-key "\e[23~"     [(f11)])
+(global-set-key "\e[24~"     [(f12)])
+(global-set-key "\eO5P"      [(control f1)])
+(global-set-key "\eO5Q"      [(control f2)])
+(global-set-key "\eO5R"      [(control f3)])
+(global-set-key "\eO5S"      [(control f4)])
+(global-set-key "\e[15;5~"   [(control f5)])
+(global-set-key "\e[17;5~"   [(control f6)])
+(global-set-key "\e[18;5~"   [(control f7)])
+(global-set-key "\e[19;5~"   [(control f8)])
+(global-set-key "\e[20;5~"   [(control f9)])
+(global-set-key "\e[21;5~"   [(control f10)])
+(global-set-key "\e[23;5~"   [(control f11)])
+(global-set-key "\e[24;5~"   [(control f12)])
+(global-set-key "\eO6P"      [(control shift f1)])
+(global-set-key "\eO6Q"      [(control shift f2)])
+(global-set-key "\eO6R"      [(control shift f3)])
+(global-set-key "\eO6S"      [(control shift f4)])
+(global-set-key "\e[15;6~"   [(control shift f5)])
+(global-set-key "\e[17;6~"   [(control shift f6)])
+(global-set-key "\e[18;6~"   [(control shift f7)])
+(global-set-key "\e[19;6~"   [(control shift f8)])
+(global-set-key "\e[20;6~"   [(control shift f9)])
+(global-set-key "\e[21;6~"   [(control shift f10)])
+(global-set-key "\e[23;6~"   [(control shift f11)])
+(global-set-key "\e[24;6~"   [(control shift f12)])
+(global-set-key "\eO3P"      [(meta f1)])
+(global-set-key "\eO3Q"      [(meta f2)])
+(global-set-key "\eO3R"      [(meta f3)])
+(global-set-key "\eO3S"      [(meta f4)])
+(global-set-key "\e[15;3~"   [(meta f5)])
+(global-set-key "\e[17;3~"   [(meta f6)])
+(global-set-key "\e[18;3~"   [(meta f7)])
+(global-set-key "\e[19;3~"   [(meta f8)])
+(global-set-key "\e[20;3~"   [(meta f9)])
+(global-set-key "\e[21;3~"   [(meta f10)])
+(global-set-key "\e[23;3~"   [(meta f11)])
+(global-set-key "\e[24;3~"   [(meta f12)])
+(global-set-key "\eO4P"      [(meta shift f1)])
+(global-set-key "\eO4Q"      [(meta shift f2)])
+(global-set-key "\eO4R"      [(meta shift f3)])
+(global-set-key "\eO4S"      [(meta shift f4)])
+(global-set-key "\e[15;4~"   [(meta shift f5)])
+(global-set-key "\e[17;4~"   [(meta shift f6)])
+(global-set-key "\e[18;4~"   [(meta shift f7)])
+(global-set-key "\e[19;4~"   [(meta shift f8)])
+(global-set-key "\e[20;4~"   [(meta shift f9)])
+(global-set-key "\e[21;4~"   [(meta shift f10)])
+(global-set-key "\e[23;4~"   [(meta shift f11)])
+(global-set-key "\e[24;4~"   [(meta shift f12)])
+(global-set-key "\eO2P"      [(shift f1)])
+(global-set-key "\e[23~"     [(shift f1)])
+(global-set-key "\eO2Q"      [(shift f2)])
+(global-set-key "\e[24~"     [(shift f2)])
+(global-set-key "\eO2R"      [(shift f3)])
+(global-set-key "\e[25~"     [(shift f3)])
+(global-set-key "\eO2S"      [(shift f4)])
+(global-set-key "\e[26~"     [(shift f4)])
+(global-set-key "\e[15;2~"   [(shift f5)])
+(global-set-key "\e[28~"     [(shift f5)])
+(global-set-key "\e[17;2~"   [(shift f6)])
+(global-set-key "\e[29~"     [(shift f6)])
+(global-set-key "\e[18;2~"   [(shift f7)])
+(global-set-key "\e[31~"     [(shift f7)])
+(global-set-key "\e[19;2~"   [(shift f8)])
+(global-set-key "\e[32~"     [(shift f8)])
+(global-set-key "\e[20;2~"   [(shift f9)])
+(global-set-key "\e[33~"     [(shift f9)])
+(global-set-key "\e[21;2~"   [(shift f10)])
+(global-set-key "\e[34~"     [(shift f10)])
+(global-set-key "\e[23;2~"   [(shift f11)])
+(global-set-key "\e[24;2~"   [(shift f12)])
 
 ;;}}}
 ;;{{{ F1 - Help
@@ -485,18 +647,18 @@ and `indent-for-tab-command' when indenting"
          (describe-function fn)
        (manual-entry (current-word)))))
 
-(global-set-key [f1]        'my-help)
+(global-set-key [(f1)]      'my-help)
 
 ;;}}}
-;;{{{ F2 - find configuration file s
+;;{{{ F2 - find configuration files
 
 (defmacro mn-kbd-find-file (file)
   `(function (lambda () (interactive) (find-file ,file))))
 
-(global-set-key [f2]        (mn-kbd-find-file "~/.emacs"))
-(global-set-key [C-f2]      (mn-kbd-find-file "~/.gnus/.gnus.el"))
-(global-set-key [M-f2]      (mn-kbd-find-file "~/.emacs.custom"))
-(global-set-key [S-f2]      (mn-kbd-find-file "~/.bashrc"))
+(global-set-key [(f2)]         (mn-kbd-find-file "~/.emacs"))
+(global-set-key [(control f2)] (mn-kbd-find-file "~/.gnus/.gnus.el"))
+(global-set-key [(meta f2)]    (mn-kbd-find-file "~/.emacs.custom"))
+(global-set-key [(shift f2)]   (mn-kbd-find-file "~/.bashrc"))
 
 ;;}}}
 ;;{{{ F5 - Gnus
@@ -508,15 +670,16 @@ and `indent-for-tab-command' when indenting"
 is running, switch to Gnus group buffer, otherwise start Gnus"
   (interactive "p")
   (cond
-   ((eq major-mode 'gnus-group-mode) (gnus-group-get-new-news))
+   ((eq major-mode 'gnus-group-mode)
+    (and (fboundp 'gnus-group-get-new-news) (gnus-group-get-new-news)))
    ((and (boundp 'gnus-group-buffer) (fboundp 'gnus-alive-p) (gnus-alive-p))
-    (switch-to-buffer gnus-group-buffer))
+    (switch-to-buffer (with-no-warnings gnus-group-buffer)))
    ((gnus))))
 
-(global-set-key [f5]        'switch-to-gnus-or-get-new-news)
-(set-key-lambda [C-f5]      (let ((b (current-buffer)))
-                              (switch-to-buffer (other-buffer))
-                              (bury-buffer b)))
+(global-set-key [(f5)]      'switch-to-gnus-or-get-new-news)
+(set-key-lambda [(control f5)] (let ((b (current-buffer)))
+                                 (switch-to-buffer (other-buffer))
+                                 (bury-buffer b)))
 
 ;;}}}
 ;;{{{ F7 - spell checking
@@ -579,29 +742,33 @@ With a prefix arg sets global dictionary."
    arg))
 
 
-(set-key-lambda [f7]        (mn-spell))
-(set-key-lambda [C-f7]      (mn-spell nil (point)))
+(set-key-lambda [(f7)]         (mn-spell))
+(set-key-lambda [(control f7)] (mn-spell nil (point)))
 
-(global-set-key [M-f7]      'mn-spell-switch-dictionary)
+(global-set-key [(meta f7)]    'mn-spell-switch-dictionary)
 
 ;;}}}
 ;;{{{ F8 - Keyboard macros
 
-(global-set-key [f8]        'kmacro-end-or-call-macro)
-(global-set-key [C-f8]      'kmacro-start-macro-or-insert-counter)
+(global-set-key [(f8)]         'kmacro-end-or-call-macro)
+(global-set-key [(control f8)] 'kmacro-start-macro-or-insert-counter)
 
 ;;}}}
 ;;{{{ F9 - Compilation
 
+(eval-when-compile
+  (defconst -mn-compile-common
+    " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Wunreachable-code -Winline -Wdisabled-optimization -ggdb -O0"))
+
 (defvar mn-compile-vars
-  '((("CFLAGS"   "-Wall -pedantic -std=c99   -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
-     ("CXXFLAGS" "-Wall -pedantic -std=c++98 -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
-     ("CPPFLAGS" "-Wall -pedantic -std=c99")
+  `((("CFLAGS"   ,(eval-when-compile (concat "-std=c99 -Werror-implicit-function-declaration" -mn-compile-common)))
+     ("CXXFLAGS" ,(eval-when-compile (concat "-std=c++98" -mn-compile-common)))
+     ("CPPFLAGS" "-Wall -pedantic -DMINA86")
      ("LDFLAGS"  nil))
 
-    (("CFLAGS"   "-Wall -pedantic -std=c89   -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
-     ("CXXFLAGS" "-Wall -pedantic -std=c++98 -Wextra -Wfloat-equal -Wshadow -Wpadded -Wunreachable-code -Winline -ggdb -O0")
-     ("CPPFLAGS" "-Wall -pedantic -std=c89")
+    (("CFLAGS"   ,(eval-when-compile (concat "-std=c89 -Wpadded -Werror-implicit-function-declaration" -mn-compile-common)))
+     ("CXXFLAGS" ,(eval-when-compile (concat "-std=c++98 -Wpadded" -mn-compile-common)))
+     ("CPPFLAGS" "-Wall -pedantic -DMINA86")
      ("LDFLAGS"  nil)))
 
   "List of enviroment variables set by `mn-compile' priory to
@@ -635,10 +802,10 @@ non-nill or `compile' otherwise."
     (if recompile (recompile) (call-interactively 'compile))))
 
 
-(global-set-key [f9]        'mn-compile)               ; F9    compile
-(global-set-key [C-f9]                                 ; C-F9  recompile
+(global-set-key [(f9)]      'mn-compile)               ; F9    compile
+(global-set-key [(control f9)]                         ; C-F9  recompile
                 (function (lambda (a) (interactive "P") (mn-compile a t))))
-(global-set-key [M-f9]                                 ; M-F9  force alt comp.
+(global-set-key [(meta f9)]                            ; M-F9  force alt comp.
                 (function (lambda (a) (interactive "P") (mn-compile (not a) t t))))
 
 ;;}}}
@@ -661,7 +828,37 @@ non-nill or `compile' otherwise."
 (autoload 'risc-mode        "risc-mode" "Toggles RISC Mode on or off" t)
 (autoload 'risc-mode-toggle "risc-mode" "Toggles RISC Mode on or off" t)
 (global-set-key "\C-c\C-c"     'risc-mode-toggle)
-(global-set-key (kbd "<menu>") 'risc-mode-toggle)
+(global-set-key [(menu)]       'risc-mode-toggle)
+
+;;}}}
+;;{{{ Copy Without Selection
+
+;; http://www.emacswiki.org/cgi-bin/wiki/CopyWithoutSelection
+
+(defun copy-word (&optional arg)
+  "Copy words at point"
+  (interactive "P")
+  (let ((beg (progn (if (looking-back "[a-zA-Z]" 1) (backward-word 1)) (point)))
+        (end (progn (forward-word arg) (point))))
+    (copy-region-as-kill beg end)))
+
+(defun copy-line (&optional arg)
+  "Save current line into Kill-Ring without mark the line "
+  (interactive "P")
+  (let ((beg (line-beginning-position))
+        (end (line-end-position)))
+    (copy-region-as-kill beg end)))
+
+(defun copy-paragraph (&optional arg)
+  "Copy paragraphes at point"
+  (interactive "P")
+  (let ((beg (progn (backward-paragraph 1) (point)))
+        (end (progn (forward-paragraph arg) (point))))
+    (copy-region-as-kill beg end)))
+
+(global-set-key "\C-cw"         'copy-word)
+(global-set-key "\C-cl"         'copy-line)
+(global-set-key "\C-cp"         'copy-paragraph)
 
 ;;}}}
 
@@ -700,6 +897,7 @@ non-nill or `compile' otherwise."
 (setq query-replace-highlight t)  ;highlight during query
 (setq search-highlight t)         ;highlight incremental search
 (show-paren-mode t)               ;show matching parenthesis.
+(setq blink-matching-paren-distance nil) ;search for open-paren till point-min
 
 ;;}}}
 ;;{{{ Show blanks and FIXME
@@ -722,10 +920,10 @@ non-nill or `compile' otherwise."
   (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
     (font-lock-add-keywords nil
      '(("\t+" 0 'my-tab-face t)
-       ("\t\\{4,\\}" 0 'my-big-indent-face t)
-       ("\t\\{6,\\}" 0 'my-huge-indent-face t)
+       ("^\t\\{4,\\}" 0 'my-big-indent-face t)
+       ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
        ("!\\{3\\}IMPORTANT!!!.*!!!" 0 'my-fixme-face t)
-       ("\\<\\(FIXME:\\)" 1 'my-fixme-face t)))))))
+       ("\\<\\(FIXME:?\\|XXX\\)" 1 'my-fixme-face t)))))))
 
 ;;}}}
 
@@ -735,11 +933,12 @@ non-nill or `compile' otherwise."
 ;;Save some space
 (menu-bar-mode -1)                ;no menu bar
 (setq use-dialog-box nil)         ;never use dialog boxes
+(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
+(if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
 (when window-system
-  (tool-bar-mode -1)              ;no tool bar
-  (scroll-bar-mode -1)            ;no scroll bar
   (require 'fringe)
-  (set-fringe-mode '(2 . 4)))     ;small fringe
+  (set-fringe-mode '(3 . 3)))     ;small fringe
 
 ;; Modeline, Minibuffer & Frame title
 (setq line-number-mode t)         ;show line number in modeline
@@ -816,8 +1015,14 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 (setq paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
       paragraph-separate "$")
 
+;; GDB
+(setq gdb-many-windows t)
+(setq gdb-show-main t)
+(setq gdb-use-separate-io-buffer t)
+
+
 ;;}}}
-;;{{{ Modes and stuff
+;;{{{ Modes
 
 ;;{{{ CC Modes family
 
@@ -847,8 +1052,22 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
           (set (make-local-variable 'compile-command)
                (concat "make -k " (substring fn 0 p))))))
 
-    (add-hook 'c-mode-hook 'cc-make-compile-command)
-    (add-hook 'c++-mode-hook 'cc-make-compile-command)))
+    (add-hook 'c-common-mode-hook 'cc-make-compile-command)))
+
+;;}}}
+;;{{{ Java Mode
+
+;; Default compile command
+;(eval-after-load "compile"
+;  (progn
+;    (defun java-make-compile-command ()
+;      "Sets `compile-command' to \"javac <file-name>\"."
+;      (let ((fn buffer-file-name) p)
+;        (when fn
+;          (set (make-local-variable 'compile-command)
+;               (concat "javac " (file-name-nondirectory fn))))))
+;
+;    (add-hook 'java-mode-hook 'java-make-compile-command)))
 
 ;;}}}
 ;;{{{ CSS Mode
@@ -878,10 +1097,10 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
                      (insert ,otherwise)))))
 
     (add-hook 'html-mode-hook (function (lambda ()
-      (define-key html-mode-map [(<)]  (rgb-insert-if-double "&lt;"))
-      (define-key html-mode-map [(>)]  (rgb-insert-if-double "&gt;"))
-      (define-key html-mode-map [(&)]  (rgb-insert-if-double "&amp;"))
-      (define-key html-mode-map [(\")] (rgb-insert-if-double "&quot;")))))))
+      (define-key html-mode-map "<"  (rgb-insert-if-double "&lt;"))
+      (define-key html-mode-map ">"  (rgb-insert-if-double "&gt;"))
+      (define-key html-mode-map "&"  (rgb-insert-if-double "&amp;"))
+      (define-key html-mode-map "\"" (rgb-insert-if-double "&quot;")))))))
 
 ;; Generates TOC based on <H?> elements
 ;; http://www.emacswiki.org/cgi-bin/wiki/HtmlToc
@@ -991,6 +1210,8 @@ is at the beginning of line or preceded by white space."
     (set-variable 'tab-stop-list
                   '(16 24 32 40 48 56 64 72 80 88 96 104 112 120))
     (set-variable 'comment-column 40)
+;    (define-key asm-mode-map ?#   'asm-colon)
+;    (define-key asm-mode-map ?\;  'asm-colon)
 )))
 
 ;;}}}
@@ -1060,29 +1281,24 @@ is at the beginning of line or preceded by white space."
 (autoload 'htmlize-region "htmlize" "Convert region to HTML" t)
 
 ;;}}}
-;;{{{ Replace recent character
-
-;; http://www.emacswiki.org/cgi-bin/wiki/ReplaceRecentCharacter
-(load "rrc")
-
-;;}}}
 ;;{{{ Folding
 
-(require 'folding)
+(when (load "folding")
+  (defconst folding-default-keys-function
+    '(folding-bind-backward-compatible-keys))
 
-(defconst folding-default-keys-function
-  '(folding-bind-backward-compatible-keys))
+  (define-key folding-mode-map "\C-cf"         'folding-toggle-show-hide)
+  (define-key folding-mode-map [(control ?c) (return)] 'folding-shift-in)
+  (define-key folding-mode-map [(control ?c) (delete)] 'folding-shift-out)
+  (define-key folding-mode-map "\C-c\C-f"      'folding-open-buffer)
+  (define-key folding-mode-map "\C-cF"         'folding-whole-buffer)
+  (define-key folding-mode-map "\C-e"          'my-end)
 
-(define-key folding-mode-map "\C-cf" 'folding-toggle-show-hide)
-(define-key folding-mode-map (kbd "C-c RET") 'folding-shift-in)
-(define-key folding-mode-map (kbd "C-c DEL") 'folding-shift-out)
-(define-key folding-mode-map "\C-c\C-f" 'folding-open-buffer)
-(define-key folding-mode-map "\C-cF" 'folding-whole-buffer)
+  (folding-add-to-marks-list 'php-mode        "// {{{" "// }}}" nil t)
+  (folding-add-to-marks-list 'javascript-mode "// {{{" "// }}}" nil t)
+  (folding-add-to-marks-list 'css-mode        "/* {{{" "/* }}}" " */" t)
 
-(folding-add-to-marks-list 'php-mode "// {{{" "// }}}" nil t)
-(folding-add-to-marks-list 'javascript-mode "// {{{" "// }}}" nil t)
-(folding-add-to-marks-list 'css-mode "/* {{{" "/* }}}" " */" t)
-(folding-mode-add-find-file-hook)
+  (folding-mode-add-find-file-hook))
 
 ;;}}}
 ;;{{{ Different cursor color depending on mode
@@ -1120,9 +1336,12 @@ is at the beginning of line or preceded by white space."
     (message "%3d %3d %3d" (count-lines start end) n (- end start))))
 
 ;;}}}
+;;{{{ Command Frequency mode
 
-;; Start server
-(server-start)
+(require 'command-frequency)
+(command-frequency-table-load)
+(command-frequency-mode 1)
+(command-frequency-autosave-mode 1)
 
 ;;}}}
 ;;{{{ Notes in *scratch*
@@ -1172,6 +1391,11 @@ is at the beginning of line or preceded by white space."
         (write-region nil nil scratch-file)
         (unless (string-equal scratch-file buffer-auto-save-file-name)
           (delete-auto-save-file-if-necessary t)))))
+
+;;}}}
+
+;; Start server
+(server-start)
 
 ;;}}}
 ;;{{{ Fun stuff ;)
