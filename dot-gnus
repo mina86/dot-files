@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
 ;; Copyright 2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-gnus,v 1.1 2006/10/06 09:43:55 mina86 Exp $
+;; $Id: dot-gnus,v 1.2 2007/04/22 10:20:50 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -17,14 +17,14 @@
 ;; Email addresses
 (setq gnus-ignored-from-addresses
       (eval-when-compile
-        (regexp-opt (mapcar (lambda (i) (concat (car i) "@" (cdr i)))
+        (regexp-opt (mapcar (function (lambda (i) (concat (car i)"@"(cdr i))))
                             '(("mina86" . "tlen.pl")
                               ("mina86" . "mina86.com")
                               ("mina86" . "users.sf.net")
                               ("mina86" . "users.sourceforge.net")
-                              ("mnazarew" . "mion.elka.pw.edu.pl")
+                              ("mnazarew" . "stud.elka.pw.edu.pl")
                               ("mnazarewicz" . "gmail.com")
-                              ("M.Nazarewicz" . "mion.elka.pw.edu.pl")))))
+                              ("M.Nazarewicz" . "stud.elka.pw.edu.pl")))))
       message-alternative-emails gnus-ignored-from-addresses)
 
 ;; Passwords
@@ -40,13 +40,13 @@
 ;;{{{ Directories
 
 (setq
- message-directory                (concat gnus-home-directory "/Mail")
- nndraft-directory                (concat gnus-home-directory "/drafts")
- nnml-use-compressed-files        t
+ message-directory          (concat gnus-home-directory "/Mail")
+ nndraft-directory          (concat gnus-home-directory "/drafts")
+ nnml-use-compressed-files  t
 
- gnus-save-newsrc-file nil
- gnus-read-newsrc-file nil
- gnus-startup-file                (concat gnus-home-directory "/newsrc"))
+ gnus-save-newsrc-file      nil
+ gnus-read-newsrc-file      nil
+ gnus-startup-file          (concat gnus-home-directory "/newsrc"))
 
 ;;}}}
 ;;{{{ Select methods & Mail sources
@@ -55,7 +55,9 @@
  gnus-select-method '(nntp "news.tpi.pl")
  gnus-always-read-dribble-file t
 
- gnus-secondary-select-methods '((nnml "")))
+ gnus-secondary-select-methods
+ '((nnml "")
+   (nntp "news.student.pw.edu.pl")))
 
 
 ;; Mail sources
@@ -94,9 +96,9 @@
  gnus-ham-process-destinations  '(("*.spam"  "nnml:mail.misc"))
  gnus-spam-process-destinations '(("nnml:.*" "nnml:spam"))
 
- gnus-spam-proicess-newsgroups
- '(("nnml:.*" ((spam spam-use-bogofilter) (ham spam-use-bogofilter)))
-   ("nnml:spam" ((ham spam-use-bogofilter)))))
+ gnus-spam-process-newsgroups
+ '(("nnml:\\(?:mail\\|list\\)\\." ((spam spam-use-bogofilter)))
+   ("nnml:spam"                   ((ham  spam-use-bogofilter)))))
 
 ;; Spliting
 
@@ -107,7 +109,7 @@
  nnmail-split-methods 'nnmail-split-fancy
  nnmail-split-fancy
  `(| (: nnmail-split-fancy-with-parent)
-     ("X-Gnus-Mail-Source" ".*mion.elka.pw.edu.pl"      "mail.mion")
+     ("X-Gnus-Mail-Source" ".*mion.elka.pw.edu.pl"   "mail.mion")
      ("Content-Type"
       ,(eval-when-compile
          (concat "charset="
@@ -115,11 +117,11 @@
                                "gb2312" "ks_c_5601-1987" "windows-1251") t)))
       junk)
      (: spam-split)
-     ("Reply-To" "k02_a@staszic.waw.pl"                 "list.k02_a")
-     (".*" "rootnode@lfa\\.pl"                          "mail.rootnode")
+     (any "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
      (from "bugzilla-daemon@informatica.agh.edu.pl"  "mail.rootnode.bugzilla")
-     (any "@grono\\.net"                                "mail.notify")
-     (any "@\\(users\\.\\)?s\\(ourceforge\\|f\\)\\.net" "mail.sf")
+     (".*" "rootnode@.*"                             "mail.rootnode")
+     (any "@grono\\.net\\|@last\\.fm"                "mail.notify")
+     (any "@\\(?:users\\.\\)?sourceforge\\.net"      "mail.sf")
      "mail.misc"))
 
 ;;}}}
@@ -147,37 +149,42 @@
     (if dict (set (make-local-variable 'ispell-local-dictionary) dict))))
 
 (add-hook 'gnus-message-setup-hook 'gnus-setup-dictionary)
-(add-hook 'message-mode-hook (lambda () (flyspell-mode 1)))
+(add-hook 'message-mode-hook (function (lambda () (flyspell-mode 1))))
 
 ;;}}}
 
 (setq
-; gnus-permanently-visible-groups "mail\\.misc"
  gnus-parameters
  '(("spam"             (total-expire . t)
-                       (expire-wait  . 1))
+                       (expiry-wait  . immediate))
 
    ("list\\."          (subscribed . t)
                        (total-expire . t)
-                       (expire-wait . 14)
-                       (dictionary . "polish"))
+                       (expire-wait . 14))
    ("list\\.k02_a"     (to-address . "k02_a@staszic.waw.pl")
-                       (charset . "iso-8859-2"))
+                       (to-list    . "k02_a@staszic.waw.pl"))
 
-   ("mail"             (dictionary . "polish"))
    ("mail\\.notify"    (total-expire . t)
                        (expire-wait . 1))
    ("mail\\.rootnode"  (total-expire . t)
                        (expire-wait . 7))
 
+   ("pw\\."            (dictionary . "polish"))
+
+   ("^nnml:"           (dictionary . "polish"))
+   ("^nnml:mail\\."    (gcc-self . t))
    ("\\(?:alt\\.\\)?pl\\..*"  (dictionary . "polish"))
    (""                 (dictionary . "british"))))
 
-(setq message-subscribed-address-functions
-      '(gnus-find-subscribed-addresses))
+(setq
+ gnus-home-score-file
+ (list (list "^nnml:" (concat gnus-home-directory "/Mail/all.SCORE"))
+       "all.SCORE")
+
+ gnus-gcc-mark-as-read t
+ message-subscribed-address-functions '(gnus-find-subscribed-addresses))
 
 ;; Posting styles
-
 (setq
  gnus-posting-styles
  '((".*"
@@ -186,44 +193,80 @@
    ("^pl\\.\\|^alt\\.pl\\."
     (name "Micha³ Nazarewicz")
     (signature-file "~/.signature-pl"))
+   ("^pl\\.\\|^alt\\.pl\\.\\|pw\\."
+    (name "Micha³ Nazarewicz")
+    (signature-file "~/.signature-pl"))
    ("^nnml:"
     (signature-file "~/.signature-pl"))
    ("^nnml:mail\\.mion"
-    (address (concat "M.Nazarewicz" "@" "mion.elka.pw.edu.pl"))))
+    (address (eval-when-compile
+               (concat "M.Nazarewicz" "@" "stud.elka.pw.edu.pl"))))
+   ("^nnml:list.k02_a"
+    (address (eval-when-compile (concat "mina86" "@" "tlen.pl"))))))
 
- gnus-message-archive-group '((unless (message-news-p) "nnml:mail.sent"))
- message-send-mail-function 'smtpmail-send-it)
-
+;;{{{ SMTP
 
 ;; http://www.pvv.ntnu.no/~terjeros/wiki/GnusGmail
-(defun fs-change-smtp ()
-  "Change the SMTP server according to the current from line."
-  (save-excursion
-    (let ((from (save-restriction
-                  (message-narrow-to-headers) (message-fetch-field "from"))))
-      (message
-       "From is `%s', setting `smtpmail-smtp-server' to `%s'"
-       from
-       (cond
-        ((string-match "pw\\.edu\\.pl" from)
-         (setq smtpmail-starttls-credentials
-               '(("mion.elka.pw.edu.pl" 587 nil nil))
-               smtpmail-auth-credentials
-               `(("mion.elka.pw.edu.pl" 587
-                  "mnazarew" ,mn-gnus-password-mion-smtp))
-               smtpmail-smtp-service 587
-               smtpmail-smtp-server  "mion.elka.pw.edu.pl"))
 
-        (t
-         (setq smtpmail-starttls-credentials
-               '(("smtp.gmail.com" 587 nil nil))
-               smtpmail-auth-credentials
-               `(("smtp.gmail.com" 587
-                  "mnazarewicz" ,mn-gnus-password-gmail-smtp))
-               smtpmail-smtp-service 587
-               smtpmail-smtp-server  "smtp.gmail.com")))))))
+(setq message-send-mail-function 'smtpmail-send-it)
 
-(add-hook 'message-setup-hook 'fs-change-smtp)
+(defvar mn-smtps
+  `(("pw\\.edu\\.pl"
+     "mion.elka.pw.edu.pl" 587 "mnazarew"    ,mn-gnus-password-mion-smtp)
+    (""
+     "smtp.gmail.com"      587 "mnazarewicz" ,mn-gnus-password-gmail-smtp))
+  "The default SMTPS argument for `mn-change-smtp' function (which see).")
+
+(setq message-send-mail-function 'smtpmail-send-it)
+
+
+(defun mn-change-smtp (&optional from smtps)
+  "Change the SMTP server according to the From address.  Returns host
+name or nil.
+
+SMTPS must be a list of 5-element lists or nil.  If it's nil
+value of `mn-smpts' will be used.  The elements of each list are
+as follows: regexp, smtp server host name, smtp server port, user
+name, password or nil.  If ARG or value of From header if ARG is
+nil matches regexp the rest of the elements will be applied to
+proper smtpmail-* variables.
+
+When called interactivelly with a prefix argument will ask for
+the value of From header."
+  (interactive
+   (list
+    (and current-prefix-arg
+         (read-string "From: " nil nil
+                      (save-excursion (save-restriction
+                                        (message-narrow-to-headers)
+                                        (message-fetch-field "from")))
+                      t))))
+
+  (unless from
+    (setq from (save-excursion (save-restriction
+                                 (message-narrow-to-headers)
+                                 (message-fetch-field "from")))))
+  (unless smtps (setq smtps mn-smtps))
+
+  (let (host port)
+    (while smtps
+      (if (string-match (caar smtps) from)
+          (setq smtps (cdar smtps)  host (car smtps) port (cadr smtps)
+                smtpmail-starttls-credentials (list (list host port () ()))
+                smtpmail-auth-credentials     (list smtps)
+                smtpmail-smtp-server          host
+                smtpmail-smtp-service         port
+                smtps nil)
+        (setq smtps (cdr smtps))))
+    (when (called-interactively-p)
+      (if host
+          (message "SMTP server set to %s" host)
+        (message "No maching SMTP server found")))
+    host))
+
+(add-hook 'message-setup-hook 'mn-change-smtp)
+
+;;}}}
 
 ;;}}}
 ;;{{{ Fix Subject in outgoing messages
@@ -241,7 +284,7 @@
  gnus-treat-emphasize t
  gnus-treat-buttonize t
  gnus-treat-buttonize-head 'head
- gnus-treat-unsplit-urls 'last
+; gnus-treat-unsplit-urls 'last
  gnus-treat-leading-whitespace t
  gnus-treat-highlight-citation t
  gnus-treat-highlight-signature t
@@ -255,6 +298,7 @@
  gnus-treat-x-pgp-sig 'head)
 
 (require 'mm-decode)
+(setq mm-attachment-override-types '("image/.*"))
 (setq mm-discouraged-alternatives (list "text/html" "text/richtext"))
 
 (setq gnus-ignored-mime-types '("text/x-vcard"))
@@ -272,23 +316,28 @@
 
 (add-hook
  'gnus-group-mode-hook
- (lambda ()
-   (define-key gnus-group-mode-map "\C-cf" 'gnus-topic-select-group)))
+ (function
+  (lambda ()
+    (define-key gnus-group-mode-map "\C-cf" 'gnus-topic-select-group))))
 
 (add-hook
  'gnus-summary-mode-hook
- (lambda ()
-   (define-key gnus-summary-mode-map "s" 'gnus-summary-mark-as-spam)
-   (define-key gnus-summary-mode-map "\C-cf"
-     (lambda () (interactive)
-       (or (gnus-summary-show-thread) (gnus-summary-hide-thread))))
-   (define-key gnus-summary-mode-map "\C-c\C-f"
-     'gnus-summary-show-all-headers)
-   (define-key gnus-summary-mode-map "c"
-     (lambda () (interactive) (gnus-summary-catchup-and-exit nil t)))
-   (define-key gnus-summary-mode-map "N"
-     (lambda () (interactive)
-       (gnus-summary-catchup nil t) (gnus-summary-next-group t)))))
+ (function
+  (lambda ()
+    (define-key gnus-summary-mode-map "s" 'gnus-summary-mark-as-spam)
+    (define-key gnus-summary-mode-map "\C-cf"
+      (function
+       (lambda () (interactive)
+         (or (gnus-summary-show-thread) (gnus-summary-hide-thread)))))
+    (define-key gnus-summary-mode-map "\C-c\C-f"
+      'gnus-summary-show-all-headers)
+    (define-key gnus-summary-mode-map "c"
+      (function
+       (lambda () (interactive) (gnus-summary-catchup-and-exit nil t))))
+    (define-key gnus-summary-mode-map "N"
+      (function
+       (lambda () (interactive)
+         (gnus-summary-catchup nil t) (gnus-summary-next-group t)))))))
 
 ;;}}}
 ;;{{{ Misc
@@ -297,7 +346,10 @@
  gnus-large-newsgroup 500
  gnus-thread-hide-subtree t
  gnus-summary-gather-subject-limit 'fuzzy
- gnus-interactive-exit nil)
+ gnus-interactive-exit nil
+ gnus-auto-select-first nil
+ gnus-thread-sort-functions '(gnus-thread-sort-by-number
+                              gnus-thread-sort-by-total-score))
 
 (gnus-compile)
 (setq gnus-topic-display-empty-topics nil)
@@ -309,3 +361,12 @@
 (gnus-demon-init)
 
 ;;}}}
+
+;; PGP:
+; (setq gnus-buttonized-mime-types '("multipart/signed"))
+; (require 'pgg)
+; (require 'pgg-epg)
+;(setq pgg-scheme 'epg)
+; (setq gnus-treat-x-pgp-sig t
+;       mm-verify-option 'always
+;       mm-decrypt-option 'always)
