@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .shellrc  -- global shell configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: shellrc,v 1.5 2006/09/23 22:51:50 mina86 Exp $
+## $Id: shellrc,v 1.6 2007/04/22 10:16:10 mina86 Exp $
 ##
 
 # Not interactive?
@@ -122,6 +122,17 @@ fi
 unset ELINKS LINKS
 
 
+# LaTeX
+TEX=`which platex 2>/dev/null`
+[ -n "$TEX" ] || TEX=`which latex 2>/dev/null`
+[ -n "$TEX" ] || TEX=`which tex 2>/dev/null`
+if [ -z "$TEX" ]; then
+	unset TEX
+else
+	export TEX
+fi
+
+
 # Perl stuff
 pf () {
 	if [ $# -eq 0 ]; then perldoc perlfunc; else perldoc -f "$@"; fi
@@ -207,7 +218,7 @@ fi
 # Various
 if [ "$_hostname" = Xerwin ]; then
 	export LANG=pl_PL.ISO8859-2 LC_COLLATE=C LC_MESSAGES=en_GB
-	export __GL_FSAA_MODE=4 __GL_LOG_MAX_ANISO=1 __GL_SYNC_TO_VBLANK=1
+#	export __GL_FSAA_MODE=4 __GL_LOG_MAX_ANISO=1 __GL_SYNC_TO_VBLANK=1
 elif [ "$_hostname" = Xtuptus ]; then
 	export LANG=pl_PL.ISO8859-2 LC_COLLATE=C LC_MESSAGES=en_GB
 fi
