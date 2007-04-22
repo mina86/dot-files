@@ -2,7 +2,7 @@
 ;;{{{ Header
 ;;
 ;; RISC Mode  v. 0.3
-;; $Id: risc-mode.el,v 1.2 2006/08/03 13:26:03 mina86 Exp $
+;; $Id: risc-mode.el,v 1.3 2007/04/22 10:16:31 mina86 Exp $
 ;; Copyright (c) 2006 by Michal Nazarewicz (mina86/AT/mina86.com)
 ;;
 ;; This software is OSI Certified Open Source Software.
@@ -55,7 +55,7 @@
 ;; commands.
 ;;
 ;;}}}
-;;{{{ Installation
+;;{{{ Installatin
 ;;
 ;; Put  'risc-mode.el'  somewhere `load'  will  find  it  and put  the
 ;; fallowing lines to your '.emacs' file:
@@ -93,7 +93,7 @@
 ;;
 ;; Poor RISC Mode  is enabled by presing either Q or  '.  In this mode
 ;; EMACS  behaves  almost  "normal".   The  only  difference  is  that
-;; pressing RET  or ESC ESC  turns RISC Mode  on again (and  Porr RISC
+;; pressing RET  or ESC ESC  turns RISC Mode  on again (and  Poor RISC
 ;; Mode off).  This is ment to be an easy way to insert few words when
 ;; in RISC Mode.
 ;;
@@ -166,7 +166,7 @@
 ;;  Y        -- `yank' or `yank-pop' if last command was `yank'
 ;;  z        -- undos
 ;;  Z        -- undos with limit to changes within the current region
-;;  ?        -- `dabbrev-expand'
+;;  ?        -- whatever M-/ was bound to.
 ;;
 ;;  c        -- an alias to C-x
 ;;  cc       -- disables RISC Mode
@@ -186,7 +186,7 @@
 ;;     "V<x>" bindings may be added.
 ;; [6] Any  key other then  SPC is used  verbatim as a  bookmark name.
 ;;     SPC is  treated specialy and evaluated either  to last bookmark
-;;     name used or buufer name if no bookmark was set yet.
+;;     name used or buffer name if no bookmark was set yet.
 ;; [7] Note that "dGG" will always start a new macro even if one is
 ;;     already defined.
 ;;
@@ -301,15 +301,14 @@ disabled however it is much harder to insert any text.
 Poor RISC Mode adds a key bindings for RET and ESC ESC which turn
 RISC Mode on as well as binding for C-c C-c which turns Poor RISC
 Mode off (and does not enable RISC Mode)."
-  (interactive (list (or current-prefix-arg nil) nil))
+  (interactive "P")
   (if (eq arg 'toggle) (setq arg nil))
   (let ((prm poor-risc-mode) (rm risc-mode))
 
     ;; Turn modes on/off
-    (cond
-     ((eq arg nil)    (setq risc-mode (not risc-mode)))
-     ((equal arg "p") (setq risc-mode nil))
-     (t               (setq risc-mode (> (prefix-numeric-value arg) 0))))
+    (setq risc-mode (if (not arg) (not risc-mode)
+                        (and (not (equal arg "p"))
+                             (> (prefix-numeric-value arg) 0))))
     (setq poor-risc-mode               (equal arg "p"))
     (setq risc-mode-map-enabled        risc-mode
           poor-risc-mode-map-enabled   poor-risc-mode)
@@ -434,7 +433,7 @@ be displayed."
 (risc-set-key "N"   'other-window)
 (risc-set-key "P"   (lambda (arg) (interactive "p") (other-window (- 0 arg))))
 (risc-set-key "/"   (lookup-key (current-global-map) "\C-l"))
-(risc-set-key "H"   'prev-buffer)
+(risc-set-key "H"   'previous-buffer)
 (risc-set-key ":"   'next-buffer)
 
 ;;}}}
@@ -611,7 +610,8 @@ nil."
                         (if (eq last-command 'yank) 'yank-pop 'yank))))
 (risc-set-key "z"    'undo)
 (risc-set-key "Z"    "uz")
-(risc-set-key "?"    'dabbrev-expand)
+(risc-set-key (kbd "?")   (lookup-key (current-global-map) "\M-/"))
+
 
 ;; Add "u" to universal universal-argument-map
 (defun risc-universal-argument-more ()
