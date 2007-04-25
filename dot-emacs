@@ -1,26 +1,24 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
-;; .emacs  -- EMACS configuration file
-;; Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.9 2007/04/22 10:43:02 mina86 Exp $
+;; .emacs  -- Emacs configuration file
+;; Copyright 2004-2007 by Michal Nazarewicz (mina86@mina86.com)
+;; $Id: dot-emacs,v 1.10 2007/04/25 18:25:54 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
 ;; Gnus
-(setq gnus-home-directory (expand-file-name "~/.gnus"))
-(when (file-directory-p gnus-home-directory)
-  (setq load-path (cons (concat gnus-home-directory "/gnus/lisp") load-path))
-  (setq message-directory (concat gnus-home-directory "/Mail"))
-
+(when (file-directory-p "~/.gnus")
+  (setq gnus-home-directory (expand-file-name "~/.gnus")
+        load-path (cons (concat gnus-home-directory "/gnus/lisp") load-path)
+        message-directory (concat gnus-home-directory "/Mail"))
   (eval-after-load "info"
     '(if (load "gnus-load")
          (setq Info-default-directory-list
                (cons (concat gnus-home-directory "/gnus/texi")
                      Info-default-directory-list)))))
 
-
-;; Add  ~/elisp  to load path
-(if (file-directory-p (expand-file-name "~/elisp"))
-    (setq load-path (cons (expand-file-name "~/elisp") load-path)))
+;; Add  ~/.emacs.d/elisp  to load path
+(if (file-directory-p (expand-file-name "~/.emacs.d/elisp"))
+    (setq load-path (cons (expand-file-name "~/.emacs.d/elisp") load-path)))
 
 ;; Use  aspell
 (setq-default ispell-program-name "aspell")
@@ -502,7 +500,8 @@ and `indent-for-tab-command' when indenting"
                       (list (if current-prefix-arg 'full))))
   (if mark-active
       (fill-region (region-beginning) (region-end) arg)
-    (fill-paragraph arg)))
+    (fill-paragraph arg))
+  (setq deactivate-mark nil))
 
 (defun my-fill () "" (interactive)
    (fill-paragraph-or-region (seq-times-nth () () left full right center)))
@@ -655,9 +654,15 @@ and `indent-for-tab-command' when indenting"
 (defmacro mn-kbd-find-file (file)
   `(function (lambda () (interactive) (find-file ,file))))
 
-(global-set-key [(f2)]         (mn-kbd-find-file "~/.emacs"))
+(global-set-key [(f2)]         (mn-kbd-find-file
+                                (if (string-match "\\.elc$" user-init-file)
+                                    (if (file-exists-p
+                                         (substring user-init-file 0 -1))
+                                        (substring user-init-file 0 -1)
+                                        (substring user-init-file 0 -4))
+                                  user-init-file)))
 (global-set-key [(control f2)] (mn-kbd-find-file "~/.gnus/.gnus.el"))
-(global-set-key [(meta f2)]    (mn-kbd-find-file "~/.emacs.custom"))
+(global-set-key [(meta f2)]    (mn-kbd-find-file custom-file))
 (global-set-key [(shift f2)]   (mn-kbd-find-file "~/.bashrc"))
 
 ;;}}}
@@ -872,7 +877,7 @@ non-nill or `compile' otherwise."
 (setq font-lock-verbose nil)          ;no messages
 
 ;; Let customize keep config there
-(setq custom-file (expand-file-name "~/.emacs.custom"))
+(setq custom-file (expand-file-name "~/.emacs.d/custom"))
 (if (file-exists-p custom-file) (load-file custom-file))
 (if (boundp 'auto-byte-compile-files-list)
     (setq auto-byte-compile-files-list
@@ -1019,7 +1024,6 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 (setq gdb-many-windows t)
 (setq gdb-show-main t)
 (setq gdb-use-separate-io-buffer t)
-
 
 ;;}}}
 ;;{{{ Modes
@@ -1342,6 +1346,7 @@ is at the beginning of line or preceded by white space."
 (command-frequency-table-load)
 (command-frequency-mode 1)
 (command-frequency-autosave-mode 1)
+(setq command-frequency-table-file "~/.emacs.d/frequencies")
 
 ;;}}}
 ;;{{{ Notes in *scratch*
@@ -1349,7 +1354,7 @@ is at the beginning of line or preceded by white space."
 ; Notes in *scratch*  v. 0.2
 ; Copyright (c) 2006 by Michal Nazarewicz (mina86@mina86.com)
 
-(defconst scratch-file (expand-file-name "~/.emacs.scratch")
+(defconst scratch-file (expand-file-name "~/.emacs.d/scratch")
   "File where content of *scratch* buffer will be read from and saved to.")
 (defconst scratch-file-autosave (concat scratch-file ".autosave")
   "File where to autosave content of *scratch* buffer.")
@@ -1400,9 +1405,10 @@ is at the beginning of line or preceded by white space."
 ;;}}}
 ;;{{{ Fun stuff ;)
 
-(defconst wq  "This is not vi!  Use C-x C-c instead.")
+(defconst q   "This is not vi!  Use C-x C-c instead.")
 (defconst w   "This is not vi!  Use C-x C-s instead.")
 (defconst q!  "This is EMACS not vi!  Use C-x C-c instead.")
+(defconst wq  "This is not vi!  Use C-x C-c instead.")
 (defconst wq! "This is EMACS not vi!  Use C-x C-c instead.")
 
 ;;}}}
