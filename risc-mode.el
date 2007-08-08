@@ -1,8 +1,8 @@
-;;                                 -*- mode: lisp; indent-tabs-mode: nil -*-
+;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;;{{{ Header
 ;;
 ;; RISC Mode  v. 0.3
-;; $Id: risc-mode.el,v 1.3 2007/04/22 10:16:31 mina86 Exp $
+;; $Id: risc-mode.el,v 1.4 2007/08/08 13:31:48 mina86 Exp $
 ;; Copyright (c) 2006 by Michal Nazarewicz (mina86/AT/mina86.com)
 ;;
 ;; This software is OSI Certified Open Source Software.
@@ -548,11 +548,11 @@ even beep.)"
   (let ((char (read-char)))
     (if (eq char 32)
         (or bookmark-current-bookmark (bookmark-buffer-name))
-      (format "%c"
-              (if (and enable-multibyte-characters
-                       (>=
-                  (unibyte-char-to-multibyte char)
-                char)))))))
+      (format "%c" char))))
+;              (if (and enable-multibyte-characters
+;                       (>=
+;                  (unibyte-char-to-multibyte char)
+;                char)))))))
 
 (risc-set-key "b"   (lambda (a) (interactive "p")
                       (bookmark-set    (risc-bookmark-read-name) a)))
@@ -581,7 +581,7 @@ will `call-last-kbd-macro'."
 nil."
   (interactive "P")
   (if (or defining-kbd-macro executing-kbd-macro)
-      (kmacro-insert-counter) (setq last-kbd-macro ())))
+      (kmacro-insert-counter 1) (setq last-kbd-macro ())))
 
 (risc-set-key "G"   'risc-macro)
 (risc-set-key "dG"  'risc-macro-delete-or-insert-counter)
