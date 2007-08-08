@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
 ;; Copyright 2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-gnus,v 1.2 2007/04/22 10:20:50 mina86 Exp $
+;; $Id: dot-gnus,v 1.3 2007/08/08 13:31:04 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -11,8 +11,10 @@
  message-from-style 'angels
  gnus-local-domain "mina86.com"
  message-user-fqdn "erwin.mina86.com"
- gnus-user-agent (format "Gnus/%s Emacs/%s (Slckware Linux)"
-                     gnus-version-number emacs-version))
+ gnus-user-agent (format "Gnus/%f (%s) Emacs/%s (Slckware Linux)"
+                         (gnus-continuum-version) gnus-version
+                         (if (string-match "^[0-9]*\\.[0-9]*" emacs-version)
+                             (match-string 0 emacs-version)) emacs-version))
 
 ;; Email addresses
 (setq gnus-ignored-from-addresses
@@ -56,8 +58,8 @@
  gnus-always-read-dribble-file t
 
  gnus-secondary-select-methods
- '((nnml "")
-   (nntp "news.student.pw.edu.pl")))
+ '((nnml "")))
+;   (nntp "news.student.pw.edu.pl")))
 
 
 ;; Mail sources
@@ -109,7 +111,6 @@
  nnmail-split-methods 'nnmail-split-fancy
  nnmail-split-fancy
  `(| (: nnmail-split-fancy-with-parent)
-     ("X-Gnus-Mail-Source" ".*mion.elka.pw.edu.pl"   "mail.mion")
      ("Content-Type"
       ,(eval-when-compile
          (concat "charset="
@@ -117,6 +118,7 @@
                                "gb2312" "ks_c_5601-1987" "windows-1251") t)))
       junk)
      (: spam-split)
+     ("X-Gnus-Mail-Source" ".*mion.elka.pw.edu.pl"   "mail.mion")
      (any "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
      (from "bugzilla-daemon@informatica.agh.edu.pl"  "mail.rootnode.bugzilla")
      (".*" "rootnode@.*"                             "mail.rootnode")
@@ -184,20 +186,108 @@
  gnus-gcc-mark-as-read t
  message-subscribed-address-functions '(gnus-find-subscribed-addresses))
 
+;;{{{ Signatures
+
+;; Based on randomsig.el
+;; http://www.backmes.de/scripts+programs.html
+
+(defvar sig-dir "~/.signatures"
+  "Directory where signatures are stored.  Signatures have to be
+saved each in separat file without \"-- \" at the beginning.")
+
+(defvar sig-files nil
+  "List of signature file names.  It may be either a list of
+strings, a string, a function returning a list of strings or
+a variable symbol.  File names are relative to `sig-dir'.")
+
+(defvar sig-file-search-unwanted "\\(/\\|^\\)\\(CV\\|RC\\)S$\\|~$"
+  "Regular expression matching unwanted files when scanning with
+`sig-files-search'")
+
+(defvar sig--prompt-history nil)
+
+
+(defun sig--files (files)
+  "Returns a list of signature file names basaed."
+  (if (listp files)
+      (if (eq (car files) 'lambda) (sig--files (funcall files)) files)
+    (when (symbolp files)
+      (cond
+       ((fboundp files) (sig--files (funcall files)))
+       (( boundp files) (sig--files (symbol-value files)))))))
+
+
+(defun sig-files-search (&optional file)
+  "Scan `sig-dir' and its subdirectories for regular files.
+If FILE is given, only FILE and its subdirectory will be
+searched."
+  (unless (file-exists-p sig-dir)
+    (error "\"%s\" does not exist" sig-dir))
+  (unless (file-directory-p sig-dir)
+    (error "\"%s\" is not a directory" sig-dir))
+  (unless file
+    (setq file ""))
+
+  (unless (or (string-match "\\(/\\|^\\)\\(\\.\\|\\.\\.\\)$" file)
+              (string-match sig-file-search-unwanted file))
+    (let ((path (expand-file-name file sig-dir)))
+      (cond
+       ((file-directory-p path)
+        (mapcar (if (string= file "")
+                    (lambda (f) (sig-files-search f))
+                  (lambda (f) (sig-files-search (concat file "/" f))))
+                (directory-files path)))
+       ((file-regular-p path) (list file))))))
+
+
+(defun sig (file)
+  "Sets signature to one in FILE.  When called interactivelly
+prompts for signature file name from `sig-files' list.  When
+called with prefix argument will prompt for any file."
+  (interactive
+   (list (if current-prefix-arg
+             (read-file-name "Signature: " sig-dir nil nil t)
+           (let ((files (sig--files sig-files)))
+             (if files
+                 (let ((file
+                        (completing-read "Signature: "
+                                         files nil t nil
+                                         'sig--prompt-history)))
+                   (if (string= file "")
+                       (error "You have to specify signature")
+                     file))
+               (error "No signature files."))))))
+  (unless (file-name-absolute-p file)
+    (setq file (expand-file-name file sig-dir)))
+  (save-excursion
+    (if (message-goto-signature)
+        (save-restriction
+          (narrow-to-region (point) (point-max))
+          (insert-file-contents file nil nil nil t))
+      (insert "-- \n")
+      (insert-file-contents file nil nil nil nil))))
+
+
+(setq sig-dir   (concat gnus-home-directory "/signatures")
+      sig-files (sig-files-search))
+(define-key message-mode-map "\C-cs" 'sig)
+
+;;}}}
+
 ;; Posting styles
 (setq
  gnus-posting-styles
  '((".*"
-    (signature-file "~/.signature-en")
+    (signature-file (concat sig-dir "/english"))
     (x-url "http://mina86.com/"))
    ("^pl\\.\\|^alt\\.pl\\."
     (name "Micha³ Nazarewicz")
-    (signature-file "~/.signature-pl"))
+    (signature-file (concat sig-dir "/polish")))
    ("^pl\\.\\|^alt\\.pl\\.\\|pw\\."
     (name "Micha³ Nazarewicz")
-    (signature-file "~/.signature-pl"))
+    (signature-file (concat sig-dir "/polish")))
    ("^nnml:"
-    (signature-file "~/.signature-pl"))
+    (signature-file (concat sig-dir "/polish")))
    ("^nnml:mail\\.mion"
     (address (eval-when-compile
                (concat "M.Nazarewicz" "@" "stud.elka.pw.edu.pl"))))
@@ -299,7 +389,8 @@ the value of From header."
 
 (require 'mm-decode)
 (setq mm-attachment-override-types '("image/.*"))
-(setq mm-discouraged-alternatives (list "text/html" "text/richtext"))
+(setq mm-discouraged-alternatives '("text/html" "text/richtext")
+      gnus-buttonized-mime-types '("multipart/signed" "multipart/alternative"))
 
 (setq gnus-ignored-mime-types '("text/x-vcard"))
 
