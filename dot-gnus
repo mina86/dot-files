@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
 ;; Copyright 2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-gnus,v 1.3 2007/08/08 13:31:04 mina86 Exp $
+;; $Id: dot-gnus,v 1.4 2007/10/22 13:06:33 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -14,7 +14,7 @@
  gnus-user-agent (format "Gnus/%f (%s) Emacs/%s (Slckware Linux)"
                          (gnus-continuum-version) gnus-version
                          (if (string-match "^[0-9]*\\.[0-9]*" emacs-version)
-                             (match-string 0 emacs-version)) emacs-version))
+                             (match-string 0 emacs-version) emacs-version)))
 
 ;; Email addresses
 (setq gnus-ignored-from-addresses
@@ -120,6 +120,7 @@
      (: spam-split)
      ("X-Gnus-Mail-Source" ".*mion.elka.pw.edu.pl"   "mail.mion")
      (any "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
+     (any "mn86@\\(?:g?o2\\|tlen\\).pl"              "mail.mn86")
      (from "bugzilla-daemon@informatica.agh.edu.pl"  "mail.rootnode.bugzilla")
      (".*" "rootnode@.*"                             "mail.rootnode")
      (any "@grono\\.net\\|@last\\.fm"                "mail.notify")
@@ -278,6 +279,15 @@ called with prefix argument will prompt for any file."
 (setq
  gnus-posting-styles
  '((".*"
+;    ("X-PGP" "B7C6DF1E")
+;    ("PGP"   "B7C6DF1E")
+;    ("X-GPG" "B7C6DF1E")
+;    ("GPG"   "B7C6DF1E")
+;    ("X-PGP-FP"      "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
+;    ("X-GPG-FP"      "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
+;    ("X-Fingerprint" "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
+
+;    ("X-Accept-Language" "pl, en")
     (signature-file (concat sig-dir "/english"))
     (x-url "http://mina86.com/"))
    ("^pl\\.\\|^alt\\.pl\\."
@@ -291,6 +301,8 @@ called with prefix argument will prompt for any file."
    ("^nnml:mail\\.mion"
     (address (eval-when-compile
                (concat "M.Nazarewicz" "@" "stud.elka.pw.edu.pl"))))
+   ("^nnml:mail\\.mn86"
+    (address (eval-when-compile (concat "mn86" "@" "o2.pl"))))
    ("^nnml:list.k02_a"
     (address (eval-when-compile (concat "mina86" "@" "tlen.pl"))))))
 
@@ -390,9 +402,21 @@ the value of From header."
 (require 'mm-decode)
 (setq mm-attachment-override-types '("image/.*"))
 (setq mm-discouraged-alternatives '("text/html" "text/richtext")
-      gnus-buttonized-mime-types '("multipart/signed" "multipart/alternative"))
+      gnus-buttonized-mime-types '("multipart/signed" "multipart/encrypted"
+                                   "multipart/alternative"))
 
 (setq gnus-ignored-mime-types '("text/x-vcard"))
+
+(setq gnus-visible-headers
+      (eval-when-compile
+        (concat "^"
+        (regexp-opt
+         (list "From" "Newsgroups" "Subject" "Date" "Followup-To" "Reply-To"
+               "Organization" "Summary" "Keywords" "To" "Cc" "Bcc" "Gcc" "Fcc"
+               "Posted-To" "Mail-Copies-To" "Mail-Followup-To" "Apparently-To"
+               "Gnus-Warning" "Resent-From" "X-Sent" "User-Agent" "X-Mailer"
+               "Newsreader" "X-Newsreader")
+         t) ":")))
 
 ;;}}}
 ;;{{{ Format lines
@@ -452,12 +476,30 @@ the value of From header."
 (gnus-demon-init)
 
 ;;}}}
+;;{{{ PGG
 
-;; PGP:
-; (setq gnus-buttonized-mime-types '("multipart/signed"))
-; (require 'pgg)
-; (require 'pgg-epg)
-;(setq pgg-scheme 'epg)
-; (setq gnus-treat-x-pgp-sig t
-;       mm-verify-option 'always
-;       mm-decrypt-option 'always)
+(autoload 'pgg-encrypt-region "pgg"
+  "Encrypt the current region." t)
+(autoload 'pgg-encrypt-symmetric-region "pgg"
+  "Encrypt the current region with symmetric algorithm." t)
+(autoload 'pgg-decrypt-region "pgg"
+  "Decrypt the current region." t)
+(autoload 'pgg-sign-region "pgg"
+  "Sign the current region." t)
+(autoload 'pgg-verify-region "pgg"
+  "Verify the current region." t)
+(autoload 'pgg-insert-key "pgg"
+  "Insert the ASCII armored public key." t)
+(autoload 'pgg-snarf-keys-region "pgg"
+  "Import public keys in the current region." t)
+
+(setq pgg-scheme 'gpg
+      pgg-gpg-user-id "mina86"
+;      pgg-gpg-program "gpg2"
+;      pgg-gpg-use-agent nil
+;      pgg-cache-passphrase nil
+      gnus-treat-x-pgp-sig t
+      mm-verify-option 'known
+      mm-decrypt-option 'known)
+
+;;}}}
