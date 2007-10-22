@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .bashrc  -- bash configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-## $Id: bashrc,v 1.7 2006/09/10 10:43:44 mina86 Exp $
+## $Id: bashrc,v 1.8 2007/10/22 12:51:32 mina86 Exp $
 ##
 
 # Include ~/.shellrc
@@ -66,14 +66,17 @@ unset PROMPT_COMMAND P
 ##
 ## Shell optons and parameters
 ##
-shopt -qu cdable_vars checkhash dotglob execfail extdebug extglob
-shopt -qu force_fignore interactive_comments lithist
-shopt -qu no_empty_cmd_completion nocaseglob shift_verbose
-shopt -qu sourcepath xpg_echo
+shopt -qu cdable_vars checkhash dotglob execfail extglob interactive_comments
+shopt -qu interactive_comments lithist no_empty_cmd_completion nocaseglob
+shopt -qu shift_verbose sourcepath xpg_echo
 
-shopt -qs cdspell checkwinsize cmdhist expand_aliases failglob
-shopt -qs extquote gnu_errfmt histappend histreedit histverify hostcomplete
-shopt -qs nullglob promptvars
+shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit
+shopt -qs histverify hostcomplete nullglob promptvars
+
+if [ "$_hostname" != Xdedal ]; then
+	shopt -qu extdebug force_fignore
+	shopt -qs failglob extquote gnu_errfmt
+fi
 
 HISTCONTROL="ignorespace:erasedups"
 HISTIGNORE="ls:su:cd:bc:wp rm:mp3 mv:cd -"
