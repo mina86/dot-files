@@ -1,0 +1,73 @@
+#! /bin/sh
+# $Id: update,v 1.1 2007/10/22 13:06:54 mina86 Exp $
+
+set -e
+
+
+
+DIRECTION=
+if [ X"$1" = Xfrom ]; then
+	DIRECTION=from
+elif [ X"$1" = Xto ]; then
+	DIRECTION=to
+else
+	echo 'usage: ./update ( to | from ) [ <files> ]'
+	exit 1
+fi
+shift
+
+
+
+if [ $DIRECTION = from ]; then
+	echo 'Updating files in current directory from configuration files'
+else
+	echo 'Updating configuration files from files in current directory'
+fi
+printf 'Do you want to continue? [y/N] '
+
+if ! read answer; then
+	exit 0
+elif [ X"${answer#[yY]}" = X"${answer}" ]; then
+	exit 0
+fi
+
+
+
+if [ $# -eq 0 ]; then
+	match () {
+		true
+	}
+else
+	match () {
+		for f in "$@"; do
+			if [ X"$FILE" = X"$f" ]; then return 0; fi
+		done
+		false
+	}
+fi
+
+
+while read FILE DEST; do
+	match "$@" || continue
+	[ X"${DEST#'~'}"  = X"$DEST" ] || DEST=$HOME${DEST#'~'}
+	[ X"${DEST%/.}" = X"$DEST" ] || DEST=$DEST$FILE
+	[ X"${DEST%/}"  = X"$DEST" ] || DEST=$DEST$FILE
+
+	if [ $DIRECTION = from ]; then
+		mv -- "$FILE" "$FILE~"
+		cp -- "$DEST" "$FILE"
+	else
+		mv -- "$DEST" "$DEST~"
+		cp -- "$FILE" "$DEST"
+	fi
+done <<EOF
+bash_profile       ~/.
+bashrc             ~/.
+dot-emacs          ~/.emacs.d/init.el
+dot-gnus           ~/.gnus/.gnus.el
+profile            ~/.
+risc-mode.el       ~/.emacs.d/elisp/
+shellrc            ~/.
+zlogin             ~/.
+zshrc              ~/.
+EOF
