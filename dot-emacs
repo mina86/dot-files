@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2007 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-emacs,v 1.11 2007/08/08 13:29:50 mina86 Exp $
+;; $Id: dot-emacs,v 1.12 2007/10/22 13:05:05 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
@@ -16,9 +16,17 @@
                (cons (concat gnus-home-directory "/gnus/texi")
                      Info-default-directory-list)))))
 
+;; Make sure user-emacs-directory is defined
+(when (or (not (boundp 'user-emacs-directory))
+          (string-equal user-emacs-directory ""))
+  (defvar user-emacs-directory (expand-file-name "~/.emacs.d/")
+    "Directory beneath which additional per-user Emacs-specific files are placed.
+Various programs in Emacs store information in this directory.
+Note that this should end with a directory separator."))
+
 ;; Add  ~/.emacs.d/elisp  to load path
-(if (file-directory-p (expand-file-name "~/.emacs.d/elisp"))
-    (setq load-path (cons (expand-file-name "~/.emacs.d/elisp") load-path)))
+(if (file-directory-p (concat user-emacs-directory "elisp"))
+    (setq load-path (cons (concat user-emacs-directory "elisp") load-path)))
 
 ;; Use  aspell
 (setq-default ispell-program-name "aspell")
@@ -221,11 +229,13 @@ three times - beginning of buffer; four times - back to where it was."
      (goto-char (point-min))
      (goto-char my-home-end--point)))
 
-(global-set-key "\C-a"          'my-home)
-(global-set-key [(home)]        'my-home)
-(global-set-key [(kp-home)]     'my-home)
-(global-set-key [(f27)]         'my-home)
-(global-set-key "\e[1~"         'my-home)
+(substitute-key-definition 'move-beginning-of-line 'my-home
+                           (current-global-map))
+;(global-set-key "\C-a"          'my-home)
+;(global-set-key [(home)]        'my-home)
+;(global-set-key [(kp-home)]     'my-home)
+;(global-set-key [(f27)]         'my-home)
+;(global-set-key "\e[1~"         'my-home)
 
 
 ;; My end
@@ -236,12 +246,13 @@ three times - beginning of buffer; four times - back to where it was."
     (goto-char (point-max))
     (goto-char my-home-end--point)))
 
-(global-set-key "\C-e"          'my-end)
-(global-set-key [(end)]         'my-end)
-(global-set-key [(kp-end)]      'my-end)
-(global-set-key [(select)]      'my-end)
-(global-set-key [(f33)]         'my-end)
-(global-set-key "\e[4~"         'my-end)
+(substitute-key-definition 'move-end-of-line 'my-end (current-global-map))
+;(global-set-key "\C-e"          'my-end)
+;(global-set-key [(end)]         'my-end)
+;(global-set-key [(kp-end)]      'my-end)
+;(global-set-key [(select)]      'my-end)
+;(global-set-key [(f33)]         'my-end)
+;(global-set-key "\e[4~"         'my-end)
 
 ;;}}}
 ;;{{{   Pager/Scrolling
@@ -252,12 +263,14 @@ three times - beginning of buffer; four times - back to where it was."
 (require 'pager)
 (setq pager-goto-edge t)
 
-(global-set-key "\ev"           'pager-page-up)     ; Page Up
-(global-set-key [(prior)]       'pager-page-up)
-(global-set-key [(f29)]         'pager-page-up)
-(global-set-key "\C-v"          'pager-page-down)   ; Page Down
-(global-set-key [(next)]        'pager-page-down)
-(global-set-key [(f35)]         'pager-page-down)
+(substitute-key-definition 'scroll-down 'pager-page-up   (current-global-map))
+(substitute-key-definition 'scroll-up   'pager-page-down (current-global-map))
+;(global-set-key "\ev"           'pager-page-up)     ; Page Up
+;(global-set-key [(prior)]       'pager-page-up)
+;(global-set-key [(f29)]         'pager-page-up)
+;(global-set-key "\C-v"          'pager-page-down)   ; Page Down
+;(global-set-key [(next)]        'pager-page-down)
+;(global-set-key [(f35)]         'pager-page-down)
 
 (set-key-lambda [(meta up)]     (scroll-down 1))    ; Alt+Up
 (set-key-lambda [(meta kp-8)]   (scroll-down 1))
@@ -290,7 +303,8 @@ three times - beginning of buffer; four times - back to where it was."
           (delete-region (1+ (point)) (point-max))))))
   (save-buffer))
 
-(global-set-key "\C-x\C-s"      'save-no-blanks)
+(substitute-key-definition 'save-buffer 'save-no-blanks (current-global-map))
+;(global-set-key "\C-x\C-s"      'save-no-blanks)
 
 ;;}}}
 ;;{{{   Misc
@@ -299,6 +313,9 @@ three times - beginning of buffer; four times - back to where it was."
   (global-set-key "\C-h"          'delete-backward-char))
 (global-set-key [(backspace)]   'delete-backward-char)
 (global-set-key [(delete)]      'delete-char)
+(global-set-key [(control backspace)] 'backward-kill-word)
+(global-set-key [(control delete)] 'kill-word)
+
 
 ;(global-set-key "\C-xg"         'goto-line)             ; C-x g  goto line
 ;Since 22.1 M-g M-g and M-g g are goto line
@@ -498,17 +515,26 @@ and `indent-for-tab-command' when indenting"
 ;;}}}
 
 ;; Alt+q - Filling
-(defun fill-paragraph-or-region (&optional arg)
-  "Runs `fill-region' if `mark-active', `fill-paragraph' otherwise."
-  (interactive (progn (barf-if-buffer-read-only)
-                      (list (if current-prefix-arg 'full))))
-  (if (and mark-active transient-mark-mode)
-      (fill-region (region-beginning) (region-end) arg)
-    (fill-paragraph arg))
-  (setq deactivate-mark nil))
+(unless (fboundp 'fill-paragraph-or-region)
+  ;; Taken from emacs 23.0.50.1 (CVS)
+  (defun fill-paragraph-or-region (arg)
+    "Fill the active region or current paragraph.
+In Transient Mark mode, when the mark is active, it calls `fill-region'
+on the active region.  Otherwise, it calls `fill-paragraph'."
+    (interactive (progn (barf-if-buffer-read-only)
+                        (list (if current-prefix-arg 'full))))
+    (if (and transient-mark-mode mark-active
+             (not (eq (region-beginning) (region-end))))
+        (fill-region (region-beginning) (region-end) arg)
+      (fill-paragraph arg))))
 
-(defun my-fill () "" (interactive)
-   (fill-paragraph-or-region (seq-times-nth () () left full right center)))
+(defun my-fill (&optional arg) ""
+  (interactive "*P")
+  (if arg
+    (fill-region (save-excursion (beginning-of-line) (point))
+                 (save-excursion (end-of-line)       (point))
+                 (seq-times-nth () () left full right center))
+    (fill-paragraph-or-region (seq-times-nth () () left full right center))))
 
 (global-set-key "\M-q"          'my-fill)
 
@@ -661,12 +687,28 @@ in the current paragraph into a single long line."
   "If function given tries to `describe-function' otherwise uses
 `manual-entry' to display manpage of a `current-word'."
   (interactive)
-   (let ((fn (function-called-at-point)))
-     (if fn
-         (describe-function fn)
-       (manual-entry (current-word)))))
+  (let ((var (variable-at-point)))
+    (if (symbolp var)
+        (describe-variable var)
+      (let ((fn (function-called-at-point)))
+        (if fn
+            (describe-function fn)
+          (man (current-word)))))))
 
 (global-set-key [(f1)]      'my-help)
+(let ((map
+       (list 'keymap
+             (cons ?f (lambda () (interactive)
+                        (let ((fn (function-called-at-point)))
+                          (and fn (describe-function fn)))))
+             (cons ?v (lambda () (interactive)
+                        (let ((var (variable-at-point)))
+                          (and (symbolp var) (describe-variable var)))))
+             (cons ?m (lambda () (interactive) (man (current-word))))
+             (cons ?i (lambda () (interactive) (info (current-word)))))))
+
+  (global-set-key [(shift f1)] map)
+  (global-set-key [(ctrl shift h)] map))
 
 ;;}}}
 ;;{{{     F2 - find configuration files
@@ -769,8 +811,11 @@ With a prefix arg sets global dictionary."
 
 (set-key-lambda [(f7)]         (mn-spell))
 (set-key-lambda [(control f7)] (mn-spell nil (point)))
-
 (global-set-key [(meta f7)]    'mn-spell-switch-dictionary)
+(set-key-lambda [(shift f7)]
+ (call-interactively
+  (if (and (boundp 'flyspell-mode) flyspell-mode)
+      'flyspell-correct-word-before-point 'ispell-word)))
 
 ;;}}}
 ;;{{{     F8 - Keyboard macros
@@ -783,19 +828,18 @@ With a prefix arg sets global dictionary."
 ;;}}}
 ;;{{{     F9 - Compilation
 
-(eval-when-compile
-  (defconst -mn-compile-common
-    " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Wunreachable-code -Winline -Wdisabled-optimization -ggdb -O0"))
+(defconst -mn-compile-common
+  " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Wunreachable-code -Winline -Wdisabled-optimization -Wstrict-aliasing=2 -Werror-implicit-function-declaration -pedantic -DMINA86 -ggdb -O0")
 
 (defvar mn-compile-vars
-  `((("CFLAGS"   ,(eval-when-compile (concat "-std=c99 -Werror-implicit-function-declaration" -mn-compile-common)))
-     ("CXXFLAGS" ,(eval-when-compile (concat "-std=c++98" -mn-compile-common)))
-     ("CPPFLAGS" "-Wall -pedantic -DMINA86")
+  `((("CFLAGS"   "-std=c99")
+     ("CXXFLAGS" "-std=c++98")
+     ("CPPFLAGS" ,-mn-compile-common)
      ("LDFLAGS"  nil))
 
-    (("CFLAGS"   ,(eval-when-compile (concat "-std=c89 -Wpadded -Werror-implicit-function-declaration" -mn-compile-common)))
-     ("CXXFLAGS" ,(eval-when-compile (concat "-std=c++98 -Wpadded" -mn-compile-common)))
-     ("CPPFLAGS" "-Wall -pedantic -DMINA86")
+    (("CFLAGS"   "-std=c89")
+     ("CXXFLAGS" "-std=c++98")
+     ("CPPFLAGS" ,-mn-compile-common)
      ("LDFLAGS"  nil)))
 
   "List of enviroment variables set by `mn-compile' priory to
@@ -890,7 +934,7 @@ non-nill or `compile' otherwise."
 (setq font-lock-verbose nil)          ;no messages
 
 ;; Let customize keep config there
-(setq custom-file (expand-file-name "~/.emacs.d/custom"))
+(setq custom-file (concat user-emacs-directory "custom"))
 (if (file-exists-p custom-file) (load-file custom-file))
 (if (boundp 'auto-byte-compile-files-list)
     (setq auto-byte-compile-files-list
@@ -906,23 +950,40 @@ non-nill or `compile' otherwise."
 ;; Show blanks and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
 
-(custom-set-faces
- '(my-tab-face ((((class color))
-   (:background "#555" :foreground "black" :underline t))) t)
- '(my-big-indent-face ((((class color))
-   (:background "#755" :foreground "black" :underline t))) t)
- '(my-huge-indent-face ((((class color))
-   (:background "#C55" :foreground "black" :underline t))) t)
- '(my-fixme-face ((((class color))
-   (:background "red" :foreground "white" :weight bold))) t)
- )
+(defface my-tab-face
+  '((((type graphical) (class color) (min-colors 216)) (:underline "#666"))
+    (((class color) (min-colors 216)) (:background "#666"))
+    (((class color) (min-colors  16)) (:background "yellow")))
+  "Face for showing TABs."
+  :group 'basic-faces)
 
+(defface my-big-indent-face
+  '((((type graphical) (class color) (min-colors 216)) (:underline "#966"))
+    (((class color) (min-colors 216)) (:background "#966"))
+    (((class color) (min-colors  16)) (:background "red"))
+    (t :inverse-video t))
+  "Face for showing sequence of four or five TAB characters in a row."
+  :group 'basic-faces)
+
+(defface my-huge-indent-face
+  '((((type graphical) (class color) (min-colors 216)) (:underline "#F00"))
+    (((class color) (min-colors 216)) (:background "#C66"))
+    (((class color) (min-colors  16)) (:background "magenta"))
+    (t :inverse-video t))
+  "Face for showing sequence of at least six five TAB characters in a row."
+  :group 'basic-faces)
+
+(defface my-fixme-face 
+  '((t :background "red" :foreground "white" :weight bold))
+  "Font for showing FIXME and XXX words."
+  :group 'basic-faces)
+ 
 
 (add-hook 'font-lock-mode-hook (function (lambda ()
   (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
     (font-lock-add-keywords nil
      '(("\t+" 0 'my-tab-face t)
-       ("^\t\\{4,\\}" 0 'my-big-indent-face t)
+       ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
        ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
        ("\\<\\(FIXME:?\\|XXX\\)" 1 'my-fixme-face t)))))))
 
@@ -935,9 +996,8 @@ non-nill or `compile' otherwise."
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
 (if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
-(when window-system
-  (require 'fringe)
-  (set-fringe-mode '(3 . 3)))     ;small fringe
+(and window-system (load "fringe")
+     (set-fringe-mode (if (string-match "^erwin\." system-name) 7 4)))
 
 
 ;; Modeline
@@ -1009,7 +1069,8 @@ non-nill or `compile' otherwise."
 ;(setq ange-ftp-ftp-program-name "pftp") ;passive FTP
 (blink-cursor-mode nil)           ;do not blink cursor
 ;(setq mouse-autoselect-window nil)  ;focus follows mouse
-
+(when (boundp 'compilation-auto-jump-to-first-error)
+  (setq compilation-auto-jump-to-first-error t))
 
 ;; Saving etc
 (if (fboundp recentf-mode)
@@ -1100,21 +1161,31 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 
 ;; Insert char or entity when pressed 2 times
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
-;(defmacro rgb-insert-if-double (otherwise)
-;  `(lambda (arg) (interactive "P")
-;               (if (or arg (not (equal (preceding-char) last-command-char)))
-;                   (self-insert-command (prefix-numeric-value arg))
-;                 (backward-delete-char 1)
-;                 (insert ,otherwise))))
-;
-;(eval-when-compile (require 'sgml-mode))
-;(eval-after-load "sgml-mode"
-;  (progn
-;   (add-hook 'html-mode-hook (lambda ()
-;     (define-key html-mode-map "<"  (rgb-insert-if-double "&lt;"))
-;     (define-key html-mode-map ">"  (rgb-insert-if-double "&gt;"))
-;     (define-key html-mode-map "&"  (rgb-insert-if-double "&amp;"))
-;     (define-key html-mode-map "\"" (rgb-insert-if-double "&quot;"))))))
+(defmacro rgb-insert-if-double (otherwise)
+ `(lambda (arg) (interactive "P")
+              (if (or arg (not (equal (preceding-char) last-command-char)))
+                  (self-insert-command (prefix-numeric-value arg))
+                (backward-delete-char 1)
+                (insert ,otherwise))))
+
+(defun mn-sgml-slash-or-close-tag (arg)
+  (interactive "P")
+  (if (or arg (not (equal (preceding-char) ?<)))
+      (self-insert-command (prefix-numeric-value arg))
+    (backward-delete-char 1)
+    (sgml-close-tag)))
+
+(eval-when-compile (require 'sgml-mode))
+(eval-after-load "sgml-mode"
+  (add-hook 'sgml-mode-hook (lambda ()
+   (define-key sgml-mode-map "<"  (rgb-insert-if-double "&lt;"))
+   (define-key sgml-mode-map ">"  (rgb-insert-if-double "&gt;"))
+   (define-key sgml-mode-map "&"  (rgb-insert-if-double "&amp;"))
+   (define-key sgml-mode-map "\"" (rgb-insert-if-double "&quot;"))
+   (define-key sgml-mode-map "/"  'mn-sgml-slash-or-close-tag)
+;   (when (eval-when-compile (fboundp 'sgml-electric-tag-pair-mode))
+;     (sgml-electric-tag-pair-mode 1))
+   (setq indent-tabs-mode ()))))
 
 ;;}}}
 ;;{{{   (La)TeX and nroff mode
@@ -1273,6 +1344,13 @@ is at the beginning of line or preceded by white space."
   (folding-mode-add-find-file-hook))
 
 ;;}}}
+;;{{{   Org Mode
+
+(setq org-startup-folded nil
+      org-disputed-keys '(([(tab)] . "\C-cf"))
+      org-replace-disputed-keys t)
+
+;;}}}
 ;;{{{   Different cursor color depending on mode
 
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
@@ -1311,10 +1389,11 @@ is at the beginning of line or preceded by white space."
 ;;{{{   Command Frequency mode
 
 (require 'command-frequency)
+(setq command-frequency-table-file
+      (concat user-emacs-directory "frequencies"))
 (command-frequency-table-load)
 (command-frequency-mode 1)
 (command-frequency-autosave-mode 1)
-(setq command-frequency-table-file "~/.emacs.d/frequencies")
 
 ;;}}}
 ;;{{{   Notes in *scratch*
@@ -1323,7 +1402,7 @@ is at the beginning of line or preceded by white space."
 ;; Copyright (c) 2006 by Michal Nazarewicz (mina86/AT/mina86.com)
 ;; Released under GNU GPL
 
-(defconst scratch-file (expand-file-name "~/.emacs.d/scratch")
+(defconst scratch-file (concat user-emacs-directory "scratch")
   "File where content of *scratch* buffer will be read from and saved to.")
 (defconst scratch-file-autosave (concat scratch-file ".autosave")
   "File where to autosave content of *scratch* buffer.")
