@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .shellrc  -- global shell configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: shellrc,v 1.7 2007/08/08 13:32:12 mina86 Exp $
+## $Id: shellrc,v 1.8 2007/10/22 12:56:19 mina86 Exp $
 ##
 
 # Not interactive?
@@ -37,6 +37,20 @@ if [ "$_hostname" = Xdedal ] || [ "$_hostname" = Xmion ]; then
 		(-gn) shift; /bin/id "$@" | sed 's/^gid=[^(]*(\([^)]*\)).*/\1/' ;;
 		(*)          /bin/id "$@"                                       ;;
 		esac
+	}
+fi
+
+
+##
+## 'which' does not return exit status in Solaris
+##
+if which foobarbaz42-command-which-does-not-exist >/dev/null 2>&1; then
+	command_exists () {
+		test -f "`which \"$1\"`"
+	}
+else
+	command_exists () {
+	which "$1" >/dev/null 2>&1
 	}
 fi
 
@@ -101,25 +115,21 @@ fi
 
 
 # Other
-if which run-emacs >/dev/null 2>&1; then
-	alias e="run-emacs"
-fi
+command_exists run-emacs && alias e="run-emacs"
 alias mb=mv      # common typo
 alias rmd=rmdir
-if which mpc >/dev/null 2>&1; then
-	alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
-fi
+command_exists mpc && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
 
 
-# Links and ELinks
-ELINKS=`which elinks 2>/dev/null`
-LINKS=`which links 2>/dev/null`
-if [ -n "$ELINKS" ]; then
-	alias links="$ELINKS"
-elif [ -n "$LINKS" ]; then
-	alias elinks="$LINKS"
-fi
-unset ELINKS LINKS
+# # Links and ELinks
+# ELINKS=`which elinks 2>/dev/null`
+# LINKS=`which links 2>/dev/null`
+# if [ -n "$ELINKS" ]; then
+# 	alias links="$ELINKS"
+# elif [ -n "$LINKS" ]; then
+# 	alias elinks="$LINKS"
+# fi
+# unset ELINKS LINKS
 
 
 # LaTeX
@@ -188,13 +198,13 @@ export MINA86RC=done
 
 
 # PATH
-if [ -d "$HOME/bin" ] &&
-		! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1
-then PATH="$PATH:$HOME/bin"; fi
-
 if [ -d "$HOME/code/tinyapps" ] &&
 	! echo "$PATH" | grep -F "$HOME/code/tinyapps" >/dev/null 2>&1
-then PATH="$PATH:$HOME/code/tinyapps"; fi
+then PATH="$HOME/code/tinyapps:$PATH"; fi
+
+if [ -d "$HOME/bin" ] &&
+		! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1
+then PATH="$HOME/bin:$PATH"; fi
 
 # Remove relative paths
 PATH="$(printf %s "$PATH" | sed -e 's~:\(\([^/:][^:]*\)\?:\)*~:~g')"
@@ -203,24 +213,19 @@ PATH="${PATH%:}"
 
 
 # Editor
-if [ -z "$EDITOR" ] && which nano >/dev/null 2>/dev/null
-then export EDITOR=nano VISUAL=nano; fi
+[ -z "$EDITOR" ] && command_exists nano && export EDITOR=nano VISUAL=nano
 
 
 # less
-if [ -n "$LESS" ] || which less >/dev/null 2>/dev/null; then
+if [ -n "$LESS" ] || command_exists less; then
 	export PAGER=less LESS=-M
-	if [ -x ~/bin/lesspipe ]; then
-		eval $(~/bin/lesspipe --install)
-	fi
+	[ -x ~/bin/lesspipe ] && eval $(~/bin/lesspipe --install)
 fi
 
 
 # CVS
 export CVS_RSH=ssh
-if [ -d "$HOME/.cvsroot" ]; then
-	export CVSROOT="$HOME/.cvsroot"
-fi
+[ -d "$HOME/.cvsroot" ] && export CVSROOT="$HOME/.cvsroot"
 
 
 # Various
@@ -243,7 +248,7 @@ fi
 
 # LS
 if [ -z "$LS_COLORS" ]; then
-	if which dircolors >/dev/null 2>&1; then
+	if command_exists dircolors; then
 		if [ -f ~/.dir_colors     ]; then eval `dircolors -b ~/.dir_colors`
 		elif [ -f /etc/DIR_COLORS ]; then eval `dircolors -b /etc/DIR_COLORS`
 		else                              eval `dircolors -b`
@@ -263,7 +268,7 @@ export GZIP="-9n"
 
 # Shell config
 export FIGNORE=".o:~:.bak"
-if [ "$_hostname" = Xerwin ] || [ "$_hostname" = Xtuptus ; then
+if [ "$_hostname" = Xerwin ] || [ "$_hostname" = Xtuptus ]; then
 	unset MAILCHECK MAIL
 fi
 
