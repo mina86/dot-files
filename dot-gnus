@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
 ;; Copyright 2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-gnus,v 1.4 2007/10/22 13:06:33 mina86 Exp $
+;; $Id: dot-gnus,v 1.5 2008/02/14 15:16:32 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -120,6 +120,8 @@
      (: spam-split)
      ("X-Gnus-Mail-Source" ".*mion.elka.pw.edu.pl"   "mail.mion")
      (any "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
+     (from "fvwm@\\(?:lists.math.uh.edu\\|fvwm.org\\)" "list.fvwm")
+     (to "fvwm@\\(?:lists.math.uh.edu\\|fvwm.org\\)" "list.fvwm")
      (any "mn86@\\(?:g?o2\\|tlen\\).pl"              "mail.mn86")
      (from "bugzilla-daemon@informatica.agh.edu.pl"  "mail.rootnode.bugzilla")
      (".*" "rootnode@.*"                             "mail.rootnode")
@@ -164,8 +166,10 @@
    ("list\\."          (subscribed . t)
                        (total-expire . t)
                        (expire-wait . 14))
-   ("list\\.k02_a"     (to-address . "k02_a@staszic.waw.pl")
-                       (to-list    . "k02_a@staszic.waw.pl"))
+   ("list\\.fvwm"      (to-address  . "fvwm@lists.math.uh.edu")
+                       (to-list     . "fvwm@lists.math.uh.edu"))
+;   ("list\\.k02_a"     (to-address . "k02_a@staszic.waw.pl")
+;                       (to-list    . "k02_a@staszic.waw.pl"))
 
    ("mail\\.notify"    (total-expire . t)
                        (expire-wait . 1))
@@ -174,6 +178,7 @@
 
    ("pw\\."            (dictionary . "polish"))
 
+   ("^nnml:list.fvwm"  (dictionary . "british"))
    ("^nnml:"           (dictionary . "polish"))
    ("^nnml:mail\\."    (gcc-self . t))
    ("\\(?:alt\\.\\)?pl\\..*"  (dictionary . "polish"))
@@ -290,9 +295,6 @@ called with prefix argument will prompt for any file."
 ;    ("X-Accept-Language" "pl, en")
     (signature-file (concat sig-dir "/english"))
     (x-url "http://mina86.com/"))
-   ("^pl\\.\\|^alt\\.pl\\."
-    (name "Micha³ Nazarewicz")
-    (signature-file (concat sig-dir "/polish")))
    ("^pl\\.\\|^alt\\.pl\\.\\|pw\\."
     (name "Micha³ Nazarewicz")
     (signature-file (concat sig-dir "/polish")))
@@ -304,7 +306,9 @@ called with prefix argument will prompt for any file."
    ("^nnml:mail\\.mn86"
     (address (eval-when-compile (concat "mn86" "@" "o2.pl"))))
    ("^nnml:list.k02_a"
-    (address (eval-when-compile (concat "mina86" "@" "tlen.pl"))))))
+    (address (eval-when-compile (concat "mina86" "@" "tlen.pl"))))
+   ("^nnml:list.fvwm"
+    (signature-file (concat sig-dir "/english")))))
 
 ;;{{{ SMTP
 
