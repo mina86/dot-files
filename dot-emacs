@@ -1,13 +1,17 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2007 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.12 2007/10/22 13:05:05 mina86 Exp $
+;; $Id: dot-emacs,v 1.13 2008/02/14 15:15:51 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
 ;; Gnus
 (when (file-directory-p "~/.gnus")
   (setq gnus-home-directory (expand-file-name "~/.gnus")
+        gnus-init-file
+        (concat gnus-home-directory
+                (if (file-exists-p (concat gnus-home-directory "/.gnus"))
+                    "/.gnus" "/.gnus.el"))
         load-path (cons (concat gnus-home-directory "/gnus/lisp") load-path)
         message-directory (concat gnus-home-directory "/Mail"))
   (eval-after-load "info"
@@ -492,22 +496,27 @@ It is called with one argument - nil")
 (defvar indent-or-complete--last-was-complete nil)
 
 (defun indent-or-complete ()
-  "Complete if point is at end of a word, otherwise indent line.
-Uses `indent-or-complete-complete-function' function when completing
-and `indent-for-tab-command' when indenting"
+  "In minibuffer runs `minibuffer-complete'.  Otherwise if
+`mark-active' runs `indent-region'.  Otherwise if point is at end of
+a word runs `inent-or-complete-complete-function'.  Otherwise runs
+`indent-for-tab-command'."
   (interactive)
-  (if (set 'indent-or-complete--last-was-complete
-           (or (looking-at "\\>")
-               (and (eq last-command this-command)
-                    indent-or-complete--last-was-complete)))
-      (funcall indent-or-complete-complete-function nil)
-    (indent-for-tab-command)))
+  (cond
+   ((minibufferp) (minibuffer-complete))
+   (mark-active (indent-region (region-beginning) (region-end)))
+   ((set 'indent-or-complete--last-was-complete
+         (or (looking-at "\\>")
+             (and (eq last-command this-command)
+                  indent-or-complete--last-was-complete)))
+    (funcall indent-or-complete-complete-function nil))
+   ((indent-for-tab-command))))
 
 ;(global-set-key "\t"    'indent-or-complete)
 ;(global-set-key [(tab)] 'indent-or-complete)
 (global-set-key "\M-/" 'hippie-expand)
 (add-hook 'find-file-hooks (function (lambda ()
-  (local-set-key [(tab)] 'indent-or-complete))))
+  (unless (eq major-mode 'org-mode)
+    (local-set-key [(tab)] 'indent-or-complete)))))
 (save-current-buffer
   (set-buffer "*scratch*")
   (local-set-key [(tab)] 'indent-or-complete))
@@ -829,16 +838,16 @@ With a prefix arg sets global dictionary."
 ;;{{{     F9 - Compilation
 
 (defconst -mn-compile-common
-  " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Wunreachable-code -Winline -Wdisabled-optimization -Wstrict-aliasing=2 -Werror-implicit-function-declaration -pedantic -DMINA86 -ggdb -O0")
+  " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Winline -Wdisabled-optimization -Wstrict-aliasing=2 -pedantic -DMINA86 -ggdb -O0 -Wpointer-arith")
 
 (defvar mn-compile-vars
-  `((("CFLAGS"   "-std=c99")
+  `((("CFLAGS"   "-std=c99 -Werror-implicit-function-declaration -Wunreachable-code -Wstrict-prototypes -Wold-style-definition")
      ("CXXFLAGS" "-std=c++98")
      ("CPPFLAGS" ,-mn-compile-common)
      ("LDFLAGS"  nil))
 
-    (("CFLAGS"   "-std=c89")
-     ("CXXFLAGS" "-std=c++98")
+    (("CFLAGS"   "-std=c89 -Werror-implicit-function-declaration -Wunreachable-code -Wstrict-prototypes -Wold-style-definition")
+     ("CXXFLAGS" "-std=c++98 -Wstrict-null-sentinel -Wctor-dtor-privacy -Woverloaded-virtual")
      ("CPPFLAGS" ,-mn-compile-common)
      ("LDFLAGS"  nil)))
 
@@ -973,11 +982,16 @@ non-nill or `compile' otherwise."
   "Face for showing sequence of at least six five TAB characters in a row."
   :group 'basic-faces)
 
-(defface my-fixme-face 
+(defface my-fixme-face
   '((t :background "red" :foreground "white" :weight bold))
   "Font for showing FIXME and XXX words."
   :group 'basic-faces)
- 
+
+(defface my-todo-face
+  '((t :foreground "red" :weight bold))
+  "Font for showing TODO words."
+  :group 'basic-faces)
+
 
 (add-hook 'font-lock-mode-hook (function (lambda ()
   (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
@@ -985,7 +999,8 @@ non-nill or `compile' otherwise."
      '(("\t+" 0 'my-tab-face t)
        ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
        ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
-       ("\\<\\(FIXME:?\\|XXX\\)" 1 'my-fixme-face t)))))))
+       ("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
+       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))))
 
 ;;}}}
 ;;{{{ Misc small config
@@ -1051,6 +1066,7 @@ non-nill or `compile' otherwise."
 
 
 ;; Other
+(icomplete-mode 1)                ;nicer completion in minibuffer
 (define-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
   (lambda () (interactive) (delete-minibuffer-contents)))
 (setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
@@ -1075,6 +1091,7 @@ non-nill or `compile' otherwise."
 ;; Saving etc
 (if (fboundp recentf-mode)
     (recentf-mode nil))           ;no recent files
+(setq backup-by-copying-when-linked t) ;preserve hard links
 (auto-compression-mode 1)         ;automatic compression
 (setq make-backup-files nil)      ;no backup
 ;(global-auto-revert-mode 1)       ;automaticly reload buffer when changed
@@ -1208,8 +1225,8 @@ is at the beginning of line or preceded by white space."
    ((re-search-backward "\\~" (- (point) 1) t)
     (delete-char 1) (self-insert-command (prefix-numeric-value arg)))
    (arg (self-insert-command (prefix-numeric-value arg)))
-   ((or (my-tex-looking-back "[a-z]" 1)
-        (my-tex-looking-back "[a-z][a-z]" 2))
+   ((my-tex-looking-back "[a-z]" 1)
+    ;    (my-tex-looking-back "[a-z][a-z]" 2))
     (insert-char ?~ 1))
    ((or (my-tex-looking-back "\\(?:tj\\|np\\|ew\\|jw\\|in\\|wg\\)\\." 3)
         (my-tex-looking-back "\\(?:tzw\||tzn\\)\\." 4))
@@ -1230,8 +1247,8 @@ is at the beginning of line or preceded by white space."
    ((re-search-backward "\\\\ " (- (point) 2) t)
     (delete-char 1) (forward-char) (self-insert-command arg))
    ((> arg 1) (self-insert-command arg))
-   ((or (my-tex-looking-back "[a-z]" 1)
-        (my-tex-looking-back "[a-z][a-z]" 2))
+   ((my-tex-looking-back "[a-z]" 1)
+;        (my-tex-looking-back "[a-z][a-z]" 2))
 ;        (my-tex-search-back "do\\|na\\|od\\|po\\|za\\|we\\|to\\|co" 2))
     (insert-char ?\\ 1) (self-insert-command 1))
    (t (self-insert-command 1))))
@@ -1279,9 +1296,10 @@ is at the beginning of line or preceded by white space."
 
 ;; Lisp/Scheme mode
 ;; No tabs!
-(add-hook 'emacs-lisp-mode-hook (lambda () (setq indent-tabs-mode ())))
-(add-hook 'lisp-mode-hook       (lambda () (setq indent-tabs-mode ())))
-(add-hook 'scheme-mode-hook     (lambda () (setq indent-tabs-mode ())))
+(let ((func (function (lambda () (setq indent-tabs-mode ())))))
+  (add-hook 'emacs-lisp-mode-hook func)
+  (add-hook 'lisp-mode-hook       func)
+  (add-hook 'scheme-mode-hook     func))
 
 
 ;; FVWM mode
@@ -1346,9 +1364,9 @@ is at the beginning of line or preceded by white space."
 ;;}}}
 ;;{{{   Org Mode
 
-(setq org-startup-folded nil
-      org-disputed-keys '(([(tab)] . "\C-cf"))
-      org-replace-disputed-keys t)
+;(setq org-startup-folded nil
+;      org-disputed-keys '(([(tab)] . "\C-cf"))
+;      org-replace-disputed-keys t)
 
 ;;}}}
 ;;{{{   Different cursor color depending on mode
@@ -1455,9 +1473,10 @@ is at the beginning of line or preceded by white space."
 
 (defconst q   "This is EMACS not vi!  Use C-x C-c instead.")
 (defconst w   "This is EMACS not vi!  Use C-x C-s instead.")
-(defconst q!  "This is EMACS not vi!  Use C-x C-c instead.")
-(defconst wq  "This is EMACS not vi!  Use C-x C-c instead.")
-(defconst wq! "This is EMACS not vi!  Use C-x C-c instead.")
+(defconst q!  q)
+(defconst wq  q)
+(defconst wq! q)
+
 
 ;;}}}
 
