@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .shellrc  -- global shell configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-## $Id: shellrc,v 1.8 2007/10/22 12:56:19 mina86 Exp $
+## $Id: shellrc,v 1.9 2008/02/14 15:12:21 mina86 Exp $
 ##
 
 # Not interactive?
@@ -198,16 +198,15 @@ export MINA86RC=done
 
 
 # PATH
-if [ -d "$HOME/code/tinyapps" ] &&
-	! echo "$PATH" | grep -F "$HOME/code/tinyapps" >/dev/null 2>&1
-then PATH="$HOME/code/tinyapps:$PATH"; fi
-
-if [ -d "$HOME/bin" ] &&
-		! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1
-then PATH="$HOME/bin:$PATH"; fi
+if ! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1; then
+	if [ -d ~/bin ]; then PATH="$HOME/bin:$PATH"; fi
+	if [ -d ~/bin64 ] && [ x"`uname -m`" = xx86_64 ]; then
+		PATH="$HOME/bin64:$PATH"
+	fi
+fi
 
 # Remove relative paths
-PATH="$(printf %s "$PATH" | sed -e 's~:\(\([^/:][^:]*\)\?:\)*~:~g')"
+PATH="$(echo ":$PATH:" | sed -e 's~:\(\([^/:][^:]*\)\?:\)*~:~g')"
 PATH="${PATH#:}"
 PATH="${PATH%:}"
 
@@ -276,7 +275,11 @@ fi
 # Compilation
 export CC=gcc CXX=g++
 if [ "$_hostname" = Xerwin ] || [ "$_hostname" = Xtuptus ]; then
-	export ARCH=i686
+	if [ x"`uname -m`" = xx86_64 ]; then
+		export ARCH=x86_64
+	else
+		export ARCH=i686
+	fi
 	flags init
 fi
 
