@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .bash_profile
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: bash_profile,v 1.4 2008/02/14 15:12:21 mina86 Exp $
+## $Id: bash_profile,v 1.5 2008/02/21 08:03:48 mina86 Exp $
 ##
 
 # Set ENV
@@ -26,4 +26,4 @@ for dir in ~/.gkrellm2/plugins ~/.fvwm/modules; do
 	if [ -e "$dir$bits" ]; then
 		rm "$dir" && ln -s "${dir##*/}$bits" "$dir"
 	fi
-fi
+done
