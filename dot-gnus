@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
 ;; Copyright 2006 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-gnus,v 1.5 2008/02/14 15:16:32 mina86 Exp $
+;; $Id: dot-gnus,v 1.6 2008/02/21 08:04:15 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -117,15 +117,14 @@
                  (regexp-opt '("big5" "iso-2022-jp" "ISO-2022-KR" "euc-kr"
                                "gb2312" "ks_c_5601-1987" "windows-1251") t)))
       junk)
+     ("Subject" "\\*\\*\\*SPAM\\*\\*\\*"             "spam")
      (: spam-split)
-     ("X-Gnus-Mail-Source" ".*mion.elka.pw.edu.pl"   "mail.mion")
+     ("X-Gnus-Mail-Source" "mion.elka.pw.edu.pl"     "mail.mion")
      (any "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
      (from "fvwm@\\(?:lists.math.uh.edu\\|fvwm.org\\)" "list.fvwm")
      (to "fvwm@\\(?:lists.math.uh.edu\\|fvwm.org\\)" "list.fvwm")
      (any "mn86@\\(?:g?o2\\|tlen\\).pl"              "mail.mn86")
-     (from "bugzilla-daemon@informatica.agh.edu.pl"  "mail.rootnode.bugzilla")
-     (".*" "rootnode@.*"                             "mail.rootnode")
-     (any "@grono\\.net\\|@last\\.fm"                "mail.notify")
+     (any "@last\\.fm"                               "mail.notify")
      (any "@\\(?:users\\.\\)?sourceforge\\.net"      "mail.sf")
      "mail.misc"))
 
