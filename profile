@@ -1,11 +1,14 @@
 ##                                                      -*- shell-script -*-
 ## .profile
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: profile,v 1.1 2006/08/05 22:17:06 mina86 Exp $
+## $Id: profile,v 1.2 2008/04/18 09:13:52 mina86 Exp $
 ##
 
 # Set ENV
 export ENV=~/.shellrc
+
+# Auto logout on time out
+TMOUT=1200
 
 # Source .shellrc
 if [ -r ~/.shellrc ]; then
@@ -16,3 +19,14 @@ if [ -r ~/.shellrc ]; then
 	fi
 	unset _todo;
 fi
+
+# 64/32 bit differences
+export bits=32
+if [ x"`uname -m`" = xx86_64 ]; then
+	bits=64
+fi
+for dir in ~/.gkrellm2/plugins ~/.fvwm/modules ~/.irssi/modules; do
+	if [ -e "$dir$bits" ]; then
+		rm "$dir" && ln -s "${dir##*/}$bits" "$dir"
+	fi
+done
