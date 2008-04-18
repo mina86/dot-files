@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2007 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.13 2008/02/14 15:15:51 mina86 Exp $
+;; $Id: dot-emacs,v 1.14 2008/04/18 09:14:54 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
@@ -370,8 +370,7 @@ window function skips to another step."
   '(("mina86" "mina86@tlen.pl" "mina86@mina86.com" "http://mina86.com/")
     ("max" "min")
     ("north" "east" "south" "west")
-    ("left" "top" "right" "bottom")
-    ("red" "orange" "yellow" "green" "blue" "indigo" "violet"))
+    ("left" "top" "right" "bottom"))
   "List of lists of words to rotate between.")
 
 
@@ -1203,6 +1202,36 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 ;   (when (eval-when-compile (fboundp 'sgml-electric-tag-pair-mode))
 ;     (sgml-electric-tag-pair-mode 1))
    (setq indent-tabs-mode ()))))
+
+(defun replace-string-pairs (list)
+  (let* ((mark  (and transient-mark-mode mark-active))
+         (start (if mark (region-beginning) (point)))
+         (end   (if mark (region-end) (point-max))))
+    (save-excursion
+      (dolist (pair list)
+        (let ((diff (- (length (cdr pair)) (length (car pair)))))
+          (goto-char start)
+          (while (search-forward (car pair) end t)
+            (setq end (+ end diff))
+            (replace-match (cdr pair) nil t)))))))
+
+(defun html-escape ()
+  "Replaces HTML special characters with HTML entities.
+
+In Transient Mark mode, if the mark is active, operate on the contents
+of the region.  Otherwise, operate from point to the end of the buffer."
+  (interactive)
+  (replace-string-pairs
+   '(("&" . "&amp;") ("<" . "&lt;") (">" . "&gt;") ("\"" . "&quot;"))))
+
+(defun html-unescape ()
+  "Replaces (some) HTML entities with characters.
+
+In Transient Mark mode, if the mark is active, operate on the contents
+of the region.  Otherwise, operate from point to the end of the buffer."
+  (interactive)
+  (replace-string-pairs
+   '(("&amp;" . "&") ("&lt;" . "<") ("&gt;" . ">") ("&quot;" . "\""))))
 
 ;;}}}
 ;;{{{   (La)TeX and nroff mode
