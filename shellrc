@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .shellrc  -- global shell configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: shellrc,v 1.9 2008/02/14 15:12:21 mina86 Exp $
+## $Id: shellrc,v 1.10 2008/04/18 09:14:04 mina86 Exp $
 ##
 
 # Not interactive?
@@ -199,6 +199,7 @@ export MINA86RC=done
 
 # PATH
 if ! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1; then
+	if [ -d ~/code/tinyapps ]; then PATH="$HOME/code/tinyapps:$PATH"; fi
 	if [ -d ~/bin ]; then PATH="$HOME/bin:$PATH"; fi
 	if [ -d ~/bin64 ] && [ x"`uname -m`" = xx86_64 ]; then
 		PATH="$HOME/bin64:$PATH"
