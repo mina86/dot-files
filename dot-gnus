@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
 ;; Copyright 2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-gnus,v 1.6 2008/02/21 08:04:15 mina86 Exp $
+;; $Id: dot-gnus,v 1.7 2008/04/18 09:17:10 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -54,7 +54,7 @@
 ;;{{{ Select methods & Mail sources
 
 (setq
- gnus-select-method '(nntp "news.tpi.pl")
+ gnus-select-method '(nntp "news.neostrada.pl")
  gnus-always-read-dribble-file t
 
  gnus-secondary-select-methods
@@ -117,7 +117,7 @@
                  (regexp-opt '("big5" "iso-2022-jp" "ISO-2022-KR" "euc-kr"
                                "gb2312" "ks_c_5601-1987" "windows-1251") t)))
       junk)
-     ("Subject" "\\*\\*\\*SPAM\\*\\*\\*"             "spam")
+     ("Subject" ".*\\*\\*\\*SPAM\\*\\*\\*.*"         junk)
      (: spam-split)
      ("X-Gnus-Mail-Source" "mion.elka.pw.edu.pl"     "mail.mion")
      (any "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
