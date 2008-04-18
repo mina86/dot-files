@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .bashrc  -- bash configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: bashrc,v 1.8 2007/10/22 12:51:32 mina86 Exp $
+## $Id: bashrc,v 1.9 2008/04/18 09:13:29 mina86 Exp $
 ##
 
 # Include ~/.shellrc
@@ -71,7 +71,7 @@ shopt -qu interactive_comments lithist no_empty_cmd_completion nocaseglob
 shopt -qu shift_verbose sourcepath xpg_echo
 
 shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit
-shopt -qs histverify hostcomplete nullglob promptvars
+shopt -qs histverify hostcomplete nullglob promptvars huponexit
 
 if [ "$_hostname" != Xdedal ]; then
 	shopt -qu extdebug force_fignore
