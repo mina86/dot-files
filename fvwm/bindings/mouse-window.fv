@@ -1,0 +1,37 @@
+#                    Click       DblClick  Move   Hold
+# Buttons
+Mouse 1 1    N  Menu MenuFvwmWindow Close
+Mouse 2 1    N  Call RaiseLower  Nop       Move   "Popup MenuFvwmWindowClose"
+Mouse 3 1    N  Menu MenuFvwmWindow Close
+
+Mouse 1 2    N  Call Close       Destroy   Move   "Popup MenuFvwmWindowClose"
+Mouse 2 2    N  Call Delete      Destroy   Move   "Popup MenuFvwmWindowClose"
+Mouse 3 2    N  Menu MenuFvwmWindowClose Close
+
+Mouse 1 4    N  Call Iconify     Maximize  Move   "Popup MenuFvwmWindowMaximize"
+Mouse 2 4    N  Call Maximize    Iconify   Move   "Popup MenuFvwmWindowMaximize"
+Mouse 3 4    N  Menu MenuFvwmWindowMaximize Maximize
+
+# Titlebar
+Mouse 1 T    N  Call Raise       Maximize  Move   "Maximize grow grow"
+Mouse 2 T    N  Call WindowShade Maximize  Move   "Module FvwmIdent"
+
+# Whole
+Mouse 1 TWSF 4  Call RaiseLower  Maximize  Move   "Maximize grow grow"
+Mouse 2 TWSF 4  Call RaiseLower  Nop       Move   "Module FvwmIdent"
+Mouse 3 TWSF 4  Call "Popup MenuFvwmWindow" Nop Resize Nop
+
+Mouse 3 TSF  N  Menu MenuFvwmWindow Nop
+
+# Border
+Mouse 1 F    N  Call Raise        Nop      Resize Nop
+Mouse 1 -    N  Call Raise        Nop      Resize "WindowShade N"
+Mouse 1 [    N  Call Raise        Nop      Resize "WindowShade W"
+Mouse 1 ]    N  Call Raise        Nop      Resize "WindowShade E"
+Mouse 1 _    N  Call Raise        Nop      Resize "WindowShade S"
+
+Mouse 2 F    N  Call WindowShade  Nop      Resize Nop
+Mouse 2 -    N  Call "WindowShade N" Nop   Resize Nop
+Mouse 2 [    N  Call "WindowShade W" Nop   Resize Nop
+Mouse 2 ]    N  Call "WindowShade E" Nop   Resize Nop
+Mouse 2 _    N  Call "WindowShade S" Nop   Resize Nop

@@ -1,0 +1,9 @@
+DestroyFunc	InitFunction
+AddToFunc	InitFunction
++ I ExecOnce opera opera
++ I ExecOnce emacs emacs
++ I ExecOnce xterm term
++ I ExecOnce mpdshow "term -T mpdshow -mesg -e mpd-show -c80"
++ I ExecOnce irssi "term -T irssi -mesg -e irssi"
++ I ExecOnce gkrellm gkrellm
++ I FvwmConsole-Run

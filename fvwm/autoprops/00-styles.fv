@@ -1,0 +1,45 @@
+Style *lock			!Title, !Borders, Sticky, WindowListSkip, ClickToFocus
+Style Audacious		!Title, !Borders
+Style Engage		!Title, !Borders, Sticky, WindowListSkip, StaysOnBottom
+Style Fvwm*			!Title,  BorderWidth 2, Sticky, WindowListSkip,  \
+					CirculateSkipIcon, CirculateSkip
+Style FvwmTabs*		!Title, !Borders, !Sticky, !WindowListSkip,  \
+					!CirculateSkipIcon, !CirculateSkip
+Style FvwmBanner	StaysOnTop
+Style FvwmButtons	ClickToFocus
+Style FvwmPager		StaysOnTop
+Style FvwmConsole	WindowShadeSteps 20, StaysOnTop, Sticky, NoIcon,  \
+					CirculateHit, CirculateHitIcon, CirculateHitShaded
+Style Gdeskcal		!Title, !Borders
+Style Gdesklets		!Title, !Borders
+Style gkrellm		!Title, !Borders, Sticky, WindowListSkip
+Style gimp			Title, Borders
+Style GIMP			!Title, !Borders
+Style Gimp			!Title, !Borders
+Style irssi			Sticky
+Style mpdshow		!Title, !Borders, Sticky, WindowListSkip, CirculateSkip
+Style MPlayer		!Title, !Borders
+Style "MPlayer - Video"	Title, !Borders
+Style Torsmo		!Title, !Borders, NeverFocus, WindowListSkip,  \
+					CirculateSkip, CirculateSkipIcon, StaysOnBottom
+Style Xystray		!Title, !Borders, StaysOnBottom, Sticky,  \
+					NoHandles, WindowListSkip
+Style XTerm			!Title, !Borders
+Style Xawtv			!Title, !Borders
+Style emacs			!Title, !Borders, FixedPSize, FixedPPosition
+Style gmrun			!Title, !Borders, WindowListSkip, Sticky,  \
+					!Maximizable, !Iconifiable, CirculateSkip,  \
+					CirculateSkipIcon, CirculateSkipShaded,  \
+					StaysOnTop, FixedUSSize, GrabFocus, FPGrabFocus
+Style gnome-panel	!Title, Sticky, WindowListSkip, StaysOnBottom, NeverFocus
+Style OpenTTD*		!Title, !Borders
+Style opera			!Title, !Borders
+Style torsmo		!Title, Sticky, WindowListSkip, StaysOnBottom, NeverFocus
+Style xbiff			!Title, Sticky, WindowListSkip, ClickToFocus
+Style xfce4-panel	!Title, Sticky, WindowListSkip, StaysOnBottom, NeverFocus
+Style xgraph		ClickToFocus
+Style xmag			ClickToFocus
+Style xman			ClickToFocus
+Style xmh			NoButton 2, NoIconTitle, StickyIcon
+Style xmms			!Title, !Borders
+Style xmosaic		Color Green/Yellow, ClickToFocus

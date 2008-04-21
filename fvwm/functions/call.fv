@@ -1,0 +1,7 @@
+DestroyFunc	Call
+AddToFunc	Call
++ I $4
++ C $0
++ D $1
++ M $2
++ H $3

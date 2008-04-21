@@ -1,0 +1,15 @@
+DestroyFunc	AutopropWindow
+AddToFunc	AutopropWindow
++ I ThisWindow (Transient, !"Audacious") WindowStyle Title, Borders
++ I ThisWindow (Transient) Break 1
++ I ThisWindow (Desktop widget) Break 1
++ I AutopropGeom emacs			 538p  200p   486p 568p 2
++ I AutopropGeom opera			   0p  260p  1024p 508p 2
+#+ I AutopropGeom irssi			1120p    0p   480p  80p 2
++ I AutopropGeom irssi			  64p    0p   416p  90p 2
++ I AutopropGeom mpdshow		  64p    0p   416p  10p 2
+#+ I AutopropGeom FvwmConsole	  64p    0p   500p  40p 2 _FvwmConsole-AutoHide
++ I AutopropGeom FvwmConsole	   0p    0p   400p  40p 2 _FvwmConsole-AutoHide
+#+ I AutopropGeom XTerm			1120p   80p   480p 440p 2
++ I AutopropGeom XTerm			 544p    0p   480p 200p 2
++ I AutopropGeom Xawtv			   0p    0p   768p 576p 2

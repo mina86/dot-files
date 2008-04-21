@@ -1,0 +1,14 @@
+ClickTime			500
+ColormapFocus		FollowsMouse
+DefaultColors		white black
+DeskTopSize			10x1
+EdgeCommand			North	FvwmConsole-Show
+EdgeLeaveCommand	North	FvwmConsole-Hide
+EdgeResistance		500
+EdgeScroll			0 0
+EdgeThickness		1
+Style * EdgeMoveDelay 500, EdgeMoveResistance 10
+HideGeometryWindow	Never
+MoveThreshold		4
+OpaqueMoveSize		0
+SnapAttraction		10 SameType Screen

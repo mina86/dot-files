@@ -1,0 +1,21 @@
+DestroyFunc	_Everything
+AddToFunc	_Everything
++ I All $0
++ I All (!CirculateHit) $0
+
+DestroyFunc	Exit
+AddToFunc	Exit
++ I _Everything Delete
++ I Schedule 1000 "_Everything Destroy"
++ I Schedule 2000 Quit
+
+DestroyFunc	Shutdown
+AddToFunc	Shutdown
++ I Exec sleep 5 && /sbin/shutdown $0 now
++ I Exit
+
+DestroyFunc	PowerOff
+AddToFunc	PowerOff	I Shutdown -h
+
+DestroyFunc	Reboot
+AddToFunc	Reboot		I Shutdown -r

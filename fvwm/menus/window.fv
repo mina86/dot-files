@@ -1,0 +1,60 @@
+DestroyMenu	MenuFvwmWindow
+AddToMenu	MenuFvwmWindow
++ &Operations		Popup MenuFvwmWindowOperations
++ &Size				Popup MenuFvwmWindowSize
++ &Refresh			Popup MenuFvwmWindowRefresh
++ &Decorations		Popup MenuFvwmWindowDecorations
++ ""				Nop
++ &Close			Close
+#+ Delete			Delete
++ Destroy			Destroy
+
+
+DestroyMenu	MenuFvwmWindowOperations
+AddToMenu	MenuFvwmWindowOperations
++ &Move				Move
++ ""				NOP
++ "Stay on &top"	Layer 6
++ "Stay &put"		Layer default
++ "Stay on &bottom"	Layer 2
++ ""				NOP
++ (De)&Iconify		Iconify
++ (Un)&Stick		Stick
++ (Un)S&hade		WindowShade
+
+
+DestroyMenu	MenuFvwmWindowSize
+AddToMenu	MenuFvwmWindowSize
++ &Resize						Resize
++ ""							Nop
++ "(Un)Ma&ximize"				Maximize
++ "(Un)Maximize &Horizontal"	Maximize 100 0
++ "(Un)Maximize &Vertical"		Maximize 0 100
++ ""							Nop
++ "(Un)&Grow"					Maximize
++ "(Un)Grow H&orizontal"		Maximize grow 0
++ "(Un)Grow V&ertical"			Maximize 0 grow
+
+
+
+DestroyMenu	MenuFvwmWindowRefresh
+AddToMenu	MenuFvwmWindowRefresh
++ Re&fresh			RefreshWindow
++ "Re&fresh All"	All (!Iconic) RefreshWindow
++ ""				Nop
++ Auto&prop			Current AutopropWindow $[w.id]
++ "Autoprop all"	All AutopropWindow $[w.id]
+
+
+DestroyMenu	MenuFvwmWindowDecorations
+AddToMenu	MenuFvwmWindowDecorations
++ "No &Title"					WindowStyle NoTitle
++ "T&itle"						WindowStyle !NoTitle
++ "No &Borders"					WindowStyle !Borders
++ "B&orders"					WindowStyle Borders
+
+DestroyMenu	MenuFvwmWindowClose
+AddToMenu	MenuFvwmWindowClose
++ &Close             Close
++ &Delete            Delete
++ Destroy            Destroy

@@ -1,0 +1,9 @@
+ImagePath		$[FVWM_USERDIR]/mini-icons:+
+ModulePath		$[FVWM_USERDIR]/modules:+
+
+DestroyFunc	ReadDir
+AddToFunc	ReadDir
++ I PipeRead 'cd "$$FVWM_USERDIR" && find $* -maxdepth 1 -type f -name "*.fv" \( \! -name "*.*.fv" -o -name "*.$$(hostname)" \) -printf "Read '%p'\\n"'
+
+ReadDir		. functions menus hooks bindings styles autoprops \
+			modules-config

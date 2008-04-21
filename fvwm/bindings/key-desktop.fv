@@ -1,0 +1,34 @@
+Key F1		A	4	GotoPage 0 0
+Key F2		A	4	GotoPage 1 0
+Key F3		A	4	GotoPage 2 0
+Key F4		A	4	GotoPage 3 0
+Key F5		A	4	GotoPage 4 0
+Key F6		A	4	GotoPage 5 0
+Key F7		A	4	GotoPage 6 0
+Key F8		A	4	GotoPage 7 0
+Key F9		A	4	GotoPage 8 0
+Key F10		A	4	GotoPage 9 0
+Key Escape	A	4	GotoPage prev
+
+Key 1		WFTS 4	MoveToPage 0 0
+Key 2		WFTS 4	MoveToPage 1 0
+Key 3		WFTS 4	MoveToPage 2 0
+Key 4		WFTS 4	MoveToPage 3 0
+Key 5		WFTS 4	MoveToPage 4 0
+Key 6		WFTS 4	MoveToPage 5 0
+Key 7		WFTS 4	MoveToPage 6 0
+Key 8		WFTS 4	MoveToPage 7 0
+Key 9		WFTS 4	MoveToPage 8 0
+Key 0		WFTS 4	MoveToPage 9 0
+#Key Escape	WFTS 4	Sticky
+
+Key 1		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 0 0
+Key 2		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 1 0
+Key 3		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 2 0
+Key 4		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 3 0
+Key 5		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 4 0
+Key 6		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 5 0
+Key 7		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 6 0
+Key 8		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 7 0
+Key 9		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 8 0
+Key 0		WFTS 4S	All (CurrentPage, !Sticky) MoveToPage 9 0

@@ -1,0 +1,18 @@
+Key Tab		A	M	WindowList Root c c  MaxLabelWidth 30,		\
+					NoDeskSort,  NoGeometry,  CurrentAtEnd,		\
+					IconifiedAtEnd, Icons, NoCurrentDeskTitle,	\
+					NoHotKeys
+
+Key Return	WTSF 4	Fullscreen-toggle
+
+Key Space	WTSF  4	Popup MenuFvwmWindow
+Key Menu	WTSF  -	Popup MenuFvwmWindow
+Key Menu	A     4	Popup MenuFvwmRoot
+
+Key grave A 4   Exec exec term
+Key grave A 4S  FvwmConsole-Activate
+
+Key Tab  A  4   Prev (CurrentPage, AcceptsFocus, !Iconic, !FvwmConsole) Focus
+Key Tab  A  4S  Next (CurrentPage, AcceptsFocus, !Iconic, !FvwmConsole) Focus
+
+Key D    A  4   De-IconifyAll

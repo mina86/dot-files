@@ -1,0 +1,15 @@
+DestroyFunc	mpd
+AddToFunc	mpd I exec echo -e "$0\\nclose" \
+	>/dev/tcp/$${MPD_HOST-localhost}/$${MPD_PORT-6600}
+
+Key Z A 4	mpd previous
+Key X A 4	mpd play
+Key C A 4	mpd pause
+Key V A 4	mpd stop
+Key B A 4	mpd next
+
+#Key Z A 4C	Exec mpc seek -00:00:05   >/dev/null
+#Key X A 4C	Exec mpc seek +00:00:05   >/dev/null
+
+Key Z A 41	mpd "volume -5"
+Key X A 41	mpd "volume +5"

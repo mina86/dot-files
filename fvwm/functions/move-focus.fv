@@ -1,0 +1,9 @@
+# Focus functions
+DestroyFunc Window-FocusInDirection
+AddToFunc Window-FocusInDirection
++ I Direction $0 (CurrentPage, AcceptsFocus, !Iconic) Focus
+
+DestroyFunc Window-FocusAndRaiseInDirection
+AddToFunc Window-FocusAndRaiseInDirection
++ I Direction $0 (CurrentPage, AcceptsFocus, !Iconic) Focus
++ I Current (Focused) Raise
