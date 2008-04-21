@@ -1,13 +1,8 @@
-DestroyFunc	_Everything
-AddToFunc	_Everything
-+ I All $0
-+ I All (!CirculateHit) $0
-
 DestroyFunc	Exit
 AddToFunc	Exit
-+ I _Everything Delete
-+ I Schedule 1000 "_Everything Destroy"
-+ I Schedule 2000 Quit
++ I All Delete
++ I All (!CirculateHit) Delete
++ I Schedule 1500 Quit
 
 DestroyFunc	Shutdown
 AddToFunc	Shutdown
