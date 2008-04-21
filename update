@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: update,v 1.2 2008/04/21 12:07:41 mina86 Exp $
+# $Id: update,v 1.3 2008/04/21 20:53:46 mina86 Exp $
 
 set -e
 
@@ -57,10 +57,10 @@ while read FILE DEST; do
 		echo "Skipping $FILE"
 	elif [ $DIRECTION = from ]; then
 		if [ -e "$FILE" ]; then mv -- "$FILE" "$FILE~"; fi
-		cp -- "$DEST" "$FILE"
+		cp -R -- "$DEST" "$FILE"
 	else
 		if [ -e "$DEST" ]; then mv -- "$DEST" "$DEST~"; fi
-		cp -- "$FILE" "$DEST"
+		cp -R -- "$FILE" "$DEST"
 	fi
 done <<EOF
 bash_profile       ~/.
@@ -72,4 +72,5 @@ risc-mode.el       ~/.emacs.d/elisp/
 shellrc            ~/.
 zlogin             ~/.
 zshrc              ~/.
+fvwm               ~/.
 EOF
