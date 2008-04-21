@@ -1,0 +1,21 @@
+DestroyFunc	ResizeBy
+AddToFunc	ResizeBy
++ I _ResizeByHelper Resize $0 $1
+
+DestroyFunc	ResizeByMaximize
+AddToFunc	ResizeByMaximize
++ I _ResizeByHelper ResizeMaximize $0 $1 $2 $3 $4 $5 $6 $7 $8
+
+
+DestroyFunc	ResizeByMove
+AddToFunc	ResizeByMove
++ I _ResizeByHelper ResizeMove $0 $1 $2 $3 $4 $5 $6 $7 $8
+
+DestroyFunc	ResizeByMoveMaximize
+AddToFunc	ResizeByMoveMaximize
++ I _ResizeByHelper ResizeMoveMaximize $0 $1 $2 $3 $4 $5 $6 $7 $8
+
+
+DestroyFunc	_ResizeByHelper
+AddToFunc	_ResizeByHelper
++ I PipeRead "W=$1; H=$2; echo $0 $$(($[w.width] $$([ $${W%p} == $$W ] && echo '* 100 / $[vp.width]') + $${W%p}))$$([ $${W%p} != $$W ] && echo p) $$(($[w.height] $$([ $${H%p} == $$H ] && echo '* 100 / $[vp.height]') + $${H%p}))$$([ $${H%p} != $$H ] && echo p) $3 $4 $5 $6 $7 $8 $9"

@@ -1,0 +1,7 @@
+DestroyModuleConfig *FvwmEvent: *
+*FvwmEvent:	Cmd
+*FvwmEvent:	PassId
+*FvwmEvent:	add_window AutopropWindow
+
+KillModule	FvwmEvent
+Module		FvwmEvent

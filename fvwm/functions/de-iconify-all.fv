@@ -1,0 +1,14 @@
+# uses State 1
+
+DestroyFunc	De-IconifyAll
+AddToFunc	De-IconifyAll
++ I All (State 1, CurrentPage, Iconic) Iconify false
++ I TestRc (NoMatch) _IconifyAll
++ I All (State 1) State 1 false
+
+
+DestroyFunc	_IconifyAll
+AddToFunc	_IconifyAll
++ I All (CurrentPage, !Iconic) State 1 true
++ I All (CurrentPage, !Iconic) Iconify true
++ I Break 2

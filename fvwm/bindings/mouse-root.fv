@@ -1,0 +1,3 @@
+Mouse 1 R       A       Call  Nop  "Exec exec term"
+Mouse 2 R       A       WindowList Mouse 0 0 NoGeometry, IconifiedAtEnd
+Mouse 3 R       A       Menu MenuFvwmRoot Nop
