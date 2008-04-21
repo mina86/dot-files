@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: update,v 1.1 2007/10/22 13:06:54 mina86 Exp $
+# $Id: update,v 1.2 2008/04/21 12:07:41 mina86 Exp $
 
 set -e
 
@@ -53,11 +53,13 @@ while read FILE DEST; do
 	[ X"${DEST%/.}" = X"$DEST" ] || DEST=$DEST$FILE
 	[ X"${DEST%/}"  = X"$DEST" ] || DEST=$DEST$FILE
 
-	if [ $DIRECTION = from ]; then
-		mv -- "$FILE" "$FILE~"
+	if ! [ -d "${DEST%/*}" ]; then
+		echo "Skipping $FILE"
+	elif [ $DIRECTION = from ]; then
+		if [ -e "$FILE" ]; then mv -- "$FILE" "$FILE~"; fi
 		cp -- "$DEST" "$FILE"
 	else
-		mv -- "$DEST" "$DEST~"
+		if [ -e "$DEST" ]; then mv -- "$DEST" "$DEST~"; fi
 		cp -- "$FILE" "$DEST"
 	fi
 done <<EOF
