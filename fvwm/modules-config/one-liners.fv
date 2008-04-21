@@ -1,8 +1,5 @@
 KillModule	FvwmAuto
 Module		FvwmAuto 200 Raise Nop
 
-KillModule	FvwmTransFocus
-Module		FvwmTransFocus 0.8 0.6 0.6
-
 KillModule	FvwmCommandS
 Module		FvwmCommandS
