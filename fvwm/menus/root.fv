@@ -15,7 +15,7 @@ AddToMenu	MenuFvwmRoot
 DestroyMenu	MenuFvwmRoot_Exit
 AddToMenu	MenuFvwmRoot_Exit
 + "E&xit%exit.png%"			Exit
-+ "Reboot"					Reboot
-+ "Power Off%kill.png%"		PowerOff
++ "Reboot"					ExitAndRun /sbin/reboot
++ "Power Off%kill.png%"		ExitAndRun /sbin/halt
 #+ "&Restart"				Restart
 #+ "Just an Xterm%display1.png%"		Restart term -T '"X Console"'

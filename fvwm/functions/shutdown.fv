@@ -4,13 +4,7 @@ AddToFunc	Exit
 + I All (!CirculateHit) Delete
 + I Schedule 1500 Quit
 
-DestroyFunc	Shutdown
-AddToFunc	Shutdown
-+ I Exec sleep 5 && /sbin/shutdown $0 now
+DestroyFunc	ExitAndRun
+AddToFunc	ExitAndRun
 + I Exit
-
-DestroyFunc	PowerOff
-AddToFunc	PowerOff	I Shutdown -h
-
-DestroyFunc	Reboot
-AddToFunc	Reboot		I Shutdown -r
++ I Exec sleep 5 && $*
