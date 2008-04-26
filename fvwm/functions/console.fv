@@ -20,8 +20,7 @@ AddToFunc	FvwmConsole-Activate
 
 DestroyFunc	FvwmConsole-Hide
 AddToFunc	FvwmConsole-Hide
-+ I Next (FvwmConsole) \
-	Schedule Periodic 500 $[w.id] Silent _FvwmConsole-AutoHide
++ I Next (FvwmConsole) Schedule 500 $[w.id] Silent _FvwmConsole-AutoHide
 
 
 
@@ -37,6 +36,7 @@ AddToFunc	_FvwmConsole-Show
 
 DestroyFunc	_FvwmConsole-AutoHide
 AddToFunc	_FvwmConsole-AutoHide
++ I ThisWindow (Focused) Schedule 500 $[w.id] Silent _FvwmConsole-AutoHide
 + I ThisWindow (Focused) Break 1
 + I Deschedule $[w.id]
 + I WindowShade N
