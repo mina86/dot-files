@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2007 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-emacs,v 1.14 2008/04/18 09:14:54 mina86 Exp $
+;; $Id: dot-emacs,v 1.15 2008/04/28 19:14:40 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
@@ -263,7 +263,7 @@ three times - beginning of buffer; four times - back to where it was."
 
 ;; Makes paging functions work the way god intended
 ;; http://www.docs.uu.se/~mic/emacs.html
-;; pager.el was modified by my
+;; pager.el was modified by me
 (require 'pager)
 (setq pager-goto-edge t)
 
@@ -335,30 +335,59 @@ three times - beginning of buffer; four times - back to where it was."
 (setq imenu-sort-function 'imenu--sort-by-name)
 
 
-;; Centering
-(defvar centerer--window-start nil)
+;; Do not break line after single character when filling
+(defun fill-single-char-nobreak-p ()
+  "Don't break line after a single character."
+  (save-excursion
+    (skip-chars-backward " \t")
+    (backward-char 2)
+    (looking-at "[[:space:]][a-zA-Z]")))
 
-(defun centerer ()
-  "Repositions current line: once - middle, twice - top, three and
-four times - `reposition-window', five times - bottom, six times -
-where it was at the beginning.
-   If performing some action doesn't really change position of the
-window function skips to another step."
-   (interactive)
-   (let ((i 0) (old (window-start)))
-     (while (and (<= (setq i (1+ i)) 6) (equal (window-start) old))
-       (seq-times-do nil (setq centerer--window-start (window-start))
-         (recenter)
-         (recenter 0)
-         (reposition-window)
-         (reposition-window)
-         (recenter -1)
-         (set-window-start (selected-window) centerer--window-start)))))
-
-(global-set-key "\C-l"     'centerer)
+(add-to-list 'fill-nobreak-predicate 'fill-single-char-nobreak-p)
 
 
-;;{{{     Tab - indent or rotate or complete
+;; Jump
+(require 'ffap)
+(defun my-jump () "Jump to the thing at point." (interactive)
+  (let ((thing (ffap-guesser))) (if thing (ffap thing)) t))
+
+(global-set-key [(control return)] 'my-jump)
+(global-set-key [(control shift mouse-1)] 'ffap-at-mouse)
+(global-set-key "\C-x\C-f"      'ffap)
+
+
+;; Make l behave as it should in help-mode
+;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
+(add-hook 'help-mode-hook
+          (function (lambda () (define-key help-mode-map "l" 'help-go-back))))
+
+;; Copy to X-clipboard on C-x C-c
+(defun x-set-clipboard-content-from-selection (begin end)
+  "Sets X clipboard content to selected text."
+  (interactive "r")
+  (let ((x-select-enable-clipboard t))
+    (x-select-text (buffer-substring begin end))))
+
+(global-set-key "\C-xc"        'x-set-clipboard-content-from-selection)
+
+;;}}}
+;;{{{   Just one space
+
+(defun mn-just-one-space (&optional n)
+  "When called for the first time Works just like `just-one-space'.
+When called second time deletes all spaces, tabs and new lines after
+the point."
+  (interactive "*p")
+  (if (equal (seq-times) 0)
+      (just-one-space n)
+    (delete-region (point)
+                   (save-excursion (skip-chars-forward " \t\n") (point)))))
+
+(substitute-key-definition 'just-one-space 'mn-just-one-space
+                           (current-global-map))
+
+;;}}}
+;;{{{   Tab - indent or rotate or complete
 
 ;; Rotate Text + indent-or-complete
 ;; v0.3 by Michal Nazarewicz <mina86/AT/tlen.pl>
@@ -521,8 +550,33 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
   (local-set-key [(tab)] 'indent-or-complete))
 
 ;;}}}
+;;{{{   Centering
 
-;; Alt+q - Filling
+(defvar centerer--window-start nil)
+
+(defun centerer ()
+  "Repositions current line: once - middle, twice - top, three and
+four times - `reposition-window', five times - bottom, six times -
+where it was at the beginning.
+   If performing some action doesn't really change position of the
+window function skips to another step."
+   (interactive)
+   (let ((i 0) (old (window-start)))
+     (while (and (<= (setq i (1+ i)) 6) (equal (window-start) old))
+       (seq-times-do nil (setq centerer--window-start (window-start))
+         (recenter)
+         (recenter 0)
+         (reposition-window)
+         (reposition-window)
+         (recenter -1)
+         (set-window-start (selected-window) centerer--window-start)))))
+
+(global-set-key "\C-l"     'centerer)
+
+;;}}}
+;;{{{   Filling
+
+;; Alt+q - Fill
 (unless (fboundp 'fill-paragraph-or-region)
   ;; Taken from emacs 23.0.50.1 (CVS)
   (defun fill-paragraph-or-region (arg)
@@ -558,42 +612,6 @@ in the current paragraph into a single long line."
   (setq deactivate-mark nil))
 
 (global-set-key "\M-Q"          'th-unfill-paragraph-or-region)
-
-
-;; Do not break line after single character when filling
-(defun fill-single-char-nobreak-p ()
-  "Don't break line after a single character."
-  (save-excursion
-    (skip-chars-backward " \t")
-    (backward-char 2)
-    (looking-at "[[:space:]][a-zA-Z]")))
-
-(add-to-list 'fill-nobreak-predicate 'fill-single-char-nobreak-p)
-
-
-;; Jump
-(require 'ffap)
-(defun my-jump () "Jump to the thing at point." (interactive)
-  (let ((thing (ffap-guesser))) (if thing (ffap thing)) t))
-
-(global-set-key [(control return)] 'my-jump)
-(global-set-key [(control shift mouse-1)] 'ffap-at-mouse)
-(global-set-key "\C-x\C-f"      'ffap)
-
-
-;; Make l behave as it should in help-mode
-;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
-(add-hook 'help-mode-hook
-          (function (lambda () (define-key help-mode-map "l" 'help-go-back))))
-
-;; Copy to X-clipboard on C-x C-c
-(defun x-set-clipboard-content-from-selection (begin end)
-  "Sets X clipboard content to selected text."
-  (interactive "r")
-  (let ((x-select-enable-clipboard t))
-    (x-select-text (buffer-substring begin end))))
-
-(global-set-key "\C-xc"        'x-set-clipboard-content-from-selection)
 
 ;;}}}
 ;;{{{   Fkeys
@@ -1363,6 +1381,14 @@ is at the beginning of line or preceded by white space."
 ;;}}}
 ;;{{{ Various features
 
+;;{{{   git
+
+(autoload 'git-status "git" "Entry point into git-status mode." t)
+(add-to-list 'vc-handled-backends 'GIT)
+(autoload 'git-blame-mode "git-blame"
+  "Minor mode for incremental blame for Git." t)
+
+;;}}}
 ;;{{{   HTMLize
 
 ;; http://fly.srk.fer.hr/~hniksic/emacs/htmlize.el
@@ -1389,13 +1415,6 @@ is at the beginning of line or preceded by white space."
   (folding-add-to-marks-list 'css-mode        "/* {{{" "/* }}}" " */" t)
 
   (folding-mode-add-find-file-hook))
-
-;;}}}
-;;{{{   Org Mode
-
-;(setq org-startup-folded nil
-;      org-disputed-keys '(([(tab)] . "\C-cf"))
-;      org-replace-disputed-keys t)
 
 ;;}}}
 ;;{{{   Different cursor color depending on mode
