@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
 ;; Copyright 2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-gnus,v 1.7 2008/04/18 09:17:10 mina86 Exp $
+;; $Id: dot-gnus,v 1.8 2008/05/18 18:45:53 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -117,12 +117,9 @@
                  (regexp-opt '("big5" "iso-2022-jp" "ISO-2022-KR" "euc-kr"
                                "gb2312" "ks_c_5601-1987" "windows-1251") t)))
       junk)
-     ("Subject" ".*\\*\\*\\*SPAM\\*\\*\\*.*"         junk)
      (: spam-split)
      ("X-Gnus-Mail-Source" "mion.elka.pw.edu.pl"     "mail.mion")
      (any "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
-     (from "fvwm@\\(?:lists.math.uh.edu\\|fvwm.org\\)" "list.fvwm")
-     (to "fvwm@\\(?:lists.math.uh.edu\\|fvwm.org\\)" "list.fvwm")
      (any "mn86@\\(?:g?o2\\|tlen\\).pl"              "mail.mn86")
      (any "@last\\.fm"                               "mail.notify")
      (any "@\\(?:users\\.\\)?sourceforge\\.net"      "mail.sf")
@@ -283,11 +280,11 @@ called with prefix argument will prompt for any file."
 (setq
  gnus-posting-styles
  '((".*"
-;    ("X-PGP" "B7C6DF1E")
+    ("X-PGP" "B7C6DF1E")
 ;    ("PGP"   "B7C6DF1E")
 ;    ("X-GPG" "B7C6DF1E")
 ;    ("GPG"   "B7C6DF1E")
-;    ("X-PGP-FP"      "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
+    ("X-PGP-FP"      "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
 ;    ("X-GPG-FP"      "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
 ;    ("X-Fingerprint" "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
 
@@ -295,7 +292,6 @@ called with prefix argument will prompt for any file."
     (signature-file (concat sig-dir "/english"))
     (x-url "http://mina86.com/"))
    ("^pl\\.\\|^alt\\.pl\\.\\|pw\\."
-    (name "Micha³ Nazarewicz")
     (signature-file (concat sig-dir "/polish")))
    ("^nnml:"
     (signature-file (concat sig-dir "/polish")))
@@ -305,9 +301,7 @@ called with prefix argument will prompt for any file."
    ("^nnml:mail\\.mn86"
     (address (eval-when-compile (concat "mn86" "@" "o2.pl"))))
    ("^nnml:list.k02_a"
-    (address (eval-when-compile (concat "mina86" "@" "tlen.pl"))))
-   ("^nnml:list.fvwm"
-    (signature-file (concat sig-dir "/english")))))
+    (address (eval-when-compile (concat "mina86" "@" "tlen.pl"))))))
 
 ;;{{{ SMTP
 
@@ -389,7 +383,7 @@ the value of From header."
  gnus-treat-emphasize t
  gnus-treat-buttonize t
  gnus-treat-buttonize-head 'head
-; gnus-treat-unsplit-urls 'last
+ gnus-treat-unsplit-urls 'last
  gnus-treat-leading-whitespace t
  gnus-treat-highlight-citation t
  gnus-treat-highlight-signature t
@@ -504,5 +498,11 @@ the value of From header."
       gnus-treat-x-pgp-sig t
       mm-verify-option 'known
       mm-decrypt-option 'known)
+
+(add-hook 'gnus-message-setup-hook
+          (function (lambda ()
+                      (if (string-match ":\\(mail\\|list\\)\\."
+                                        gnus-newsgroup-name)
+                          (mml-secure-message-sign-pgpmime)))))
 
 ;;}}}
