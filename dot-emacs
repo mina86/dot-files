@@ -1,12 +1,12 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2007 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-emacs,v 1.15 2008/04/28 19:14:40 mina86 Exp $
+;; $Id: dot-emacs,v 1.16 2008/05/18 18:54:02 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
 ;; Gnus
-(when (file-directory-p "~/.gnus")
+(when (eval-when-compile (file-directory-p "~/.gnus"))
   (setq gnus-home-directory (expand-file-name "~/.gnus")
         gnus-init-file
         (concat gnus-home-directory
@@ -29,7 +29,8 @@ Various programs in Emacs store information in this directory.
 Note that this should end with a directory separator."))
 
 ;; Add  ~/.emacs.d/elisp  to load path
-(if (file-directory-p (concat user-emacs-directory "elisp"))
+(if (eval-when-compile
+      (file-directory-p (concat user-emacs-directory "elisp")))
     (setq load-path (cons (concat user-emacs-directory "elisp") load-path)))
 
 ;; Use  aspell
@@ -163,6 +164,43 @@ match will equal nil."
 (defmacro set-key-lambda (key &rest body)
   `(global-set-key ,key (function (lambda () (interactive) ,@body))))
 
+;;{{{   Temporary map
+
+(defconst temporary-map-parent
+  `(keymap
+    (27 keymap (27 . set-temporary-map))
+    (7 . set-temporary-map)
+    (t . ,(lambda () (interactive)
+            (setq overriding-local-map nil
+                  unread-command-events
+                  (append (listify-key-sequence (this-command-keys))
+                          unread-command-events)))
+       ))
+  "A parent for all temporary map keymaps.  It has a binding
+for C-g and ESC ESC which disables `overriding-local-map' and
+binding for everything else which disables `overriding-local-map'
+and passes input event through.
+
+Maps which have `temporary-map-parent' as their parents may be
+used as `overriding-local-map' to temporarly introduce some
+bindings which will be disabled as soon as binding not found in
+a map is used.")
+
+(defun make-temporary-map (&optional map)
+  "It MAP is nil creates a new empty temporary map with parent
+set to `temporary-map-parent'.  If MAP is not nil sets its parent
+to `temporary-map-parent' and returns it."
+  (unless map (setq map (list 'keymap)))
+  (set-keymap-parent map temporary-map-parent)
+  map)
+
+(defun set-temporary-map (&optional map)
+  "When called interacivelly disables `overriding-local-map'
+otherwise sets it to map."
+  (interactive)
+  (setq overriding-local-map map))
+
+;;}}}
 ;;{{{   Sequence commands
 
 ;; Sequence commands  1.3  by me, Michal Nazarewicz ;)
@@ -327,23 +365,11 @@ three times - beginning of buffer; four times - back to where it was."
 (global-set-key "\C-xk"         'kill-this-buffer)      ; don't ask which
                                                         ; buffer to kill
 (global-set-key "\C-cr"         'revert-buffer)         ; Reload buffer
-(set-key-lambda "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
 (global-set-key [(control ";")] 'comment-dwim)          ; C-; comments
 
-(require 'imenu)
-(global-set-key [(shift mouse-3)] 'imenu)
-(setq imenu-sort-function 'imenu--sort-by-name)
-
-
-;; Do not break line after single character when filling
-(defun fill-single-char-nobreak-p ()
-  "Don't break line after a single character."
-  (save-excursion
-    (skip-chars-backward " \t")
-    (backward-char 2)
-    (looking-at "[[:space:]][a-zA-Z]")))
-
-(add-to-list 'fill-nobreak-predicate 'fill-single-char-nobreak-p)
+;(require 'imenu)
+;(global-set-key [(shift mouse-3)] 'imenu)
+;(setq imenu-sort-function 'imenu--sort-by-name)
 
 
 ;; Jump
@@ -371,6 +397,21 @@ three times - beginning of buffer; four times - back to where it was."
 (global-set-key "\C-xc"        'x-set-clipboard-content-from-selection)
 
 ;;}}}
+;;{{{   DWIW %
+
+;; http://www.zafar.se/bkz/Articles/EmacsTips
+(global-set-key "%" 'match-paren-maybe)
+
+(defun match-paren-maybe (arg)
+  "Go to the matching parenthesis if on parenthesis otherwise insert %."
+  (interactive "p")
+  (cond ((equal ?( (char-syntax (char-after)))
+         (forward-list 1) (backward-char 1))
+        ((equal ?) (char-syntax (char-after)))
+         (forward-char 1) (backward-list 1))
+        (t (self-insert-command (or arg 1)))))
+
+;;}}}
 ;;{{{   Just one space
 
 (defun mn-just-one-space (&optional n)
@@ -378,10 +419,10 @@ three times - beginning of buffer; four times - back to where it was."
 When called second time deletes all spaces, tabs and new lines after
 the point."
   (interactive "*p")
-  (if (equal (seq-times) 0)
-      (just-one-space n)
-    (delete-region (point)
-                   (save-excursion (skip-chars-forward " \t\n") (point)))))
+  (if (equal last-command this-command)
+      (delete-region (point)
+                     (save-excursion (skip-chars-forward " \t\n") (point)))
+    (just-one-space n)))
 
 (substitute-key-definition 'just-one-space 'mn-just-one-space
                            (current-global-map))
@@ -590,7 +631,7 @@ on the active region.  Otherwise, it calls `fill-paragraph'."
         (fill-region (region-beginning) (region-end) arg)
       (fill-paragraph arg))))
 
-(defun my-fill (&optional arg) ""
+(defun my-fill (&optional arg)
   (interactive "*P")
   (if arg
     (fill-region (save-excursion (beginning-of-line) (point))
@@ -722,19 +763,6 @@ in the current paragraph into a single long line."
           (man (current-word)))))))
 
 (global-set-key [(f1)]      'my-help)
-(let ((map
-       (list 'keymap
-             (cons ?f (lambda () (interactive)
-                        (let ((fn (function-called-at-point)))
-                          (and fn (describe-function fn)))))
-             (cons ?v (lambda () (interactive)
-                        (let ((var (variable-at-point)))
-                          (and (symbolp var) (describe-variable var)))))
-             (cons ?m (lambda () (interactive) (man (current-word))))
-             (cons ?i (lambda () (interactive) (info (current-word)))))))
-
-  (global-set-key [(shift f1)] map)
-  (global-set-key [(ctrl shift h)] map))
 
 ;;}}}
 ;;{{{     F2 - find configuration files
@@ -770,9 +798,9 @@ is running, switch to Gnus group buffer, otherwise start Gnus"
    ((gnus))))
 
 (global-set-key [(f5)]      'switch-to-gnus-or-get-new-news)
-(set-key-lambda [(control f5)] (let ((b (current-buffer)))
-                                 (switch-to-buffer (other-buffer))
-                                 (bury-buffer b)))
+;(set-key-lambda [(control f5)] (let ((b (current-buffer)))
+;                                 (switch-to-buffer (other-buffer))
+;                                 (bury-buffer b)))
 
 ;;}}}
 ;;{{{     F7 - spell checking
@@ -920,8 +948,9 @@ non-nill or `compile' otherwise."
 ))
 
 ;;}}}
-;;{{{   Copy Without Selection
+;;{{{   Copy/Kill
 
+;; Copy w/o Selection
 ;; http://www.emacswiki.org/cgi-bin/wiki/CopyWithoutSelection
 
 (defun copy-word (&optional arg)
@@ -948,6 +977,57 @@ non-nill or `compile' otherwise."
 (global-set-key "\C-cw"         'copy-word)
 (global-set-key "\C-cl"         'copy-line)
 (global-set-key "\C-cp"         'copy-paragraph)
+
+
+;; Make C-w, M-w work on word if no selection
+(set-key-lambda "\C-w"
+                (call-interactively (if mark-active 'kill-region 'kill-word)))
+(set-key-lambda "\M-w"
+                (if mark-active
+                    (call-interactively 'kill-ring-save)
+                  (kill-ring-save (point) (progn (forward-word 1) (point)))
+                  (setq this-command 'kill-region)))
+
+;;}}}
+;;{{{   C-x C-b followed by C-b cycles through buffers
+
+(defvar switch-to-buffer-map
+  (let ((map (make-temporary-map)))
+    (define-key map "\C-b" 'switch-to-next-buffer)
+    (define-key map "b"    (lambda () (interactive)
+                             (switch-to-buffer (other-buffer))
+                             (set-temporary-map nil)))
+    (define-key map "\C-k" 'kill-this-buffer)
+    map)
+  "A temporary keymap activated after `switch-to-buffer' is called.")
+
+(defconst switch-to-next-buffer-skip-buffers
+  (eval-when-compile
+    (concat "^" (regexp-opt (list "newsrc-dribble" "\\*Completions\\*") t)))
+  "Regexp maching buffer names to skip when
+`switch-to-next-buffer' is called.")
+
+(defun switch-to-other-buffer ()
+  "Switches to `other-buffer'."
+  (interactive)
+  (switch-to-buffer (other-buffer))
+  (set-temporary-map switch-to-buffer-map))
+
+(defun switch-to-next-buffer ()
+  "Switchs to next buffer."
+  (interactive)
+  (let* ((starting-buffer (other-buffer))
+         (buffer          (other-buffer starting-buffer)))
+    (while (and (not (equal buffer (current-buffer)))
+                (string-match switch-to-next-buffer-skip-buffers
+                              (buffer-name buffer)))
+       (bury-buffer buffer)
+       (setq buffer (other-buffer starting-buffer)))
+    (bury-buffer)
+    (switch-to-buffer starting-buffer)
+    (switch-to-buffer buffer)))
+
+(global-set-key "\C-x\C-b" 'switch-to-other-buffer)
 
 ;;}}}
 
@@ -1118,7 +1198,7 @@ non-nill or `compile' otherwise."
 
 ;; Indention
 (defun tab-stop-list (&optional width columns)
-  "Returns list of all positive integers ordered rom smallest to
+  "Returns list of all positive integers ordered from smallest to
 largest which are multiplications of WIDTH and are lower or equal
 COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
   (if (not width) (setq width tab-width))
@@ -1172,6 +1252,17 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
       gdb-show-main t
       gdb-use-separate-io-buffer nil)
 
+
+;; Do not break line after single character when filling
+(defun fill-single-char-nobreak-p ()
+  "Don't break line after a single character."
+  (save-excursion
+    (skip-chars-backward " \t")
+    (backward-char 2)
+    (looking-at "[[:space:]][a-zA-Z]")))
+
+(add-to-list 'fill-nobreak-predicate 'fill-single-char-nobreak-p)
+
 ;;}}}
 ;;{{{ Major Modes
 
@@ -1193,6 +1284,7 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 ;;}}}
 ;;{{{   HTML Mode
 
+
 ;; Insert char or entity when pressed 2 times
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
 (defmacro rgb-insert-if-double (otherwise)
@@ -1202,6 +1294,7 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
                 (backward-delete-char 1)
                 (insert ,otherwise))))
 
+
 (defun mn-sgml-slash-or-close-tag (arg)
   (interactive "P")
   (if (or arg (not (equal (preceding-char) ?<)))
@@ -1209,17 +1302,54 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
     (backward-delete-char 1)
     (sgml-close-tag)))
 
+
+;; Create a link out of the preceeding word if it appears to be a URL
+(defun mn-linkify-maybe ()
+  "If the word before cursor appears to be an URL wrap it around
+in a <a href=\"...\">...</a>.  Returns whether it happend."
+  (interactive "*")
+  (let ((bounds (bounds-of-thing-at-point 'url)))
+    (when (and bounds (equal (point) (cdr bounds)))
+      (let ((url (delete-and-extract-region (car bounds) (cdr bounds))))
+        (insert "<a href=\"" url "\">" url "</a>")
+        t))))
+
+
+;; Insert '&nbsp;'  instead of ' ' in SGML mode.
+;; Also removes '&nbsp;' when 2nd space added.
+;; When called without prefix argument and the above does not match
+;; calls mn-linkify-maybe.
+(defun mn-html-space (arg) (interactive "P")
+  (cond
+   ((re-search-backward "&nbsp;" (- (point) 6) t)
+    (delete-char 6) (self-insert-command (prefix-numeric-value arg)))
+   (arg (self-insert-command (prefix-numeric-value arg)))
+   ((my-tex-looking-back "[a-z]" 1)
+    (insert "&nbsp;"))
+   (t (mn-linkify-maybe) (self-insert-command 1))))
+
+
+
 (eval-when-compile (require 'sgml-mode))
 (eval-after-load "sgml-mode"
   (add-hook 'sgml-mode-hook (lambda ()
+   (define-key sgml-mode-map " "  'mn-html-space)
    (define-key sgml-mode-map "<"  (rgb-insert-if-double "&lt;"))
    (define-key sgml-mode-map ">"  (rgb-insert-if-double "&gt;"))
    (define-key sgml-mode-map "&"  (rgb-insert-if-double "&amp;"))
    (define-key sgml-mode-map "\"" (rgb-insert-if-double "&quot;"))
+   (define-key sgml-mode-map "~"  (rgb-insert-if-double "&nbsp;"))
+   (define-key sgml-mode-map "-"  (rgb-insert-if-double "&#8211;"))
+   (define-key sgml-mode-map "'"  (rgb-insert-if-double "&#8221;"))
+   (define-key sgml-mode-map "`"  (rgb-insert-if-double "&#8220;"))
+   (define-key sgml-mode-map ","  (rgb-insert-if-double "&#8222;"))
+   (define-key sgml-mode-map "."  (rgb-insert-if-double "&#8230;"))
    (define-key sgml-mode-map "/"  'mn-sgml-slash-or-close-tag)
 ;   (when (eval-when-compile (fboundp 'sgml-electric-tag-pair-mode))
 ;     (sgml-electric-tag-pair-mode 1))
    (setq indent-tabs-mode ()))))
+
+
 
 (defun replace-string-pairs (list)
   (let* ((mark  (and transient-mark-mode mark-active))
@@ -1255,16 +1385,14 @@ of the region.  Otherwise, operate from point to the end of the buffer."
 ;;{{{   (La)TeX and nroff mode
 
 ;; Helper for tex-space
-(defun my-tex-looking-back (regexp len)
-  "Returns non-nil if text LEN chars backward matches REGEXP and
-is at the beginning of line or preceded by white space."
-  (save-excursion
-    (backward-char len)
-    (if (looking-at regexp)
-        (or (looking-at "^")
-            (progn (backward-char 1) (looking-at "[[:space:]~]"))))))
+(defmacro my-tex-looking-back (regexp len)
+  "Returns non-nil if text LEN chars backward matches REGEXP
+prefixed with \\b."
+  `(save-excursion
+     (backward-char ,len)
+     (looking-at ,(concat "\\b" regexp))))
 
-;; Insert '~' or '\ ' instead of ' ' in LaTeX when needed
+;; insert '~' or '\ ' instead of ' ' in LaTeX when needed
 ;; Also removes '~' when 2nd space added
 ;; http://www.debianusers.pl/article.php?aid=39
 (defun tex-space (arg) (interactive "P")
@@ -1275,8 +1403,8 @@ is at the beginning of line or preceded by white space."
    ((my-tex-looking-back "[a-z]" 1)
     ;    (my-tex-looking-back "[a-z][a-z]" 2))
     (insert-char ?~ 1))
-   ((or (my-tex-looking-back "\\(?:tj\\|np\\|ew\\|jw\\|in\\|wg\\)\\." 3)
-        (my-tex-looking-back "\\(?:tzw\||tzn\\)\\." 4))
+   ((or (my-tex-looking-back "[a-z][a-z]\\." 3)
+        (my-tex-looking-back "\\(?:tz[wn]\\|it[pd]\\)\\." 4))
     (insert "\\ "))
    (t (self-insert-command 1))))
 
@@ -1368,7 +1496,7 @@ is at the beginning of line or preceded by white space."
 
 
 ;; Script mode
-(autoload 'script-mode "script-mode" "Mode fore editing scripts" t)
+;(autoload 'script-mode "script-mode" "Mode fore editing scripts" t)
 
 
 ;; LSL mode
@@ -1384,7 +1512,8 @@ is at the beginning of line or preceded by white space."
 ;;{{{   git
 
 (autoload 'git-status "git" "Entry point into git-status mode." t)
-(add-to-list 'vc-handled-backends 'GIT)
+;(add-to-list 'vc-handled-backends 'GIT)
+(setq vc-handled-backends '(CVS SVN Git GIT))
 (autoload 'git-blame-mode "git-blame"
   "Minor mode for incremental blame for Git." t)
 
@@ -1440,16 +1569,16 @@ is at the beginning of line or preceded by white space."
 ;;{{{   wc
 
 ;; Based on http://www.emacswiki.org/cgi-bin/wiki/WordCount
-(defun wc (&optional start end)
-  "Prints number of lines, words and characters in region or whole buffer."
-  (interactive)
-  (let ((n 0)
-        (start (if mark-active (region-beginning) (point-min)))
-        (end (if mark-active (region-end) (point-max))))
-    (save-excursion
-      (goto-char start)
-      (while (< (point) end) (if (forward-word 1) (setq n (1+ n)))))
-    (message "%3d %3d %3d" (count-lines start end) n (- end start))))
+;; (defun wc (&optional start end)
+;;   "Prints number of lines, words and characters in region or whole buffer."
+;;   (interactive)
+;;   (let ((n 0)
+;;         (start (if mark-active (region-beginning) (point-min)))
+;;         (end (if mark-active (region-end) (point-max))))
+;;     (save-excursion
+;;       (goto-char start)
+;;       (while (< (point) end) (if (forward-word 1) (setq n (1+ n)))))
+;;     (message "%3d %3d %3d" (count-lines start end) n (- end start))))
 
 ;;}}}
 ;;{{{   Command Frequency mode
@@ -1484,7 +1613,7 @@ is at the beginning of line or preceded by white space."
         (set-buffer-modified-p nil)))
   (auto-save-mode 1)
   (setq buffer-auto-save-file-name scratch-file-autosave)
-;  (setq revert-buffer-function 'scratch-revert)
+  (setq revert-buffer-function 'scratch-revert)
   (fundamental-mode))
 
 (defun scratch-revert (ignore-auto noconfirm)
