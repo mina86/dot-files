@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: update,v 1.4 2008/04/28 19:12:51 mina86 Exp $
+# $Id: update,v 1.5 2008/05/23 09:22:40 mina86 Exp $
 
 set -e
 
@@ -70,6 +70,7 @@ dot-gnus           ~/.gnus/.gnus.el
 profile            ~/.
 risc-mode.el       ~/.emacs.d/elisp/
 shellrc            ~/.
+xinitrc            ~/.
 zlogin             ~/.
 zshrc              ~/.
 EOF
