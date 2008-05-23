@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .bash_profile
-## Copyright 2004-2006 by Michal Nazarewicz (mina86@mina86.com)
-## $Id: bash_profile,v 1.6 2008/04/18 09:13:14 mina86 Exp $
+## Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
+## $Id: bash_profile,v 1.7 2008/05/23 09:34:47 mina86 Exp $
 ##
 
 # Set ENV
