@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
-;; Copyright 2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-gnus,v 1.8 2008/05/18 18:45:53 mina86 Exp $
+;; Copyright 2006-2008 by Michal Nazarewicz (mina86/AT/mina86.com)
+;; $Id: dot-gnus,v 1.9 2008/05/23 09:34:47 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 

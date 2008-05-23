@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .profile
-## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: profile,v 1.2 2008/04/18 09:13:52 mina86 Exp $
+## Copyright 2004-2008 by Michal Nazarewicz (mina86/AT/mina86.com)
+## $Id: profile,v 1.3 2008/05/23 09:34:47 mina86 Exp $
 ##
 
 # Set ENV

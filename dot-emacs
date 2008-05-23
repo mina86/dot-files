@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
-;; Copyright 2004-2007 by Michal Nazarewicz (mina86/AT/mina86.com)
-;; $Id: dot-emacs,v 1.16 2008/05/18 18:54:02 mina86 Exp $
+;; Copyright 2004-2008 by Michal Nazarewicz (mina86/AT/mina86.com)
+;; $Id: dot-emacs,v 1.17 2008/05/23 09:34:47 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
