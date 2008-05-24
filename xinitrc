@@ -1,7 +1,7 @@
-#!/bin/sh                                               -*- shell-script -*-
+
 ## .xinitrc  -- X init script
 ## Copyright 2008 by Michal Nazarewicz (mina86@mina86.com)
-## $Id: xinitrc,v 1.2 2008/05/23 09:32:34 mina86 Exp $
+## $Id: xinitrc,v 1.3 2008/05/24 08:14:29 mina86 Exp $
 ##
 
 # Hostname
