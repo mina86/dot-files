@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.17 2008/05/23 09:34:47 mina86 Exp $
+;; $Id: dot-emacs,v 1.18 2008/05/25 18:02:39 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
@@ -1613,7 +1613,7 @@ prefixed with \\b."
         (set-buffer-modified-p nil)))
   (auto-save-mode 1)
   (setq buffer-auto-save-file-name scratch-file-autosave)
-  (setq revert-buffer-function 'scratch-revert)
+  (set (make-local-variable 'revert-buffer-function) 'scratch-revert)
   (fundamental-mode))
 
 (defun scratch-revert (ignore-auto noconfirm)
