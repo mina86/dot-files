@@ -1,12 +1,12 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.18 2008/05/25 18:02:39 mina86 Exp $
+;; $Id: dot-emacs,v 1.19 2008/06/05 13:18:10 mina86 Exp $
 ;;
 ;;{{{ System dependend data and directories
 
 ;; Gnus
-(when (eval-when-compile (file-directory-p "~/.gnus"))
+(when (eval-when-compile (string-equal "erwin" system-name))
   (setq gnus-home-directory (expand-file-name "~/.gnus")
         gnus-init-file
         (concat gnus-home-directory
@@ -45,7 +45,7 @@ Note that this should end with a directory separator."))
   (let ((ghd (or (and (boundp 'gnus-home-directory) gnus-home-directory)
                  (expand-file-name "~"))))
     (cond
-     ((string-match "\\.elc$" user-init-file)
+     ((string-match "\\.elc$" (or user-init-file "/home/mina86/.emacs.d/init.el"))
       (list (substring user-init-file 0 -4)
             (substring user-init-file 0 -1)
             (concat ghd "/.gnus")
@@ -414,15 +414,15 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   Just one space
 
-(defun mn-just-one-space (&optional n)
+(defun mn-just-one-space ()
   "When called for the first time Works just like `just-one-space'.
 When called second time deletes all spaces, tabs and new lines after
 the point."
-  (interactive "*p")
+  (interactive)
   (if (equal last-command this-command)
       (delete-region (point)
                      (save-excursion (skip-chars-forward " \t\n") (point)))
-    (just-one-space n)))
+    (just-one-space)))
 
 (substitute-key-definition 'just-one-space 'mn-just-one-space
                            (current-global-map))
@@ -571,8 +571,8 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
 `indent-for-tab-command'."
   (interactive)
   (cond
-   ((minibufferp) (minibuffer-complete))
-   (mark-active (indent-region (region-beginning) (region-end)))
+   ((and (fboundp 'minibufferp) (minibufferp)) (minibuffer-complete))
+   (mark-active (indent-region (region-beginning) (region-end) nil))
    ((set 'indent-or-complete--last-was-complete
          (or (looking-at "\\>")
              (and (eq last-command this-command)
@@ -1103,12 +1103,11 @@ non-nill or `compile' otherwise."
 ;;{{{ Misc small config
 
 ;;Save some space
-(menu-bar-mode -1)                ;no menu bar
 (setq use-dialog-box nil)         ;never use dialog boxes
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
 (if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
-(and window-system (load "fringe")
+(and window-system (load "fringe" t)
      (set-fringe-mode (if (string-match "^erwin\." system-name) 7 4)))
 
 
@@ -1155,7 +1154,8 @@ non-nill or `compile' otherwise."
                                (mouse-2 . describe-mode)
                                (down-mouse-1 . mouse-major-mode-menu))))
         ") "))
-(if (string-match "^tuptus\\." system-name)
+(if (and (string-match "^tuptus\\." system-name)
+         (fboundp 'display-battery-mode))
     (display-battery-mode 1))     ;show battery on my laptop
 ;(setq display-time-24hr-format t) ;show time in 24h format
 ;(setq display-time-interval 30)   ;update time & load avg every 30s
@@ -1283,7 +1283,6 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 
 ;;}}}
 ;;{{{   HTML Mode
-
 
 ;; Insert char or entity when pressed 2 times
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
@@ -1511,11 +1510,12 @@ prefixed with \\b."
 
 ;;{{{   git
 
-(autoload 'git-status "git" "Entry point into git-status mode." t)
-;(add-to-list 'vc-handled-backends 'GIT)
-(setq vc-handled-backends '(CVS SVN Git GIT))
-(autoload 'git-blame-mode "git-blame"
-  "Minor mode for incremental blame for Git." t)
+(when (eval-when-compile (not (string-equal "pikus" system-name)))
+  (autoload 'git-status "git" "Entry point into git-status mode." t)
+  ;(add-to-list 'vc-handled-backends 'GIT)
+  (setq vc-handled-backends '(CVS SVN Git GIT))
+  (autoload 'git-blame-mode "git-blame"
+    "Minor mode for incremental blame for Git." t))
 
 ;;}}}
 ;;{{{   HTMLize
@@ -1629,13 +1629,15 @@ prefixed with \\b."
          t)))
 
 (defun kill-emacs-scratch-save ()
-  (let ((buffer (get-buffer-create "*scratch*")))
-    (if buffer
-        (save-excursion
+  (let ((buffer (get-buffer "*scratch*")))
+    (when buffer
+      (save-excursion
+        (save-restriction
           (set-buffer buffer)
-          (write-region nil nil scratch-file)
+          (widen)
+          (write-region (point-min) (point-max) scratch-file)
           (unless (string-equal scratch-file buffer-auto-save-file-name)
-            (delete-auto-save-file-if-necessary t))))))
+            (delete-auto-save-file-if-necessary t)))))))
 
 (add-hook 'kill-buffer-query-functions 'kill-scratch-buffer)
 (add-hook 'kill-emacs-hook 'kill-emacs-scratch-save)
