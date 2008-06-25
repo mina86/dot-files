@@ -4,8 +4,9 @@ DefaultColors		white black
 DeskTopSize			10x1
 EdgeCommand			North	FvwmConsole-Show
 EdgeLeaveCommand	North	FvwmConsole-Hide
-EdgeResistance		500 5
-EdgeScroll			0 0
+EdgeResistance		-1
+Style				*		EdgeMoveDelay 300, EdgeMoveResistance 10
+Style				*		EdgeResizeDelay 600
 EdgeThickness		1
 HideGeometryWindow	Never
 MoveThreshold		4
