@@ -11,4 +11,4 @@ EdgeThickness		1
 HideGeometryWindow	Never
 MoveThreshold		4
 OpaqueMoveSize		0
-SnapAttraction		10 SameType Screen
+Style * SnapAttraction		10 SameType Screen
