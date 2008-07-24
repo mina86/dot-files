@@ -1,8 +1,49 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.19 2008/06/05 13:18:10 mina86 Exp $
+;; $Id: dot-emacs,v 1.20 2008/07/24 09:10:42 mina86 Exp $
 ;;
+;;{{{ Compatibility with old Emacses
+
+(unless (boundp 'user-emacs-directory)
+  (defvar user-emacs-directory (expand-file-name "~/.emacs.d/")
+    "Directory beneath which additional per-user Emacs-specific files are placed.
+Various programs in Emacs store information in this directory.
+Note that this should end with a directory separator."))
+
+(unless (boundp 'use-empty-active-region)
+  (defcustom use-empty-active-region nil
+    "If non-nil, an active region takes control even if empty.
+This applies to certain commands which, in Transient Mark mode,
+apply to the active region if there is one.  If the setting is t,
+these commands apply to an empty active region if there is one.
+If the setting is nil, these commands treat an empty active
+region as if it were not active."
+    :type 'boolean
+    :version "23.1"
+    :group 'editing-basics))
+
+(unless (fboundp 'use-region-p)
+  (defun use-region-p ()
+    "Return t if certain commands should apply to the region.
+Certain commands normally apply to text near point,
+but in Transient Mark mode when the mark is active they apply
+to the region instead.  Such commands should use this subroutine to
+test whether to do that.
+
+This function also obeys `use-empty-active-region'."
+    (and (region-active-p)
+         (or use-empty-active-region (> (region-end) (region-beginning))))))
+
+(unless (fboundp 'region-active-p)
+  (defun region-active-p ()
+    "Return t if Transient Mark mode is enabled and the mark is active.
+This is NOT the best function to use to test whether a command should
+operate on the region instead of the usual behavior -- for that,
+use `use-region-p'."
+    (and transient-mark-mode mark-active)))
+
+;;}}}
 ;;{{{ System dependend data and directories
 
 ;; Gnus
@@ -21,12 +62,8 @@
                      Info-default-directory-list)))))
 
 ;; Make sure user-emacs-directory is defined
-(when (or (not (boundp 'user-emacs-directory))
-          (string-equal user-emacs-directory ""))
-  (defvar user-emacs-directory (expand-file-name "~/.emacs.d/")
-    "Directory beneath which additional per-user Emacs-specific files are placed.
-Various programs in Emacs store information in this directory.
-Note that this should end with a directory separator."))
+(if (string-equal user-emacs-directory "")
+    (setq user-emacs-directory (expand-file-name "~/.emacs.d/")))
 
 ;; Add  ~/.emacs.d/elisp  to load path
 (if (eval-when-compile
@@ -405,10 +442,12 @@ three times - beginning of buffer; four times - back to where it was."
 (defun match-paren-maybe (arg)
   "Go to the matching parenthesis if on parenthesis otherwise insert %."
   (interactive "p")
-  (cond ((equal ?( (char-syntax (char-after)))
-         (forward-list 1) (backward-char 1))
-        ((equal ?) (char-syntax (char-after)))
-         (forward-char 1) (backward-list 1))
+  (cond ((and (not (= (point) (point-max)))
+              (equal ?( (char-syntax (char-after))))
+         (forward-list 1))
+        ((and (not (= (point) (point-min)))
+              (equal ?) (char-syntax (char-before))))
+         (backward-list 1))
         (t (self-insert-command (or arg 1)))))
 
 ;;}}}
@@ -473,30 +512,27 @@ string is not found on the list returns nil."
 (defun rotate-region (&optional beg end)
   "Rotates string in buffer between BEG and END.  If string was
 not found in `rotate-text-rotations' returns nil otherwise t.  If
-BEG is nil either `region-beginning' (if `transient-mark-mode'
-and `mark-active') or begining of word is used as the default.
-If END is nil either `region-end' or end of word is used as the
-default.  If function was called interactivly and mark was active
-it lets it active."
-
-  (save-excursion
-    (setq beg
-          (or beg
-              (and transient-mark-mode mark-active (region-beginning))
-              (progn (or (looking-at "\\<") (forward-word -1)) (point))))
-    (setq end
-          (or end
-              (and transient-mark-mode mark-active (region-end))
-              (progn (or (looking-at "\\>") (forward-word  1)) (point)))))
-
-  (let ((do-region (and (interactive-p) transient-mark-mode mark-active))
-        (str (rotate-text (buffer-substring beg end))))
-    (when str
-      (delete-region beg end)
-      (goto-char beg)
-      (insert str)
-      (setq deactivate-mark (not do-region))
-      t)))
+BEG is nil either `region-beginning' (if `use-region-p') or
+begining of word is used as the default.  If END is nil either
+`region-end' or end of word is used as the default.  If function
+was called interactivly and mark was active it lets it active."
+  (let ((use-region-p (use-region-p)))
+    (save-excursion
+      (setq beg
+            (or beg
+                (and use-region-p (region-beginning))
+                (progn (or (looking-at "\\<") (forward-word -1)) (point))))
+      (setq end
+            (or end
+                (and use-region-p (region-end))
+                (progn (or (looking-at "\\>") (forward-word  1)) (point)))))
+    (let ((str (rotate-text (buffer-substring beg end))))
+      (when str
+        (delete-region beg end)
+        (goto-char beg)
+        (insert str)
+        (setq deactivate-mark (not (and (interactive-p) use-region-p)))
+        t))))
 
 ;; hippie-expand try function
 (defvar try-rotate-string--rotations)
@@ -566,13 +602,13 @@ It is called with one argument - nil")
 
 (defun indent-or-complete ()
   "In minibuffer runs `minibuffer-complete'.  Otherwise if
-`mark-active' runs `indent-region'.  Otherwise if point is at end of
+`use-region-p' runs `indent-region'.  Otherwise if point is at end of
 a word runs `inent-or-complete-complete-function'.  Otherwise runs
 `indent-for-tab-command'."
   (interactive)
   (cond
    ((and (fboundp 'minibufferp) (minibufferp)) (minibuffer-complete))
-   (mark-active (indent-region (region-beginning) (region-end) nil))
+   ((use-region-p) (indent-region (region-beginning) (region-end)))
    ((set 'indent-or-complete--last-was-complete
          (or (looking-at "\\>")
              (and (eq last-command this-command)
@@ -622,12 +658,11 @@ window function skips to another step."
   ;; Taken from emacs 23.0.50.1 (CVS)
   (defun fill-paragraph-or-region (arg)
     "Fill the active region or current paragraph.
-In Transient Mark mode, when the mark is active, it calls `fill-region'
-on the active region.  Otherwise, it calls `fill-paragraph'."
+IF `use-region-p' then it calls `fill-region', otherwise --
+`fill-paragraph'."
     (interactive (progn (barf-if-buffer-read-only)
                         (list (if current-prefix-arg 'full))))
-    (if (and transient-mark-mode mark-active
-             (not (eq (region-beginning) (region-end))))
+    (if (use-region-p)
         (fill-region (region-beginning) (region-end) arg)
       (fill-paragraph arg))))
 
@@ -647,7 +682,7 @@ on the active region.  Otherwise, it calls `fill-paragraph'."
 in the current paragraph into a single long line."
   (interactive)
   (let ((fill-column most-positive-fixnum))
-    (if (and mark-active transient-mark-mode)
+    (if (use-region-p)
         (fill-region (region-beginning) (region-end) nil)
       (fill-paragraph nil)))
   (setq deactivate-mark nil))
@@ -820,8 +855,7 @@ is running, switch to Gnus group buffer, otherwise start Gnus"
   "If LANG is not-nil sets ispell dictionary to lang, then checks
 region from START to END for spelling errors.  The default values
 for START and END are `region-beginning' and `region-end' if
-`transient-mark-mode' is on and `mark-active' or `point-min' and
-`point-max' otherwise.
+`use-region-p' or `point-min' and `point-max' otherwise.
 
 However, if START is nil, END is not and `region-beginning' falls
 after END START will get value of `point-min'.  And the other way
@@ -842,8 +876,7 @@ returned."
           nil t)))
   (if lang (ispell-change-dictionary (if (string= lang "") nil lang)))
   (cond
-   ((not (and (boundp 'transient-mark-mode) transient-mark-mode
-              (boundp 'mark-active) mark-active))
+   ((not (use-region-p))
     (if (not start) (setq start (point-min)))
     (if (not end)   (setq end   (point-max))))
    ((not (or start end)) (setq start (region-beginning) end (region-end)))
@@ -980,23 +1013,62 @@ non-nill or `compile' otherwise."
 
 
 ;; Make C-w, M-w work on word if no selection
-(set-key-lambda "\C-w"
-                (call-interactively (if mark-active 'kill-region 'kill-word)))
+(set-key-lambda "\C-w" (call-interactively
+                        (if (use-region-p) 'kill-region 'kill-word)))
 (set-key-lambda "\M-w"
-                (if mark-active
+                (if (use-region-p)
                     (call-interactively 'kill-ring-save)
                   (kill-ring-save (point) (progn (forward-word 1) (point)))
                   (setq this-command 'kill-region)))
 
+;; C-S-w, M-S-w, C-S-y -- works on registers
+(defvar copy-or-append-to-register--register nil)
+
+(defun copy-or-append-to-register (register start end &optional delete append)
+  (interactive
+   (let ((append-p (equal last-command this-command)))
+     (list
+      (or (and append-p copy-or-append-to-register--register)
+          (read-char (if append-p
+                       "Append to register: " "Copy to register: ") nil nil))
+      (if (use-region-p) (region-beginning) (point))
+      (if (use-region-p) (region-end) (progn (forward-word 1) (point)))
+      prefix-arg
+      append-p)))
+  (if append
+      (append-to-register register start end delete)
+    (copy-or-append-to-register register start end delete))
+  (setq copy-or-append-to-register--register register))
+
+(defun kill-or-append-to-register ()
+  (setq prefix-arg t)
+  (call-interactively 'copy-or-append-to-register))
+
+(global-set-key [(control shift w)] 'copy-or-append-to-register)
+(global-set-key [(meta    shift w)] 'kill-or-append-to-register)
+(global-set-key [(control shift y)] 'insert-register)
+
 ;;}}}
 ;;{{{   C-x C-b followed by C-b cycles through buffers
+
+(defmacro lambda-run-and-set-temporary-map (map &rest body)
+  "Returns a lambda expression which executes BODY and then sets
+temporary map (using `set-temporary-map' to MAP."
+  (declare (indent 1))
+  `(lambda () (interactive)
+     ,@body
+     (set-temporary-map ,map)))
 
 (defvar switch-to-buffer-map
   (let ((map (make-temporary-map)))
     (define-key map "\C-b" 'switch-to-next-buffer)
-    (define-key map "b"    (lambda () (interactive)
-                             (switch-to-buffer (other-buffer))
-                             (set-temporary-map nil)))
+    (define-key map [(control right)] 'next-buffer)
+    (define-key map [(control left)] 'previous-buffer)
+    (define-key map [(control tab)] 'next-buffer)
+    (define-key map [(control shift tab)] 'previous-buffer)
+    (define-key map [(space)] (lambda () (interactive)(set-temporary-map ())))
+    (define-key map "b"    (lambda-run-and-set-temporary-map nil
+                             (switch-to-buffer (other-buffer))))
     (define-key map "\C-k" 'kill-this-buffer)
     map)
   "A temporary keymap activated after `switch-to-buffer' is called.")
@@ -1006,12 +1078,6 @@ non-nill or `compile' otherwise."
     (concat "^" (regexp-opt (list "newsrc-dribble" "\\*Completions\\*") t)))
   "Regexp maching buffer names to skip when
 `switch-to-next-buffer' is called.")
-
-(defun switch-to-other-buffer ()
-  "Switches to `other-buffer'."
-  (interactive)
-  (switch-to-buffer (other-buffer))
-  (set-temporary-map switch-to-buffer-map))
 
 (defun switch-to-next-buffer ()
   "Switchs to next buffer."
@@ -1027,7 +1093,22 @@ non-nill or `compile' otherwise."
     (switch-to-buffer starting-buffer)
     (switch-to-buffer buffer)))
 
-(global-set-key "\C-x\C-b" 'switch-to-other-buffer)
+(global-set-key "\C-x\C-b"
+                (lambda-run-and-set-temporary-map switch-to-buffer-map
+                  (switch-to-buffer (other-buffer))))
+
+(global-set-key [(control x) (control right)]
+                (lambda-run-and-set-temporary-map switch-to-buffer-map
+                  (next-buffer)))
+(global-set-key [(control x) (control left)]
+                (lambda-run-and-set-temporary-map switch-to-buffer-map
+                  (previous-buffer)))
+(global-set-key [(control tab)]
+                (lambda-run-and-set-temporary-map switch-to-buffer-map
+                  (next-buffer)))
+(global-set-key [(control shift tab)]
+                (lambda-run-and-set-temporary-map switch-to-buffer-map
+                  (previous-buffer)))
 
 ;;}}}
 
@@ -1170,6 +1251,7 @@ non-nill or `compile' otherwise."
 (setq frame-title-format "%b - Emacs") ;frame title format
 (setq history-delete-duplicates t);don't show splash screen
 (setq inhibit-splash-screen   t)  ;don't show splash screen
+(setq inhibit-startup-echo-area-message "mina86") ;don't show "For info..." message
 (setq inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
                                   ; many files               (EMACS 21.4+)
 (setq sentence-end-double-space 1);sentance end with double space
@@ -1184,6 +1266,8 @@ non-nill or `compile' otherwise."
 ;(setq mouse-autoselect-window nil)  ;focus follows mouse
 (when (boundp 'compilation-auto-jump-to-first-error)
   (setq compilation-auto-jump-to-first-error t))
+(if (boundp 'line-move-visual)
+    (setq line-move-visual nil))  ;move by logical lines not screen lines
 
 ;; Saving etc
 (if (fboundp recentf-mode)
@@ -1284,74 +1368,138 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 ;;}}}
 ;;{{{   HTML Mode
 
-;; Insert char or entity when pressed 2 times
-;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
-(defmacro rgb-insert-if-double (otherwise)
- `(lambda (arg) (interactive "P")
-              (if (or arg (not (equal (preceding-char) last-command-char)))
-                  (self-insert-command (prefix-numeric-value arg))
-                (backward-delete-char 1)
-                (insert ,otherwise))))
-
-
-(defun mn-sgml-slash-or-close-tag (arg)
-  (interactive "P")
-  (if (or arg (not (equal (preceding-char) ?<)))
-      (self-insert-command (prefix-numeric-value arg))
-    (backward-delete-char 1)
-    (sgml-close-tag)))
-
-
 ;; Create a link out of the preceeding word if it appears to be a URL
-(defun mn-linkify-maybe ()
-  "If the word before cursor appears to be an URL wrap it around
+(if (load "thingatpt" t)
+    (defun mn-linkify-maybe ()
+      "If the word before cursor appears to be an URL wrap it around
 in a <a href=\"...\">...</a>.  Returns whether it happend."
-  (interactive "*")
-  (let ((bounds (bounds-of-thing-at-point 'url)))
-    (when (and bounds (equal (point) (cdr bounds)))
-      (let ((url (delete-and-extract-region (car bounds) (cdr bounds))))
-        (insert "<a href=\"" url "\">" url "</a>")
-        t))))
+      (interactive "*")
+      (when (save-excursion
+              (save-restriction
+                (let ((end (point)))
+                  (beginning-of-line)
+                  (narrow-to-region (point) end)
+                  (looking-at
+                   (concat ".*\\(" thing-at-point-url-regexp "\\)\\'")))))
+        (let ((url (delete-and-extract-region (match-beginning 1)
+                                              (match-end 1))))
+          (insert "<a href=\"" url "\">" url "</a>"))))
+  (defun mn-linkify-maybe ()
+    "If the word before cursor appears to be an URL wrap it
+around in a <a href=\"...\">...</a>.  Returns whether it happend.
+
+This is however a stub implementation (because thingatpt could not be loaded) which does nothing and returns nul."
+    nil))
 
 
-;; Insert '&nbsp;'  instead of ' ' in SGML mode.
-;; Also removes '&nbsp;' when 2nd space added.
-;; When called without prefix argument and the above does not match
-;; calls mn-linkify-maybe.
-(defun mn-html-space (arg) (interactive "P")
-  (cond
-   ((re-search-backward "&nbsp;" (- (point) 6) t)
-    (delete-char 6) (self-insert-command (prefix-numeric-value arg)))
-   (arg (self-insert-command (prefix-numeric-value arg)))
-   ((my-tex-looking-back "[a-z]" 1)
-    (insert "&nbsp;"))
-   (t (mn-linkify-maybe) (self-insert-command 1))))
+(defun mn-magick-self-insert-command (spec &optional default when-prefix)
+  "If prefix argument is not nil calls WHEN-PREFIX with single
+argument being a `prefix-numeric-value' or the `prefix-arg'.
 
+Otherwise looks through SPEC which is a list of 3-element
+lists (called rules):
+  (regexp length action)
+Rule is said to match if `point' is at least LENGTH characters from
+`point-min' and REGEXP matches starting at position LENGTH characters
+earlier then `point'.  ACTION of first rule that matches is performed.
+If no rule matches DEFAULT is treated as action to perform.
+
+If ACTION to perform is a string (DEFAULT may not be a string)
+then `replace-match' is called otherwise it is assumed ACTION is
+a function and it is called with single argument 1.
+
+DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
+  (if prefix-arg
+      (funcall (or when-prefix  'self-insert-command)
+               (prefix-numeric-value prefix-arg))
+    (let ((action (catch 'done
+                    (let ((dist (- (point) (point-min))))
+                      (dolist (rule spec)
+                        (when (>= dist (cadr rule))
+                          (save-excursion
+                            (backward-char (cadr rule))
+                            (when (looking-at (car rule))
+                              (throw 'done (cadr (cdr rule))))))))
+                    default)))
+      (if (stringp action) (replace-match action)
+        (funcall (or action 'self-insert-command) 1)))))
+
+(defmacro mn-magick-self-insert-define
+  (map key spec &optional default when-prefix)
+  `(define-key ,map ,key
+     (lambda () (interactive ,"*")
+       (mn-magick-self-insert-command ,spec ,default ,when-prefix))))
 
 
 (eval-when-compile (require 'sgml-mode))
 (eval-after-load "sgml-mode"
   (add-hook 'sgml-mode-hook (lambda ()
-   (define-key sgml-mode-map " "  'mn-html-space)
-   (define-key sgml-mode-map "<"  (rgb-insert-if-double "&lt;"))
-   (define-key sgml-mode-map ">"  (rgb-insert-if-double "&gt;"))
-   (define-key sgml-mode-map "&"  (rgb-insert-if-double "&amp;"))
-   (define-key sgml-mode-map "\"" (rgb-insert-if-double "&quot;"))
-   (define-key sgml-mode-map "~"  (rgb-insert-if-double "&nbsp;"))
-   (define-key sgml-mode-map "-"  (rgb-insert-if-double "&#8211;"))
-   (define-key sgml-mode-map "'"  (rgb-insert-if-double "&#8221;"))
-   (define-key sgml-mode-map "`"  (rgb-insert-if-double "&#8220;"))
-   (define-key sgml-mode-map ","  (rgb-insert-if-double "&#8222;"))
-   (define-key sgml-mode-map "."  (rgb-insert-if-double "&#8230;"))
-   (define-key sgml-mode-map "/"  'mn-sgml-slash-or-close-tag)
-;   (when (eval-when-compile (fboundp 'sgml-electric-tag-pair-mode))
-;     (sgml-electric-tag-pair-mode 1))
-   (setq indent-tabs-mode ()))))
+    (mn-magick-self-insert-define sgml-mode-map " "
+                                  '(("[^<]\\b\\w" 2 "\\&&nbsp;")
+                                    ("^\\w"       1 "\\&&nbsp;")
+                                    ("&nbsp;"     6 " "))
+                                  (lambda (n)
+                                    (mn-linkify-maybe)
+                                    (self-insert-command n)))
+    (mn-magick-self-insert-define sgml-mode-map "<"
+                                  '(("<"          1 "&lt;")
+                                    ("&lt;"       4 "&#xab;")))
+    (mn-magick-self-insert-define sgml-mode-map ">"
+                                  '(("&nbsp;&#8211;" 13 " -->")
+                                    (">"          1 "&gt;")
+                                    ("&gt;"       4 "&#xbb;")))
+    (mn-magick-self-insert-define sgml-mode-map "&"
+                                  '(("&"          1 "&amp;")))
+    (mn-magick-self-insert-define sgml-mode-map "."
+                                  '(("\\.\\."     2 "&#8230;")))
+    (mn-magick-self-insert-define sgml-mode-map "\""
+                                  '(("\""         1 "&quot;")))
+    (mn-magick-self-insert-define sgml-mode-map "~"
+                                  '(("~"          1 "&nbsp;")))
+    (mn-magick-self-insert-define sgml-mode-map "'"
+                                  '(("'"          1 "&#8221;")))
+    (mn-magick-self-insert-define sgml-mode-map "`"
+                                  '(("`"          1 "&#8220;")))
+    (mn-magick-self-insert-define sgml-mode-map ","
+                                  '((","          1 "&#8222;")))
+    (mn-magick-self-insert-define sgml-mode-map "."
+                                  '(("\\.\\."     2 "&#8230;")))
+    (mn-magick-self-insert-define sgml-mode-map "-"
+                                  '(("[-!]-"      2 nil)
+                                    (" -"         2 "&nbsp;&#8211;")
+                                    ("-"          1 "&nbsp;&#8211;")
+                                    ("&#8211;"    7 "&#8212;")
+                                    ("\\\\"       1 "&8209;")))
+    (mn-magick-self-insert-define sgml-mode-map "/"
+                                  '(("<"          1
+                                     (lambda (n)
+                                       (backward-delete-char 1)
+                                       (sgml-close-tag)))))
+    (mn-magick-self-insert-define sgml-mode-map [(backspace)]
+                                  '(("&lt;"       4 "<")
+                                    ("&#xab;"     6 "&lt;")
+                                    ("&gt;"       4 ">")
+                                    ("&#xbb;"     6 "&gt;")
+                                    ("&amp;"      5 "&")
+                                    ("&quot;"     6 "\"")
+                                    ("&#8230;"    7 "..")
+                                    ("&#8220;"    7 "`")
+                                    ("&#8221;"    7 "'")
+                                    ("&#8222;"    7 ",")
+                                    ("&#8212;"    7 "&#8211;")
+                                    ("&#82\\(?:11\\|09\\);" 7 "-")
+                                    ("&.....;"    7 "")
+                                    ("&....;"     6 "")
+                                    ("&...;"      5 "")
+                                    ("&..;"       4 ""))
+                                  'delete-backward-char
+                                  'delete-backward-char)
+    (setq indent-tabs-mode ()))))
 
 
 
 (defun replace-string-pairs (list)
-  (let* ((mark  (and transient-mark-mode mark-active))
+  (let* ((mark  (use-region-p))
          (start (if mark (region-beginning) (point)))
          (end   (if mark (region-end) (point-max))))
     (save-excursion
@@ -1566,21 +1714,6 @@ prefixed with \\b."
 (add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
 
 ;;}}}
-;;{{{   wc
-
-;; Based on http://www.emacswiki.org/cgi-bin/wiki/WordCount
-;; (defun wc (&optional start end)
-;;   "Prints number of lines, words and characters in region or whole buffer."
-;;   (interactive)
-;;   (let ((n 0)
-;;         (start (if mark-active (region-beginning) (point-min)))
-;;         (end (if mark-active (region-end) (point-max))))
-;;     (save-excursion
-;;       (goto-char start)
-;;       (while (< (point) end) (if (forward-word 1) (setq n (1+ n)))))
-;;     (message "%3d %3d %3d" (count-lines start end) n (- end start))))
-
-;;}}}
 ;;{{{   Command Frequency mode
 
 (require 'command-frequency)
@@ -1629,15 +1762,11 @@ prefixed with \\b."
          t)))
 
 (defun kill-emacs-scratch-save ()
-  (let ((buffer (get-buffer "*scratch*")))
-    (when buffer
-      (save-excursion
-        (save-restriction
-          (set-buffer buffer)
-          (widen)
-          (write-region (point-min) (point-max) scratch-file)
-          (unless (string-equal scratch-file buffer-auto-save-file-name)
-            (delete-auto-save-file-if-necessary t)))))))
+  (save-excursion
+    (set-buffer (get-buffer-create "*scratch*"))
+    (write-region nil nil scratch-file)
+    (unless (string-equal scratch-file buffer-auto-save-file-name)
+      (delete-auto-save-file-if-necessary t))))
 
 (add-hook 'kill-buffer-query-functions 'kill-scratch-buffer)
 (add-hook 'kill-emacs-hook 'kill-emacs-scratch-save)
@@ -1665,3 +1794,9 @@ prefixed with \\b."
 (kill-buffer "*Messages*")        ;kill buffer with messages
 
 ;(when (file-directory-p gnus-home-directory) (gnus))
+
+(if (fboundp 'emacs-init-time)
+    (add-hook 'after-init-hook
+              (function (lambda ()
+                          (message "Emacs initialization took %s"
+                                   (emacs-init-time))))))
