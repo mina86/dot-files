@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
 ;; Copyright 2006-2008 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-gnus,v 1.9 2008/05/23 09:34:47 mina86 Exp $
+;; $Id: dot-gnus,v 1.10 2008/07/24 08:52:55 mina86 Exp $
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -110,20 +110,23 @@
 
  nnmail-split-methods 'nnmail-split-fancy
  nnmail-split-fancy
- `(| (: nnmail-split-fancy-with-parent)
-     ("Content-Type"
-      ,(eval-when-compile
-         (concat "charset="
-                 (regexp-opt '("big5" "iso-2022-jp" "ISO-2022-KR" "euc-kr"
-                               "gb2312" "ks_c_5601-1987" "windows-1251") t)))
-      junk)
-     (: spam-split)
-     ("X-Gnus-Mail-Source" "mion.elka.pw.edu.pl"     "mail.mion")
-     (any "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
-     (any "mn86@\\(?:g?o2\\|tlen\\).pl"              "mail.mn86")
-     (any "@last\\.fm"                               "mail.notify")
-     (any "@\\(?:users\\.\\)?sourceforge\\.net"      "mail.sf")
-     "mail.misc"))
+ (let ((addr-hdr "to|from|b?cc"))
+   `(| (: nnmail-split-fancy-with-parent)
+       ("Content-Type"
+        ,(eval-when-compile
+           (concat "charset="
+                   (regexp-opt '("big5" "iso-2022-jp" "ISO-2022-KR" "euc-kr"
+                                 "gb2312" "ks_c_5601-1987" "windows-1251")
+                               t)))
+        junk)
+       ("Subject" "MSG ID:[0-9][0-9][0-9][0-9][0-9]"        junk)
+       (: spam-split)
+       ("X-Gnus-Mail-Source" "mion.elka.pw.edu.pl"          "mail.mion")
+       (addr-hdr "k02_a@staszic.waw.pl\\|K02_a"             "list.k02_a")
+       (addr-hdr "mn86@\\(?:g?o2\\|tlen\\).pl"              "mail.mn86")
+       (addr-hdr "@last\\.fm"                               "mail.notify")
+       (addr-hdr "@\\(?:users\\.\\)?sourceforge\\.net"      "mail.sf")
+       "mail.misc")))
 
 ;;}}}
 ;;{{{ Group parameters, Posting styles & Sending
