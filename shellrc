@@ -1,7 +1,7 @@
 ##                                                      -*- shell-script -*-
 ## .shellrc  -- global shell configuration file
 ## Copyright 2004-2008 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: shellrc,v 1.12 2008/05/23 09:34:47 mina86 Exp $
+## $Id: shellrc,v 1.13 2008/07/29 07:38:01 mina86 Exp $
 ##
 
 # Not interactive?
@@ -110,12 +110,16 @@ esac
 if [ -x /usr/local/bin/ls ]; then
 	alias ls='LANG=C /usr/local/bin/ls $LS_OPTIONS'
 else
-	alias ls="LANG=C ls $LS_OPTIONS"
+	alias ls='LANG=C ls $LS_OPTIONS'
 fi
 
 
 # Other
-command_exists run-emacs && alias e="run-emacs"
+if command_exists run-emacs; then
+	alias e=run-emacs
+elif command_exists emacsclient; then
+	alias e='emacsclient -n'
+fi
 alias mb=mv      # common typo
 alias rmd=rmdir
 command_exists mpc && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
