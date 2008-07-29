@@ -1,7 +1,7 @@
 MenuStyle *		BorderWidth 0, Foreground black, Background grey60,		\
 				Greyed grey40, HilightBack black, ActiveFore white,		\
 				Hilight3DOff, AnimationOff, RemoveSubmenus,				\
-				Font -*-Helvetica-bold-r-*-*-12-*-*-*-*-*-*-*,			\
+				Font -*-helvetica-bold-r-*-12-*-*-*-*-*-*-*,			\
 				PopupImmediately, PopupOffset 0 90, TitleUnderlines0,	\
 				SeparatorsShort, TrianglesSolid, SubmenusRight,			\
 				MouseWheel ScrollsMenuBackwards, AutomaticHotkeys,		\
