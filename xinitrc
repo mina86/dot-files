@@ -1,7 +1,7 @@
 
 ## .xinitrc  -- X init script
 ## Copyright 2008 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: xinitrc,v 1.4 2008/06/04 21:45:25 mina86 Exp $
+## $Id: xinitrc,v 1.5 2008/07/29 14:03:11 mina86 Exp $
 ##
 
 # Hostname
@@ -20,13 +20,16 @@ done
 xset -b -c r rate 250 50 s off +dpms
 cd
 if [ "$_hostname" = Xerwin ]; then
-	xcompmgr >/dev/null 2>&1 &
+	( cd /; xcompmgr >/dev/null 2>&1 </dev/null & ) &
 	synergys
 #	exec /usr/bin/gpg-agent --enable-ssh-support --daemon fvwm
 	exec /usr/bin/gpg-agent --daemon fvwm
-else
+elif [ "$_hostname" = Xtuptus ]; then
 	[ -e ~/current-bg ] && rm -f -- ~/current-bg
 	synergyc erwin
+	exec fvwm
+else
+	( cd /; xcompmgr >/dev/null 2>&1 </dev/null & ) &
 	exec fvwm
 fi
 return $?
