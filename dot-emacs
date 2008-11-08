@@ -1,7 +1,7 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.20 2008/07/24 09:10:42 mina86 Exp $
+;; $Id: dot-emacs,v 1.21 2008/11/08 21:12:41 mina86 Exp $
 ;;
 ;;{{{ Compatibility with old Emacses
 
@@ -47,7 +47,7 @@ use `use-region-p'."
 ;;{{{ System dependend data and directories
 
 ;; Gnus
-(when (eval-when-compile (string-equal "erwin" system-name))
+(when (eval-when-compile (string-match "^erwin\\." system-name))
   (setq gnus-home-directory (expand-file-name "~/.gnus")
         gnus-init-file
         (concat gnus-home-directory
@@ -80,7 +80,7 @@ use `use-region-p'."
 
 (defvar auto-byte-compile-files-list
   (let ((ghd (or (and (boundp 'gnus-home-directory) gnus-home-directory)
-                 (expand-file-name "~"))))
+                 (expand-file-name "~/.gnus"))))
     (cond
      ((string-match "\\.elc$" (or user-init-file "/home/mina86/.emacs.d/init.el"))
       (list (substring user-init-file 0 -4)
@@ -104,9 +104,9 @@ use `use-region-p'."
   `auto-byte-compile-files-list'.
 
 Entries equal to \".\", \"..\" or ending with \"/.\" or \"/..\"
-are ignored.  If element is a directory it will be processed
-recursively but if regexp is nil only files ending with \".el\"
-will be processed.
+are ignored.  Directories starting with a dot will be ignored.
+If element is a directory it will be processed recursively but if
+regexp is nil only files ending with \".el\" will be processed.
 
 match can be
 - nil which is equivalent to passing `auto-byte-compile-files-list';
@@ -155,12 +155,13 @@ itself."
       (while (setq f (car file))
         (setq file (cdr file) f (expand-file-name f))
         (cond
-         ((string-match f "\\(^\\|/\\)\\.\\.?$"))
+         ((string-match f "\\(?:^\\|/\\)\\.\\.?$"))
          ((file-directory-p f)
-          (if regexp
-              (setq file (append (directory-files f t nil t) file))
-            (setq n (+ n (auto-byte-compile-file (directory-files f t nil t)
-                                                 (or match t) '("\\.el$"))))))
+          (unless (string-match f "\\(?:^\\|/\\)\\.")
+            (if regexp
+                (setq file (append (directory-files f t nil t) file))
+              (setq n (+ n (auto-byte-compile-file (directory-files f t nil t)
+                                                   (or match t) '("\\.el$")))))))
          ((and (file-newer-than-file-p f (byte-compile-dest-file f))
                (or (not match)
                    (catch 'found
@@ -1189,7 +1190,7 @@ temporary map (using `set-temporary-map' to MAP."
 (if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
 (if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
 (and window-system (load "fringe" t)
-     (set-fringe-mode (if (string-match "^erwin\." system-name) 7 4)))
+     (set-fringe-mode (if (string-match "^erwin\\." system-name) 7 4)))
 
 
 ;; Modeline
@@ -1651,6 +1652,20 @@ prefixed with \\b."
 (add-to-list 'auto-mode-alist '("\\.lsl$" . lsl-mode))
 (add-hook 'lsl-mode-hook (function (lambda nil (setq indent-tabs-mode nil))))
 
+
+;; Haskell mode
+
+(when (eval-when-compile
+        (file-directory-p (concat user-emacs-directory "elisp/haskell-mode")))
+  (load (concat user-emacs-directory "elisp/haskell-mode/haskell-site-file"))
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+  ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
+   (add-hook 'haskell-mode-hook
+             (lambda ()
+               (setq comment-padding  " "
+                     comment-start    "--"))))
+
 ;;}}}
 
 ;;}}}
@@ -1658,7 +1673,7 @@ prefixed with \\b."
 
 ;;{{{   git
 
-(when (eval-when-compile (not (string-equal "pikus" system-name)))
+(when (eval-when-compile (not (string-match "^pikus" system-name)))
   (autoload 'git-status "git" "Entry point into git-status mode." t)
   ;(add-to-list 'vc-handled-backends 'GIT)
   (setq vc-handled-backends '(CVS SVN Git GIT))
