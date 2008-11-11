@@ -1,7 +1,6 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-;; $Id: dot-emacs,v 1.21 2008/11/08 21:12:41 mina86 Exp $
 ;;
 ;;{{{ Compatibility with old Emacses
 
@@ -202,43 +201,6 @@ match will equal nil."
 (defmacro set-key-lambda (key &rest body)
   `(global-set-key ,key (function (lambda () (interactive) ,@body))))
 
-;;{{{   Temporary map
-
-(defconst temporary-map-parent
-  `(keymap
-    (27 keymap (27 . set-temporary-map))
-    (7 . set-temporary-map)
-    (t . ,(lambda () (interactive)
-            (setq overriding-local-map nil
-                  unread-command-events
-                  (append (listify-key-sequence (this-command-keys))
-                          unread-command-events)))
-       ))
-  "A parent for all temporary map keymaps.  It has a binding
-for C-g and ESC ESC which disables `overriding-local-map' and
-binding for everything else which disables `overriding-local-map'
-and passes input event through.
-
-Maps which have `temporary-map-parent' as their parents may be
-used as `overriding-local-map' to temporarly introduce some
-bindings which will be disabled as soon as binding not found in
-a map is used.")
-
-(defun make-temporary-map (&optional map)
-  "It MAP is nil creates a new empty temporary map with parent
-set to `temporary-map-parent'.  If MAP is not nil sets its parent
-to `temporary-map-parent' and returns it."
-  (unless map (setq map (list 'keymap)))
-  (set-keymap-parent map temporary-map-parent)
-  map)
-
-(defun set-temporary-map (&optional map)
-  "When called interacivelly disables `overriding-local-map'
-otherwise sets it to map."
-  (interactive)
-  (setq overriding-local-map map))
-
-;;}}}
 ;;{{{   Sequence commands
 
 ;; Sequence commands  1.3  by me, Michal Nazarewicz ;)
@@ -389,6 +351,9 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   Misc
 
+(when window-system (global-unset-key "\C-z"))
+
+
 (unless window-system
   (global-set-key "\C-h"          'delete-backward-char))
 (global-set-key [(backspace)]   'delete-backward-char)
@@ -403,6 +368,7 @@ three times - beginning of buffer; four times - back to where it was."
 (global-set-key "\C-xk"         'kill-this-buffer)      ; don't ask which
                                                         ; buffer to kill
 (global-set-key "\C-cr"         'revert-buffer)         ; Reload buffer
+(set-key-lambda "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
 (global-set-key [(control ";")] 'comment-dwim)          ; C-; comments
 
 ;(require 'imenu)
@@ -437,19 +403,18 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   DWIW %
 
-;; http://www.zafar.se/bkz/Articles/EmacsTips
-(global-set-key "%" 'match-paren-maybe)
+;; Based on http://www.zafar.se/bkz/Articles/EmacsTips
+(global-set-key [(control ?%)] 'match-paren)
 
-(defun match-paren-maybe (arg)
-  "Go to the matching parenthesis if on parenthesis otherwise insert %."
-  (interactive "p")
+(defun match-paren ()
+  "Go to the matching parenthesis if on parenthesis."
+  (interactive)
   (cond ((and (not (= (point) (point-max)))
               (equal ?( (char-syntax (char-after))))
          (forward-list 1))
         ((and (not (= (point) (point-min)))
               (equal ?) (char-syntax (char-before))))
-         (backward-list 1))
-        (t (self-insert-command (or arg 1)))))
+         (backward-list 1))))
 
 ;;}}}
 ;;{{{   Just one space
@@ -1050,68 +1015,6 @@ non-nill or `compile' otherwise."
 (global-set-key [(control shift y)] 'insert-register)
 
 ;;}}}
-;;{{{   C-x C-b followed by C-b cycles through buffers
-
-(defmacro lambda-run-and-set-temporary-map (map &rest body)
-  "Returns a lambda expression which executes BODY and then sets
-temporary map (using `set-temporary-map' to MAP."
-  (declare (indent 1))
-  `(lambda () (interactive)
-     ,@body
-     (set-temporary-map ,map)))
-
-(defvar switch-to-buffer-map
-  (let ((map (make-temporary-map)))
-    (define-key map "\C-b" 'switch-to-next-buffer)
-    (define-key map [(control right)] 'next-buffer)
-    (define-key map [(control left)] 'previous-buffer)
-    (define-key map [(control tab)] 'next-buffer)
-    (define-key map [(control shift tab)] 'previous-buffer)
-    (define-key map [(space)] (lambda () (interactive)(set-temporary-map ())))
-    (define-key map "b"    (lambda-run-and-set-temporary-map nil
-                             (switch-to-buffer (other-buffer))))
-    (define-key map "\C-k" 'kill-this-buffer)
-    map)
-  "A temporary keymap activated after `switch-to-buffer' is called.")
-
-(defconst switch-to-next-buffer-skip-buffers
-  (eval-when-compile
-    (concat "^" (regexp-opt (list "newsrc-dribble" "\\*Completions\\*") t)))
-  "Regexp maching buffer names to skip when
-`switch-to-next-buffer' is called.")
-
-(defun switch-to-next-buffer ()
-  "Switchs to next buffer."
-  (interactive)
-  (let* ((starting-buffer (other-buffer))
-         (buffer          (other-buffer starting-buffer)))
-    (while (and (not (equal buffer (current-buffer)))
-                (string-match switch-to-next-buffer-skip-buffers
-                              (buffer-name buffer)))
-       (bury-buffer buffer)
-       (setq buffer (other-buffer starting-buffer)))
-    (bury-buffer)
-    (switch-to-buffer starting-buffer)
-    (switch-to-buffer buffer)))
-
-(global-set-key "\C-x\C-b"
-                (lambda-run-and-set-temporary-map switch-to-buffer-map
-                  (switch-to-buffer (other-buffer))))
-
-(global-set-key [(control x) (control right)]
-                (lambda-run-and-set-temporary-map switch-to-buffer-map
-                  (next-buffer)))
-(global-set-key [(control x) (control left)]
-                (lambda-run-and-set-temporary-map switch-to-buffer-map
-                  (previous-buffer)))
-(global-set-key [(control tab)]
-                (lambda-run-and-set-temporary-map switch-to-buffer-map
-                  (next-buffer)))
-(global-set-key [(control shift tab)]
-                (lambda-run-and-set-temporary-map switch-to-buffer-map
-                  (previous-buffer)))
-
-;;}}}
 
 ;;}}}
 ;;{{{ Syntax highlighting
@@ -1249,7 +1152,7 @@ temporary map (using `set-temporary-map' to MAP."
 (define-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
   (lambda () (interactive) (delete-minibuffer-contents)))
 (setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
-(setq frame-title-format "%b - Emacs") ;frame title format
+(setq frame-title-format "Emacs") ;frame title format
 (setq history-delete-duplicates t);don't show splash screen
 (setq inhibit-splash-screen   t)  ;don't show splash screen
 (setq inhibit-startup-echo-area-message "mina86") ;don't show "For info..." message
@@ -1259,6 +1162,7 @@ temporary map (using `set-temporary-map' to MAP."
 (setq truncate-lines nil)         ;wrap lines
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
 (setq require-final-newline t)    ;always end file with NL
+(setq indicate-empty-lines t)     ;show empty lines at the end of file
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
 (setq gc-cons-threshold 4000000)  ;bytes before garbage collection
 (setq ange-ftp-try-passive-mode t);passive FTP
@@ -1582,6 +1486,33 @@ prefixed with \\b."
           (function (lambda () (define-key nroff-mode-map " " 'nroff-space))))
 
 ;;}}}
+;;{{{   Generate serialVersionUID in Java
+
+(defun mn-serialVersionUID (&optional insert)
+  "When called interactivly or with a non nil argument inserts
+a random 64-bit hexadecimal integer prefixed with \"0x\" and
+suffixed with \"L\".  When called with nil argument or with
+argument ommited returns that number."
+  (interactive (list t))
+  (if insert
+      (insert (mn-serialVersionUID))
+    (format "0x%04x%04x%04x%04xL"
+            (random 65536) (random 65536)
+            (random 65536) (random 65536))))
+
+(add-hook 'java-mode-hook (lambda ()
+  (add-hook 'write-contents-functions (lambda ()
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (while (re-search-forward "serialVersionUID\s+=\s+[0-9a-fA-FxX]+L;"
+                                  nil t)
+          (replace-match
+           (concat "serialVersionUID = " (mn-serialVersionUID) ";")
+           nil t))))))))
+
+;;}}}
 ;;{{{   Misc
 
 ;; Text mode
@@ -1625,6 +1556,12 @@ prefixed with \\b."
   (add-hook 'scheme-mode-hook     func))
 
 
+;; Sawfish mode
+(autoload 'sawfish-mode "sawfish" "Mode for editing Sawfish config files")
+(add-to-list 'auto-mode-alist '(".*sawfishrc\\'" . sawfish-mode))
+(add-to-list 'auto-mode-alist '(".*\\.jl\\'" . sawfish-mode))
+
+
 ;; FVWM mode
 ;; http://groups.google.fr/groups?threadm=mailman.2630.1083314129.1061.help-gnu-emacs%40gnu.org
 (autoload 'fvwm-mode "fvwm-mode" "Mode fore editing fvwm's config files" t)
@@ -1654,7 +1591,6 @@ prefixed with \\b."
 
 
 ;; Haskell mode
-
 (when (eval-when-compile
         (file-directory-p (concat user-emacs-directory "elisp/haskell-mode")))
   (load (concat user-emacs-directory "elisp/haskell-mode/haskell-site-file"))
@@ -1703,6 +1639,7 @@ prefixed with \\b."
   (define-key folding-mode-map "\C-e"          'my-end)
 
   (folding-add-to-marks-list 'php-mode        "// {{{" "// }}}" nil t)
+  (folding-add-to-marks-list 'sawfish-mode    ";;{{{" ";;}}}" nil t)
   (folding-add-to-marks-list 'javascript-mode "// {{{" "// }}}" nil t)
   (folding-add-to-marks-list 'css-mode        "/* {{{" "/* }}}" " */" t)
 
@@ -1790,6 +1727,8 @@ prefixed with \\b."
 
 ;; Start server
 (server-start)
+
+(random t)
 
 ;;}}}
 ;;{{{ Fun stuff ;)
