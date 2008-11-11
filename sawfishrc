@@ -1,0 +1,190 @@
+;; Show errors on screen
+(require 'sawfish.wm.ext.error-handler)
+(setq error-destination 'screen)
+
+
+;; Hyper (win key) as prefix
+(custom-set-typed-variable
+ (quote wm-modifier-value) (quote (hyper)) (quote modifier-list))
+
+
+;; Focus and Auto Raise
+(require 'auto-raise)
+(setq focus-mode             'enter-only
+      focus-click-through    t
+      raise-windows-on-focus t
+      raise-window-timeout   200)
+(bind-keys window-keymap
+           "W-Button2-Click"(lambda () (raise-lower-window   (input-focus))))
+
+
+;; Moving and resizing
+(require 'sawfish.wm.commands.move-resize)
+(setq move-show-position     t
+      resize-show-dimensions t
+      move-outline-mode      'box
+      resize-outline-mode    'box
+      move-snap-epsilon      5
+      move-snap-mode         'magnetism)
+
+(bind-keys window-keymap
+           "W-Button1-Move" (lambda()(move-window-interactively  (input-focus)))
+           "W-Button3-Move" (lambda()(resize-window-interactively(input-focus))))
+
+
+;; Viewports
+(set-number-of-viewports 10 1)
+(set-screen-viewport 0 0)
+
+(bind-keys global-keymap
+           "W-F1"           (lambda () (set-screen-viewport 0 0))
+           "W-F2"           (lambda () (set-screen-viewport 1 0))
+           "W-F3"           (lambda () (set-screen-viewport 2 0))
+           "W-F4"           (lambda () (set-screen-viewport 3 0))
+           "W-F5"           (lambda () (set-screen-viewport 4 0))
+           "W-F6"           (lambda () (set-screen-viewport 5 0))
+           "W-F7"           (lambda () (set-screen-viewport 6 0))
+           "W-F8"           (lambda () (set-screen-viewport 7 0))
+           "W-F9"           (lambda () (set-screen-viewport 8 0))
+           "W-F9"           (lambda () (set-screen-viewport 9 0)))
+
+(defmacro set-current-window-viewport-x-0 (x)
+  (list 'lambda nil (list 'set-window-viewport (list 'input-focus) x '0)))
+
+(bind-keys window-keymap
+           "W-1"            (set-current-window-viewport-x-0 0)
+           "W-2"            (set-current-window-viewport-x-0 1)
+           "W-3"            (set-current-window-viewport-x-0 2)
+           "W-4"            (set-current-window-viewport-x-0 3)
+           "W-5"            (set-current-window-viewport-x-0 4)
+           "W-6"            (set-current-window-viewport-x-0 5)
+           "W-7"            (set-current-window-viewport-x-0 6)
+           "W-8"            (set-current-window-viewport-x-0 7)
+           "W-9"            (set-current-window-viewport-x-0 8)
+           "W-0"            (set-current-window-viewport-x-0 9))
+
+
+;; No decoration
+(add-hook 'before-add-window-hook
+          (lambda (w)
+            (unless (window-transient-p w)
+              (set-window-type w 'unframed))))
+
+
+;; Transparency
+(defvar default-window-alpha (cons 0.9 0.7))
+
+(defconst window-alpha-max   #xffffffff)
+(defconst window-alpha-min   #x1fffffff)
+
+;; If alpha is a list then:
+;; * if blur is nil     takes alpha's car,
+;; * if blur is not nil takes alpha's cdr.
+;; If now alpha is not a number returns `window-alpha-max'.
+;; If alpha is within [0, 1] multiplies it by `window-alpha-max'
+;; Returns (max `window-alpha-min' (min `window-alpha-max' alpha))
+(defun window-alpha-value (alpha blur)
+  (let ((a (if (listp alpha) (if blur (cdr alpha) (car alpha)) alpha)))
+    (if (numberp a)
+        (max window-alpha-min
+             (min window-alpha-max
+                  (or (and (>= a 0) (<= a 1) (* a window-alpha-max)) a)))
+      window-alpha-max)))
+
+;; Return's window's alpha property or `default-window-alpha'
+(defun window-alpha-property (w)
+          (or (window-get w 'alpha) default-window-alpha))
+
+;; Sets window opacity.
+;; If alpha is nil uses `window-alpha-property'.
+;; Uses `window-alpha-value' to get alpha value from alpha and blur arguments.
+(defun set-window-alpha (w alpha #!optional blur)
+  (let ((a (window-alpha-value (or alpha (window-alpha-property w)) blur)))
+    (if (= a window-alpha-max)
+        (delete-x-property (window-frame-id w) '_NET_WM_WINDOW_OPACITY))
+    (set-x-property (window-frame-id w) '_NET_WM_WINDOW_OPACITY
+                    (make-vector 1 a) 'CARDINAL 32))
+  (sync-server))
+
+(add-hook 'focus-in-hook  (lambda (w fmode) (set-window-alpha w nil nil)))
+(add-hook 'focus-out-hook (lambda (w fmode) (set-window-alpha w nil t  )))
+
+
+;; Applications & Menus
+(require 'menus)
+(require 'customize)
+(require 'jump-or-exec)
+
+(defvar mn-term-command    "term -T term          -g 80x32+583+0")
+(defvar mn-mpdshow-command "term -T mpdshow -mesg -g 80x1-68+0 -e mpd-show -c80")
+(defvar mn-irssi-command   "term -T irssi   -mesg -g 80x10-68+10 -e irssi")
+
+(setq root-menu
+      '(("_irssi"     (jump-or-exec "^irssi$"  mn-irssi-command))
+        ("_Emacs"     (jump-or-exec "^Emacs"   "emacs"))
+        ("The _GIMP"  (jump-or-exec "^GIMP$"   "gimp"))
+        ("GQ_View"    (jump-or-exec "^GQview$" "gqview"))
+        ("_Opera"     (jump-or-exec "^Opera$"  "opera"))
+        (nil)
+        ("_Customize" customize)
+        ("E_xit"      ("_Quit"    quit)
+                      ("_Reboot"
+                       (progn (system "( sleep 2; /sbin/reboot )") (quit)))
+                      ("Power _Off"
+                       (progn (system "( sleep 2; /sbin/halt   )") (quit))))))
+
+(bind-keys root-window-keymap
+           "Button1-Click2" (lambda () (system (concat mn-term-command " &")))
+           "Button2-Click"  (lambda () (popup-menu window-menu))
+           "Button3-Click"  popup-root-menu)
+
+(bind-keys global-keymap
+           "W-`"            (lambda () (system (concat mn-term-command " &"))))
+
+(bind-keys window-keymap
+           "W-Space"        (lambda () (popup-window-menu (input-focus))))
+;; (bind-keys window-keymap
+;;            "W-Button3-Click"(lambda () (popup-window-menu (input-focus))))
+
+
+;; Music Player Daemon
+(defun mn-mpd (command)
+  (system (concat "echo -e '" command "\\nclose\\n' "
+                  "> /dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}")))
+(defmacro mn-mpd-lambda (command)
+  (list 'lambda () (list 'mn-mpd command)))
+
+(bind-keys global-keymap
+           "W-z"            (mn-mpd-lambda "previous")
+           "W-x"            (mn-mpd-lambda "play")
+           "W-c"            (mn-mpd-lambda "pause")
+           "W-v"            (mn-mpd-lambda "stop")
+           "W-b"            (mn-mpd-lambda "next"))
+
+
+;; Matcher
+(require 'sawfish.wm.ext.match-window)
+(setq match-window-profile
+      '((((WM_CLASS . "^Opera/opera$"))
+         (ignore-program-position . #t) (position 583 . 350)
+         (dimensions 1096 . 700) (viewport 1 . 1))
+        (((WM_ICON_NAME . "^GQview$"))
+         (viewport 3 . 1))
+        (((WM_CLASS . "^Emacs"))
+         (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 87)
+         (viewport 0 . 0))
+        (((WM_CLASS . "^Gimp/gimp$"))
+         (alpha . 1))
+        (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
+         (viewport 2 . 1) (group . Gimp))
+        (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
+         (place-mode . centered) (depth . 16)
+         (sticky . #t) (sticky-viewport . #t)
+         (cycle-skip . #t) (window-list-skip . #t) (task-list-skip . #t))
+        (((WM_ICON_NAME . "^mpdshow$"))
+         (focus-when-mapped . #f) (focus-mode . click)
+         (sticky . #t) (sticky-viewport . #t)
+         (cycle-skip . #t) (window-list-skip . #t) (task-list-skip . #t))
+        (((WM_ICON_NAME . "^irssi$"))
+         (sticky . #t) (sticky-viewport . #t))))
+
