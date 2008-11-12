@@ -148,10 +148,18 @@
         ("GQ_View"    (mn-jump-or-exec "^GQview$" "gqview"))
         ("_Opera"     (mn-jump-or-exec "Opera$"   "opera")))
       root-menu
-      '(("_Customize" customize)
-        ("_Quit"      quit)
-        ("_Reboot"    (progn (system "( sleep 2; /sbin/reboot )") (quit)))
-        ("Power _Off" (progn (system "( sleep 2; /sbin/halt   )") (quit)))))
+      (append
+       '(("_Customize" customize)
+         ("Re_start"   restart)
+         ()
+         ("_Quit"      quit)
+         ("_Reboot"    (progn (system "( sleep 2; /sbin/reboot )") (quit))))
+       (and (file-exists-p "/usr/local/sbin/reboot-w")
+            '(("Reboot _Windows"
+               (progn (system "( sleep 2; /usr/local/sbin/reboot-w )") (quit)))))
+       '(("Power _Off" (progn (system "( sleep 2; /sbin/halt   )") (quit))))))
+
+
 
 (bind-keys root-window-keymap
            "Button1-Click2" (lambda () (system (concat mn-term-command " &")))
@@ -170,8 +178,8 @@
 
 ;; Music Player Daemon
 (defun mn-mpd (command)
-  (system (concat "echo -e '" command "\\nclose\\n' "
-                  "> /dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}")))
+  (system (concat "echo '" command "\nclose\n' >/dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}")))
+
 (defmacro mn-mpd-lambda (command)
   (list 'lambda () (list 'mn-mpd command)))
 
