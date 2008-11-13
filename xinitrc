@@ -14,8 +14,7 @@ case "$(hostname)" in
 erwin*)
 	( cd /; exec xcompmgr >/dev/null 2>&1 </dev/null ) &
 	synergys
-#	exec /usr/bin/gpg-agent --enable-ssh-support --daemon fvwm
-#	exec /usr/bin/gpg-agent --daemon fvwm
+#	exec /usr/bin/gpg-agent --enable-ssh-support --daemon sawfish
 	exec /usr/bin/gpg-agent --daemon sawfish
 	;;
 tuptus*)
@@ -25,7 +24,12 @@ tuptus*)
 	;;
 *)
 	( cd /; exec xcompmgr >/dev/null 2>&1 </dev/null ) &
-	exec fvwm
+	setxkbmap pl
+	if [ -f ~/.wallpaper.bmp ] && 
+		which Esetroot >/dev/null 2>/dev/null; then
+		Esetroot -scale ~/.wallpaper.bmp
+	fi
+	exec sawfish
 esac
 
 return $?
