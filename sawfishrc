@@ -17,6 +17,29 @@
 ;;
 
 
+;; What machine are we running
+(defvar mn-machine
+  (catch 'return
+    (let ((sn (system-name)))
+    (mapc (lambda (spec)
+            (when (string-looking-at (car spec) sn) (throw 'return (cdr spec))))
+          '(("erwin"     . erwin)
+            ("tuptus"    . tuptus)
+            ("localhost" . pikus)      ; haven't figured out why (system-name)
+            ("pikus"     . pikus)))))) ; returns "localhost.localdomain" on pikus
+
+(defun mn-machine-cond (#!rest list)
+  (catch 'return
+    (mapc (lambda (spec)
+            (when (= mn-machine (car spec)) (throw 'return (eval (cdr spec)))))
+          list)))
+
+(defun mn-machine-filter (#!rest list)
+  (mapcar cdr (filter (lambda (element)
+                        (let ((a (car element)))
+                          (or (not a) (= mn-machine (car element))))) list)))
+
+
 ;; Show errors on screen
 (require 'sawfish.wm.ext.error-handler)
 (setq error-destination 'screen)
@@ -132,9 +155,15 @@
 (require 'menus)
 (require 'customize)
 
-(defvar mn-term-command    "term -T term          -g 80x32+583+0")
-(defvar mn-mpdshow-command "term -T mpdshow -mesg -g 80x1-68+0 -e mpd-show -c80")
-(defvar mn-irssi-command   "term -T irssi   -mesg -g 80x10-68+10 -e irssi")
+(defvar mn-term-command
+  (mn-machine-cond '(erwin . "term -T term          -g 80x32+583+0")
+                   '(pikus . "term -T term          -g 80x35+492+0")))
+(defvar mn-mpdshow-command
+  (when (= mn-machine 'erwin)
+    "term -T mpdshow -mesg -g 80x1-68+0 -e mpd-show -c80"))
+(defvar mn-irssi-command
+  (mn-machine-cond '(erwin . "term -T irssi   -mesg -g 80x10-68+10 -e irssi")
+                   '(pikus . "term -T irssi   -mesg -g 80x10-72+0  -e irssi")))
 
 ;; Inspired by jump-or-exec written by Damien Elmes <resolve@repose.cx>
 (defun mn-jump-or-exec (regexp command)
@@ -148,7 +177,7 @@
         ("GQ_View"    (mn-jump-or-exec "^GQview$" "gqview"))
         ("_Opera"     (mn-jump-or-exec "Opera$"   "opera")))
       root-menu
-      (append
+      (nconc
        '(("_Customize" customize)
          ("Re_start"   restart)
          ()
@@ -194,27 +223,44 @@
 ;; Matcher
 (require 'sawfish.wm.ext.match-window)
 (setq match-window-profile
-      '((((WM_CLASS . "^Opera/opera$"))
+      (mn-machine-filter
+       '(erwin
+         ((WM_CLASS . "^Opera/opera$"))
          (ignore-program-position . #t) (position 583 . 350)
          (dimensions 1096 . 700) (viewport 1 . 1))
-        (((WM_ICON_NAME . "^GQview$"))
+       '(pikus
+         ((WM_CLASS . "^Opera/opera$"))
+         (ignore-program-position . #t) (position 492 . 400)
+         (dimensions 1108 . 800) (viewport 1 . 1))
+       '(()
+         ((WM_ICON_NAME . "^GQview$"))
          (viewport 3 . 1))
-        (((WM_CLASS . "^Emacs"))
+       '(erwin
+         ((WM_CLASS . "^Emacs"))
          (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 87)
          (viewport 0 . 0))
-        (((WM_CLASS . "^Gimp/gimp|MPlayer/.*$"))
+       '(pikus
+         ((WM_CLASS . "^Emacs"))
+         (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 120)
+         (viewport 0 . 0))
+       '(()
+         ((WM_CLASS . "^Gimp/gimp|MPlayer/.*$"))
          (alpha . 1))
-        (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
+       '(()
+         ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
          (viewport 2 . 1) (group . Gimp))
-        (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
+       '(()
+         ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
          (place-mode . centered) (depth . 16)
          (sticky . #t) (sticky-viewport . #t)
          (cycle-skip . #t) (window-list-skip . #t) (task-list-skip . #t))
-        (((WM_ICON_NAME . "^mpdshow$"))
+       '(()
+         ((WM_ICON_NAME . "^mpdshow$"))
          (focus-when-mapped . #f) (focus-mode . click)
          (sticky . #t) (sticky-viewport . #t)
          (cycle-skip . #t) (window-list-skip . #t) (task-list-skip . #t))
-        (((WM_ICON_NAME . "^irssi$"))
+       '(()
+         ((WM_ICON_NAME . "^irssi$"))
          (sticky . #t) (sticky-viewport . #t))))
 
 ;; Run some applications
@@ -223,10 +269,12 @@
             (mapc (lambda (pair)
                     (unless (get-window-by-name-re (car pair))
                       (system (concat (cdr pair) " &"))))
-                  `(("Opera"    . "opera")
-                    ("Emacs"    . "emacs")
-                    ("irssi"    . ,mn-irssi-command)
-                    ("mpdshow"  . ,mn-mpdshow-command)
-                    ("gkrellm"  . "gkrellm")))))
+                  (nconc
+                   `(("Opera"    . "opera")
+                     ("Emacs"    . "emacs")
+                     ("irssi"    . ,mn-irssi-command))
+                   (and mn-mpdshow-command
+                        (cons "mpdshow"  mn-mpdshow-command))
+                   '(("gkrellm"  . "gkrellm"))))))
 
 ; (restart)
