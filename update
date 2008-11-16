@@ -47,20 +47,30 @@ else
 fi
 
 
+cp_backup () {
+	if [ -e "$2" ]; then
+		if ! cmp -s -- "$1" "$2"; then
+			mv -- "$2" "$2~"
+			cp -- "$1" "$2"
+		fi
+	else
+		cp -- "$1" "$2"
+	fi
+}
+
+
 while read FILE DEST; do
 	match "$@" || continue
-	[ X"${DEST#'~'}"  = X"$DEST" ] || DEST=$HOME${DEST#'~'}
-	[ X"${DEST%/.}" = X"$DEST" ] || DEST=$DEST$FILE
-	[ X"${DEST%/}"  = X"$DEST" ] || DEST=$DEST$FILE
+	[ X"${DEST#'~'}" = X"$DEST" ] || DEST=$HOME${DEST#'~'}
+	[ X"${DEST%/.}"  = X"$DEST" ] || DEST=$DEST$FILE
+	[ X"${DEST%/}"   = X"$DEST" ] || DEST=$DEST$FILE
 
 	if ! [ -d "${DEST%/*}" ]; then
 		echo "Skipping $FILE"
 	elif [ $DIRECTION = from ]; then
-		if [ -e "$FILE" ]; then mv -- "$FILE" "$FILE~"; fi
-		cp -- "$DEST" "$FILE"
+		cp_backup "$DEST" "$FILE"
 	else
-		if [ -e "$DEST" ]; then mv -- "$DEST" "$DEST~"; fi
-		cp -- "$FILE" "$DEST"
+		cp_backup "$FILE" "$DEST"
 	fi
 done <<EOF
 bash_profile       ~/.
