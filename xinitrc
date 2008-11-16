@@ -18,16 +18,20 @@ erwin*)
 	exec /usr/bin/gpg-agent --daemon sawfish
 	;;
 tuptus*)
-	[ -e ~/current-bg ] && rm -f -- ~/current-bg
-	synergyc erwin
-	exec fvwm
+	(
+		sleep 1
+		[ -e ~/current-bg ] && rm -f -- ~/current-bg
+		[ -x ~/bin/setbg ] && ~/bin/setbg random 
+		synergyc erwin
+	) &
+	exec sawfish
 	;;
 *)
 	( cd /; exec xcompmgr >/dev/null 2>&1 </dev/null ) &
 	setxkbmap pl
 	if [ -f ~/.wallpaper.bmp ] && 
 		which Esetroot >/dev/null 2>/dev/null; then
-		Esetroot -scale ~/.wallpaper.bmp
+		nice Esetroot -scale ~/.wallpaper.bmp &
 	fi
 	exec sawfish
 esac

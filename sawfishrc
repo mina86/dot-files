@@ -21,23 +21,29 @@
 (defvar mn-machine
   (catch 'return
     (let ((sn (system-name)))
-    (mapc (lambda (spec)
-            (when (string-looking-at (car spec) sn) (throw 'return (cdr spec))))
-          '(("erwin"     . erwin)
-            ("tuptus"    . tuptus)
-            ("localhost" . pikus)      ; haven't figured out why (system-name)
-            ("pikus"     . pikus)))))) ; returns "localhost.localdomain" on pikus
+      (mapc (lambda (spec)
+              (when (string-looking-at (car spec) sn)
+                (throw 'return (cdr spec))))
+            '(("erwin"     . erwin)
+              ("tuptus"    . tuptus)
+              ("pikus"     . pikus))))))
 
 (defun mn-machine-cond (#!rest list)
   (catch 'return
     (mapc (lambda (spec)
-            (when (= mn-machine (car spec)) (throw 'return (eval (cdr spec)))))
+            (when (= mn-machine (car spec))
+              (throw 'return (eval (cdr spec)))))
           list)))
 
 (defun mn-machine-filter (#!rest list)
   (mapcar cdr (filter (lambda (element)
                         (let ((a (car element)))
-                          (or (not a) (= mn-machine (car element))))) list)))
+                          (cond
+                           ((not a)           t)
+                           ((not (listp a))   (= mn-machine a))
+                           ((= (car a) 'eval) (eval (cdr a)))
+                           (t                 (member mn-machine a)))))
+                      list)))
 
 
 ;; Show errors on screen
@@ -156,14 +162,16 @@
 (require 'customize)
 
 (defvar mn-term-command
-  (mn-machine-cond '(erwin . "term -T term          -g 80x32+583+0")
-                   '(pikus . "term -T term          -g 80x35+492+0")))
+  (mn-machine-cond '(erwin  . "term -T term        -g 80x32+583+0")
+                   '(tuptus . "term -T term        -g 80x25-64+100")
+                   '(pikus  . "term -T term        -g 80x35+492+0")))
 (defvar mn-mpdshow-command
   (when (= mn-machine 'erwin)
     "term -T mpdshow -mesg -g 80x1-68+0 -e mpd-show -c80"))
 (defvar mn-irssi-command
-  (mn-machine-cond '(erwin . "term -T irssi   -mesg -g 80x10-68+10 -e irssi")
-                   '(pikus . "term -T irssi   -mesg -g 80x10-72+0  -e irssi")))
+  (mn-machine-cond '(erwin  . "term -T irssi -mesg -g 80x10-68+10 -e irssi")
+                   '(tuptus . "term -T irssi -mesg -g 80x10-64+0  -e irssi")
+                   '(pikus  . "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
 
 ;; Inspired by jump-or-exec written by Damien Elmes <resolve@repose.cx>
 (defun mn-jump-or-exec (regexp command)
@@ -206,40 +214,50 @@
 
 
 ;; Music Player Daemon
-(defun mn-mpd (command)
-  (system (concat "echo '" command "\nclose\n' >/dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}")))
+(when (member mn-machine '(erwin tuptus))
+  (when (and (= mn-machine 'tuptus) (not (getenv "MPD_HOST")))
+    (setenv "MPD_HOST" "erwin"))
 
-(defmacro mn-mpd-lambda (command)
-  (list 'lambda () (list 'mn-mpd command)))
+  (defun mn-mpd (command)
+    (system
+     (concat "echo '" command
+             "\nclose\n' >/dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}")))
 
-(bind-keys global-keymap
-           "W-z"            (mn-mpd-lambda "previous")
-           "W-x"            (mn-mpd-lambda "play")
-           "W-c"            (mn-mpd-lambda "pause")
-           "W-v"            (mn-mpd-lambda "stop")
-           "W-b"            (mn-mpd-lambda "next"))
+  (defmacro mn-mpd-lambda (command)
+    (list 'lambda () (list 'mn-mpd command)))
+
+  (bind-keys global-keymap
+             "W-z"            (mn-mpd-lambda "previous")
+             "W-x"            (mn-mpd-lambda "play")
+             "W-c"            (mn-mpd-lambda "pause")
+             "W-v"            (mn-mpd-lambda "stop")
+             "W-b"            (mn-mpd-lambda "next")))
 
 
 ;; Matcher
 (require 'sawfish.wm.ext.match-window)
 (setq match-window-profile
       (mn-machine-filter
-       '(erwin
+       '((erwin)
          ((WM_CLASS . "^Opera/opera$"))
          (ignore-program-position . #t) (position 583 . 350)
          (dimensions 1096 . 700) (viewport 1 . 1))
-       '(pikus
+       '((pikus)
          ((WM_CLASS . "^Opera/opera$"))
-         (ignore-program-position . #t) (position 492 . 400)
-         (dimensions 1108 . 800) (viewport 1 . 1))
+         (ignore-program-position . #t) (position 0 . 368)
+         (dimensions 1024 . 400) (viewport 1 . 1))
        '(()
          ((WM_ICON_NAME . "^GQview$"))
          (viewport 3 . 1))
-       '(erwin
+       '((erwin)
          ((WM_CLASS . "^Emacs"))
          (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 87)
          (viewport 0 . 0))
-       '(pikus
+       '((tuptus)
+         ((WM_CLASS . "^Emacs"))
+         (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 76)
+         (viewport 0 . 0))
+       '((pikus)
          ((WM_CLASS . "^Emacs"))
          (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 120)
          (viewport 0 . 0))
@@ -267,14 +285,14 @@
 (add-hook 'after-initialization-hook
           (lambda ()
             (mapc (lambda (pair)
-                    (unless (get-window-by-name-re (car pair))
+                    (unless (and (car pair)(get-window-by-name-re (car pair)))
                       (system (concat (cdr pair) " &"))))
-                  (nconc
-                   `(("Opera"    . "opera")
-                     ("Emacs"    . "emacs")
-                     ("irssi"    . ,mn-irssi-command))
-                   (and mn-mpdshow-command
-                        (cons "mpdshow"  mn-mpdshow-command))
-                   '(("gkrellm"  . "gkrellm"))))))
+                  (mn-machine-filter
+                   '((erwin pikus)       "Opera"    . "opera")
+                   '((erwin pikus)       "Emacs"    . "emacs")
+                   `((erwin pikus)       "irssi"    . ,mn-irssi-command)
+                   `((eval . mn-mpdshow-command)
+                                         "mpdshow"  . ,mn-mpdshow-command)
+                   '(()                  "gkrellm"  . "gkrellm")))))
 
 ; (restart)
