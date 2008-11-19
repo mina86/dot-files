@@ -16,8 +16,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 
+;;{{{ What machine are we running
 
-;; What machine are we running
 (defvar mn-machine
   (catch 'return
     (let ((sn (system-name)))
@@ -45,6 +45,8 @@
                            (t                 (member mn-machine a)))))
                       list)))
 
+;;}}}
+;;{{{ Misc small
 
 ;; Show errors on screen
 (require 'sawfish.wm.ext.error-handler)
@@ -80,7 +82,15 @@
            "W-Button3-Move" (lambda()(resize-window-interactively(input-focus))))
 
 
-;; Viewports
+;; No decoration
+(add-hook 'before-add-window-hook
+          (lambda (w)
+            (unless (window-transient-p w)
+              (set-window-type w 'unframed))))
+
+;;}}}
+;;{{{ Viewports
+
 (set-number-of-viewports 10 1)
 (set-screen-viewport 0 0)
 
@@ -111,15 +121,9 @@
            "W-9"            (set-current-window-viewport-x-0 8)
            "W-0"            (set-current-window-viewport-x-0 9))
 
+;;}}}
+;;{{{ Transparency
 
-;; No decoration
-(add-hook 'before-add-window-hook
-          (lambda (w)
-            (unless (window-transient-p w)
-              (set-window-type w 'unframed))))
-
-
-;; Transparency
 (defvar default-window-alpha (cons 0.9 0.7))
 
 (defconst window-alpha-max   #xffffffff)
@@ -157,7 +161,9 @@
 (add-hook 'focus-out-hook (lambda (w fmode) (set-window-alpha w nil t  )))
 
 
-;; Applications & Menus
+;;}}}
+;;{{{ Applications & menus
+
 (require 'menus)
 (require 'customize)
 
@@ -173,11 +179,28 @@
                    '(tuptus . "term -T irssi -mesg -g 80x10-64+0  -e irssi")
                    '(pikus  . "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
 
+
+;; Get terminal window
+(require 'sawfish.wm.util.window-order)
+(defun mn-focus-term ()
+  (let ((windows
+         (filter
+          (lambda (w)
+            (and (not (= w (input-focus)))
+                 (not (window-get w 'sticky))
+                 (string-equal "xterm" (aref (get-x-text-property w 'WM_CLASS) 0))))
+          (window-order current-workspace t nil))))
+    (if windows
+        (display-window (car windows))
+      (system (concat mn-term-command " &")))))
+
+
 ;; Inspired by jump-or-exec written by Damien Elmes <resolve@repose.cx>
 (defun mn-jump-or-exec (regexp command)
   (let ((w (get-window-by-name-re regexp)))
     (if w (display-window w) (system (concat command " &")))))
 
+;; Menus
 (setq apps-menu
       '(("_irssi"     (mn-jump-or-exec "^irssi$"  mn-irssi-command))
         ("_Emacs"     (mn-jump-or-exec "^Emacs"   "emacs"))
@@ -197,15 +220,21 @@
        '(("Power _Off" (progn (system "( sleep 2; /sbin/halt   )") (quit))))))
 
 
-
+;; Application and menu bindings
 (bind-keys root-window-keymap
            "Button1-Click2" (lambda () (system (concat mn-term-command " &")))
            "Button2-Click"  (lambda () (popup-menu window-menu))
            "Button3-Click"  popup-apps-menu
+           "W-Space"        popup-apps-menu
            "W-Button3-Click"popup-root-menu)
 
 (bind-keys global-keymap
-           "W-`"            (lambda () (system (concat mn-term-command " &"))))
+           "W-`"            mn-focus-term
+           "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   "emacs"))
+           "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
+           "W-e"           (lambda()(mn-jump-or-exec "^irssi$"  mn-irssi-command))
+           "W-r"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
+           "W-t"           (lambda()(mn-jump-or-exec "^GQview$" "gqview")))
 
 (bind-keys window-keymap
            "W-Space"        (lambda () (popup-window-menu (input-focus))))
@@ -213,7 +242,24 @@
 ;;            "W-Button3-Click"(lambda () (popup-window-menu (input-focus))))
 
 
-;; Music Player Daemon
+;; Run some applications
+(add-hook 'after-initialization-hook
+          (lambda ()
+            (mapc (lambda (pair)
+                    (unless (and (car pair)(get-window-by-name-re (car pair)))
+                      (system (concat (cdr pair) " &"))))
+                  (mn-machine-filter
+                   '((erwin pikus)       "Opera"    . "opera")
+                   '((erwin pikus)       "Emacs"    . "emacs")
+                   `((erwin pikus)       "irssi"    . ,mn-irssi-command)
+                   `((eval . mn-mpdshow-command)
+                                         "mpdshow"  . ,mn-mpdshow-command)
+                   '(()                  "gkrellm"  . "gkrellm")))))
+
+
+;;}}}
+;;{{{ Music Player Daemon
+
 (when (member mn-machine '(erwin tuptus))
   (when (and (= mn-machine 'tuptus) (not (getenv "MPD_HOST")))
     (setenv "MPD_HOST" "erwin"))
@@ -233,8 +279,9 @@
              "W-v"            (mn-mpd-lambda "stop")
              "W-b"            (mn-mpd-lambda "next")))
 
+;;}}}
+;;{{{ Matcher
 
-;; Matcher
 (require 'sawfish.wm.ext.match-window)
 (setq match-window-profile
       (mn-machine-filter
@@ -281,18 +328,6 @@
          ((WM_ICON_NAME . "^irssi$"))
          (sticky . #t) (sticky-viewport . #t))))
 
-;; Run some applications
-(add-hook 'after-initialization-hook
-          (lambda ()
-            (mapc (lambda (pair)
-                    (unless (and (car pair)(get-window-by-name-re (car pair)))
-                      (system (concat (cdr pair) " &"))))
-                  (mn-machine-filter
-                   '((erwin pikus)       "Opera"    . "opera")
-                   '((erwin pikus)       "Emacs"    . "emacs")
-                   `((erwin pikus)       "irssi"    . ,mn-irssi-command)
-                   `((eval . mn-mpdshow-command)
-                                         "mpdshow"  . ,mn-mpdshow-command)
-                   '(()                  "gkrellm"  . "gkrellm")))))
+;;}}}
 
 ; (restart)
