@@ -161,16 +161,16 @@
 (require 'customize)
 
 (defvar mn-term-command
-  (case mn-machine ((erwin)  "term -T term        -g 80x32+583+0")
-                   ((tuptus) "term -T term        -g 80x25-64+100")
-                   ((pikus)  "term -T term        -g 80x35+492+0")))
+  (case (screen-width) ((1680) "term -T term        -g 80x32+583+0")
+                       ((1024) "term -T term        -g 80x25-64+100")
+                       ((1600) "term -T term        -g 80x35+492+0")))
 (defvar mn-mpdshow-command
   (when (= mn-machine 'erwin)
     "term -T mpdshow -mesg -g 80x1-68+0 -e mpd-show -c80"))
 (defvar mn-irssi-command
-  (case mn-machine ((erwin)  "term -T irssi -mesg -g 80x10-68+10 -e irssi")
-                   ((tuptus) "term -T irssi -mesg -g 80x10-64+0  -e irssi")
-                   ((pikus)  "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
+  (case (screen-width) ((1680) "term -T irssi -mesg -g 80x10-68+10 -e irssi")
+                       ((1024) "term -T irssi -mesg -g 80x10-64+0  -e irssi")
+                       ((1600) "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
 
 
 ;; Get terminal window
@@ -277,27 +277,27 @@
 
 (require 'sawfish.wm.ext.match-window)
 (setq match-window-profile
-      (mn-var-filter mn-machine
-       '((erwin)
+      (mn-var-filter (screen-width)
+       '((1680)
          ((WM_CLASS . "^Opera/opera$"))
          (ignore-program-position . #t) (position 583 . 350)
          (dimensions 1096 . 700) (viewport 1 . 1))
-       '((pikus)
+       '((1600)
          ((WM_CLASS . "^Opera/opera$"))
          (ignore-program-position . #t) (position 0 . 368)
          (dimensions 1024 . 400) (viewport 1 . 1))
        '(()
          ((WM_ICON_NAME . "^GQview$"))
          (viewport 3 . 1))
-       '((erwin)
+       '((1680)
          ((WM_CLASS . "^Emacs"))
          (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 87)
          (viewport 0 . 0))
-       '((tuptus)
+       '((1024)
          ((WM_CLASS . "^Emacs"))
          (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 76)
          (viewport 0 . 0))
-       '((pikus)
+       '((1600)
          ((WM_CLASS . "^Emacs"))
          (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 120)
          (viewport 0 . 0))
