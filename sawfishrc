@@ -28,21 +28,14 @@
               ("tuptus"    . tuptus)
               ("pikus"     . pikus))))))
 
-(defun mn-machine-cond (#!rest list)
-  (catch 'return
-    (mapc (lambda (spec)
-            (when (= mn-machine (car spec))
-              (throw 'return (eval (cdr spec)))))
-          list)))
-
-(defun mn-machine-filter (#!rest list)
+(defun mn-var-filter (variable #!rest list)
   (mapcar cdr (filter (lambda (element)
                         (let ((a (car element)))
                           (cond
                            ((not a)           t)
-                           ((not (listp a))   (= mn-machine a))
+                           ((not (listp a))   (equal variable a))
                            ((= (car a) 'eval) (eval (cdr a)))
-                           (t                 (member mn-machine a)))))
+                           (t                 (member variable a)))))
                       list)))
 
 ;;}}}
@@ -168,16 +161,16 @@
 (require 'customize)
 
 (defvar mn-term-command
-  (mn-machine-cond '(erwin  . "term -T term        -g 80x32+583+0")
-                   '(tuptus . "term -T term        -g 80x25-64+100")
-                   '(pikus  . "term -T term        -g 80x35+492+0")))
+  (case mn-machine ((erwin)  "term -T term        -g 80x32+583+0")
+                   ((tuptus) "term -T term        -g 80x25-64+100")
+                   ((pikus)  "term -T term        -g 80x35+492+0")))
 (defvar mn-mpdshow-command
   (when (= mn-machine 'erwin)
     "term -T mpdshow -mesg -g 80x1-68+0 -e mpd-show -c80"))
 (defvar mn-irssi-command
-  (mn-machine-cond '(erwin  . "term -T irssi -mesg -g 80x10-68+10 -e irssi")
-                   '(tuptus . "term -T irssi -mesg -g 80x10-64+0  -e irssi")
-                   '(pikus  . "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
+  (case mn-machine ((erwin)  "term -T irssi -mesg -g 80x10-68+10 -e irssi")
+                   ((tuptus) "term -T irssi -mesg -g 80x10-64+0  -e irssi")
+                   ((pikus)  "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
 
 
 ;; Get terminal window
@@ -248,7 +241,7 @@
             (mapc (lambda (pair)
                     (unless (and (car pair)(get-window-by-name-re (car pair)))
                       (system (concat (cdr pair) " &"))))
-                  (mn-machine-filter
+                  (mn-var-filter mn-machine
                    '((erwin pikus)       "Opera"    . "opera")
                    '((erwin pikus)       "Emacs"    . "emacs")
                    `((erwin pikus)       "irssi"    . ,mn-irssi-command)
@@ -284,7 +277,7 @@
 
 (require 'sawfish.wm.ext.match-window)
 (setq match-window-profile
-      (mn-machine-filter
+      (mn-var-filter mn-machine
        '((erwin)
          ((WM_CLASS . "^Opera/opera$"))
          (ignore-program-position . #t) (position 583 . 350)
