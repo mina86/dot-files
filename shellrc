@@ -94,9 +94,9 @@ esac
 
 # Ikar, Dedal & Mion keep GNU ls in /usr/local/bin/ls
 if [ -x /usr/local/bin/ls ]; then
-	ls () { LANG=C /usr/local/bin/ls $LS_OPTIONS; }
+	ls () { LANG=C /usr/local/bin/ls $LS_OPTIONS "$@"; }
 else
-	ls () { LANG=C /usr/bin/ls $LS_OPTIONS; }
+	ls () { LANG=C /usr/bin/ls $LS_OPTIONS "$@"; }
 fi
 
 ## make and change directory
