@@ -31,7 +31,6 @@ fi
 
 if [ -z "$INTERACTIVE" ]; then
 	printf 'Do you want to continue? [y/N] '
-	read answer || exit 0
 	if ! read answer; then
 		exit 0
 	elif [ X"${answer#[yY]}" = X"${answer}" ]; then
@@ -91,10 +90,10 @@ cp_backup () {
 	if [ -e "$2" ]; then
 		if ! cmp -s -- "$1" "$2" && ask "$1" "$2"; then
 			mv -- "$2" "$2~"
-			cp -- "$1" "$2"
+			cp -v -- "$1" "$2"
 		fi
 	elif [ x$INTERACTIVE != xI ] || ask "$1" "$2"; then
-		cp -- "$1" "$2"
+		cp -v -- "$1" "$2"
 	fi
 }
 
