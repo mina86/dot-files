@@ -27,6 +27,7 @@ case "$_hostname" in (Xdedal|Xmion)
 	# like modern POSIX id utility. It understends fallowing arguments:
 	# id [ -u | -un | -g | -gn ] [ user ].  Anything else will be
 	# passed directly to system id utility.
+	unalias id 2>/dev/null
 	id () {
 		if [ $# -gt 2 ]; then /bin/id "$@"; return; fi
 
@@ -44,6 +45,7 @@ esac
 ##
 ## 'which' does not return exit status on Solaris
 ##
+unalias command_exists 2>/dev/null
 if which foobarbaz42-command-which-does-not-exist >/dev/null 2>&1; then
 	command_exists () {
 		test -f "`which \"$1\"`"
@@ -93,6 +95,7 @@ esac
 ##
 
 # Ikar, Dedal & Mion keep GNU ls in /usr/local/bin/ls
+unalias ls dir vdir ll l 2>/dev/null
 if [ -x /usr/local/bin/ls ]; then
 	ls () { LANG=C /usr/local/bin/ls $LS_OPTIONS "$@"; }
 else
@@ -100,6 +103,7 @@ else
 fi
 
 ## make and change directory
+unalias md 2>/dev/null
 md () {
 	if [ $# -eq 0 ]; then
 		echo usage: 'md dir [ dir ... ]' >&2
@@ -143,6 +147,7 @@ fi
 
 
 # Perl stuff
+unalias pf pd 2>/dev/null
 pf () {
 	if [ $# -eq 0 ]; then perldoc perlfunc; else perldoc -f "$@"; fi
 }
@@ -160,28 +165,12 @@ pd () {
 
 
 ##
-## TODO List
-##
-if [ -f .todo ]; then
-	todo () {
-		case "${1-view}" in
-		(-c|clearview) clear; todo -v ;;
-		(-v|view) cat ~/.todo ;;
-		(-e|edit) "${EDITOR-${VISUAL-vi}}" ~/.todo ;;
-		(-d|delete) : >~/.todo ;;
-		esac
-	}
-	_todo=defined
-fi
-
-
-
-##
 ## Variables
 ##
 
 # For setting flags
 if [ -e ~/bin/flags-do ]; then
+	unalias flags 2>/dev/null
 	flags () {
 		. ~/bin/flags-do "$@"
 	}
