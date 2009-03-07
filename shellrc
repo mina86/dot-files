@@ -21,7 +21,7 @@ umask 0077
 ##
 ## OHFG! id doesn't work as it should under Solaris
 ##
-if [ "$_hostname" = Xdedal ] || [ "$_hostname" = Xmion ]; then
+case "$_hostname" in (Xdedal|Xmion)
 	# This function is a little wrapper for id command. It's not POSIX
 	# compatible but have some features which make it behave almost
 	# like modern POSIX id utility. It understends fallowing arguments:
@@ -38,11 +38,11 @@ if [ "$_hostname" = Xdedal ] || [ "$_hostname" = Xmion ]; then
 		(*)          /bin/id "$@"                                       ;;
 		esac
 	}
-fi
+esac
 
 
 ##
-## 'which' does not return exit status in Solaris
+## 'which' does not return exit status on Solaris
 ##
 if which foobarbaz42-command-which-does-not-exist >/dev/null 2>&1; then
 	command_exists () {
@@ -50,7 +50,7 @@ if which foobarbaz42-command-which-does-not-exist >/dev/null 2>&1; then
 	}
 else
 	command_exists () {
-	which "$1" >/dev/null 2>&1
+		which "$1" >/dev/null 2>&1
 	}
 fi
 
@@ -72,20 +72,6 @@ fi
 
 
 ##
-## make and change directory
-##
-md () {
-	if [ $# -eq 0 ]
-	then echo usage: 'md dir [ dir ... ]'; return 1
-	elif [ $# -eq 1 ]
-	then mkdir -p -- "$1" && cd -- "$1"
-	else mkdir -p -- "$@"
-	fi
-}
-
-
-
-##
 ## Prompt
 ##
 
@@ -103,16 +89,36 @@ esac
 
 
 ##
-## Aliases
+## Aliases & functions
 ##
 
 # Ikar, Dedal & Mion keep GNU ls in /usr/local/bin/ls
 if [ -x /usr/local/bin/ls ]; then
-	alias ls='LANG=C /usr/local/bin/ls $LS_OPTIONS'
+	ls () { LANG=C /usr/local/bin/ls $LS_OPTIONS; }
 else
-	alias ls='LANG=C ls $LS_OPTIONS'
+	ls () { LANG=C /usr/bin/ls $LS_OPTIONS; }
 fi
 
+## make and change directory
+md () {
+	if [ $# -eq 0 ]; then
+		echo usage: 'md dir [ dir ... ]' >&2
+		return 1
+	else
+		mkdir -p -- "$@" && cd "$1"
+	fi
+}
+
+## List directory or content of file
+l () {
+	if [ $# -eq 1 -a -f "$1" ]; then
+		less -- "$1"
+	elif [ $# -eq 2 -a x"$1" = x-- -a -f "$2" ]; then
+		less -- "$2"
+	else
+		ls "$@"
+	fi
+}
 
 # Other
 if command_exists run-emacs; then
@@ -123,17 +129,6 @@ fi
 alias mb=mv      # common typo
 alias rmd=rmdir
 command_exists mpc && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
-
-
-# # Links and ELinks
-# ELINKS=`which elinks 2>/dev/null`
-# LINKS=`which links 2>/dev/null`
-# if [ -n "$ELINKS" ]; then
-# 	alias links="$ELINKS"
-# elif [ -n "$LINKS" ]; then
-# 	alias elinks="$LINKS"
-# fi
-# unset ELINKS LINKS
 
 
 # LaTeX
@@ -211,9 +206,9 @@ if ! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1; then
 fi
 
 # Remove relative paths
-PATH="$(echo ":$PATH:" | sed -e 's~:\(\([^/:][^:]*\)\?:\)*~:~g')"
-PATH="${PATH#:}"
-PATH="${PATH%:}"
+PATH="$(echo ":$PATH:" | sed -e 's~:\(\([^/:][^:]*\)\?:\)*~:~g
+s/^::*//
+s/::*$//')"
 
 
 # Editor
@@ -232,15 +227,6 @@ export CVS_RSH=ssh
 [ -d "$HOME/.cvsroot" ] && export CVSROOT="$HOME/.cvsroot"
 
 
-# Various
-if [ "$_hostname" = Xerwin ]; then
-	export LANG=pl_PL.ISO8859-2 LC_COLLATE=C LC_MESSAGES=en_GB
-#	export __GL_FSAA_MODE=4 __GL_LOG_MAX_ANISO=1 __GL_SYNC_TO_VBLANK=1
-elif [ "$_hostname" = Xtuptus ]; then
-	export LANG=pl_PL.ISO8859-2 LC_COLLATE=C LC_MESSAGES=en_GB
-fi
-
-
 # Temp  (wierd config for ikar/dedal and mion)
 if   [ -d /temp ] && [ -w /temp ]
 then export TMP=/temp TEMP=/temp TMPDIR=/temp
@@ -250,7 +236,7 @@ else export TMP=/tmp TEMP=/tmp TMPDIR=/tmp
 fi
 
 
-# LS
+# LS options and colors
 if [ -z "$LS_COLORS" ]; then
 	if command_exists dircolors; then
 		if [ -f ~/.dir_colors     ]; then eval `dircolors -b ~/.dir_colors`
@@ -270,23 +256,18 @@ fi
 export GZIP="-9n"
 
 
-# Shell config
-export FIGNORE=".o:~:.bak"
-if [ "$_hostname" = Xerwin ] || [ "$_hostname" = Xtuptus ]; then
+# Locale, shell config and compilation
+export FIGNORE=".o:~:.bak" CC=gcc CXX=g++
+case "$_hostname" in (Xerwin|Xtuptus)
+	export LANG=pl_PL.ISO8859-2 LC_COLLATE=C LC_MESSAGES=en_GB
 	unset MAILCHECK MAIL
-fi
-
-
-# Compilation
-export CC=gcc CXX=g++
-if [ "$_hostname" = Xerwin ] || [ "$_hostname" = Xtuptus ]; then
 	if [ x"`uname -m`" = xx86_64 ]; then
 		export ARCH=x86_64
 	else
 		export ARCH=i686
 	fi
 	flags init
-fi
+esac
 
 
 
