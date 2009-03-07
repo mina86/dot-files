@@ -354,8 +354,7 @@ three times - beginning of buffer; four times - back to where it was."
 (when window-system (global-unset-key "\C-z"))
 
 
-(unless window-system
-  (global-set-key "\C-h"          'delete-backward-char))
+(global-set-key "\C-h"          'delete-backward-char)
 (global-set-key [(backspace)]   'delete-backward-char)
 (global-set-key [(delete)]      'delete-char)
 (global-set-key [(control backspace)] 'backward-kill-word)
@@ -823,11 +822,6 @@ region from START to END for spelling errors.  The default values
 for START and END are `region-beginning' and `region-end' if
 `use-region-p' or `point-min' and `point-max' otherwise.
 
-However, if START is nil, END is not and `region-beginning' falls
-after END START will get value of `point-min'.  And the other way
-around: if END is nil, START is not and `region-end' falls before
-START END will get value of `point-max'.
-
 If LANG is an empty string local dictionary is set to
 nil (ie. the global dictionary is used).
 
@@ -841,14 +835,10 @@ returned."
               (mapcar 'list (ispell-valid-dictionary-list)))
           nil t)))
   (if lang (ispell-change-dictionary (if (string= lang "") nil lang)))
-  (cond
-   ((not (use-region-p))
-    (if (not start) (setq start (point-min)))
-    (if (not end)   (setq end   (point-max))))
-   ((not (or start end)) (setq start (region-beginning) end (region-end)))
-   ((not start) (setq start (min (region-beginning) end  )))
-   ((not end  ) (setq end   (max (region-end)       start))))
-  (if (< start end) (ispell-region start end)))
+  (let* ((rp (use-region-p))
+         (s  (or start (if rp (region-beginning) (point-min))))
+         (e  (or end   (if rp (region-end)       (point-max)))))
+    (if (< s e) (ispell-region s e))))
 
 (defun mn-spell-switch-dictionary (&optional arg)
   "Switches dictionary to the next dictionary from `mn-spell-dictionaries'.
@@ -1252,6 +1242,18 @@ COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
 
 (add-to-list 'fill-nobreak-predicate 'fill-single-char-nobreak-p)
 
+
+;; Sort words in region
+;; http://www.emacswiki.org/emacs/SortWords
+(defun sort-words (reverse beg end)
+  "Sort words in region alphabetically, in REVERSE if negative.
+Prefixed with negative \\[universal-argument], sorts in reverse.
+The variable `sort-fold-case' determines whether alphabetic case
+affects the sort order.
+See `sort-regexp-fields'."
+  (interactive "P\nr")
+  (sort-regexp-fields reverse "\\w+" "\\&" beg end))
+
 ;;}}}
 ;;{{{ Major Modes
 
@@ -1530,6 +1532,9 @@ argument ommited returns that number."
     (set-variable 'tab-stop-list (tab-stop-list 16))
     (set-variable 'comment-column 40))))
 
+
+;; Org mode
+(setq org-insert-mode-line-in-empty-file t)
 
 ;; PHP mode
 ;; http://sourceforge.net/projects/php-mode

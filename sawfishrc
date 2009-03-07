@@ -302,7 +302,7 @@
          (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 120)
          (viewport 0 . 0))
        '(()
-         ((WM_CLASS . "^Gimp/gimp|MPlayer/.*$"))
+         ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
          (alpha . 1))
        '(()
          ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
