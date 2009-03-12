@@ -98,8 +98,10 @@ esac
 unalias ls dir vdir ll l 2>/dev/null
 if [ -x /usr/local/bin/ls ]; then
 	ls () { LANG=C /usr/local/bin/ls $LS_OPTIONS "$@"; }
-else
+elif [ -x /usr/bin/ls ]; then
 	ls () { LANG=C /usr/bin/ls $LS_OPTIONS "$@"; }
+elif [ -x /bin/ls ]; then
+	ls () { LANG=C /bin/ls $LS_OPTIONS "$@"; }
 fi
 
 ## make and change directory
