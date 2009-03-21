@@ -1,6 +1,6 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .gnus.el  -- GNUS configuration file
-;; Copyright 2006-2008 by Michal Nazarewicz (mina86/AT/mina86.com)
+;; Copyright 2006-2009 by Michal Nazarewicz (mina86/AT/mina86.com)
 ;;
 ;;{{{ Main configration (name, email, fqdn, ...)
 
@@ -109,7 +109,7 @@
 
  nnmail-split-methods 'nnmail-split-fancy
  nnmail-split-fancy
- (let ((addr-hdr "to|from|b?cc"))
+ (let ((addr-hdr "to\\|from\\|b?cc"))
    `(| (: nnmail-split-fancy-with-parent)
        ("Content-Type"
         ,(eval-when-compile
@@ -118,14 +118,12 @@
                                  "gb2312" "ks_c_5601-1987" "windows-1251")
                                t)))
         junk)
-       ("Subject" "MSG ID:[0-9][0-9][0-9][0-9][0-9]"        junk)
+       ("Subject" "MSG ID:[0-9][0-9][0-9][0-9][0-9]"          junk)
        (: spam-split)
-       ("X-Gnus-Mail-Source" "mion.elka.pw.edu.pl"          "mail.mion")
-       (addr-hdr "k02_a@staszic.waw.pl"                     "list.k02_a")
-       ("Subject" "K02_a"                                   "list.k02_a")
-       (addr-hdr "mn86@\\(?:g?o2\\|tlen\\).pl"              "mail.mn86")
-       (addr-hdr "@last\\.fm"                               "mail.notify")
-       (addr-hdr "@\\(?:users\\.\\)?sourceforge\\.net"      "mail.sf")
+       (,addr-hdr "dno\\(?:-request\\)?@foch\\.\\(?:ircx\\.net\\|hdtv\\)\\.pl" "list.dno")
+       ("X-Gnus-Mail-Source" "mion\\.elka\\.pw\\.edu\\.pl"    "mail.mion")
+       (,addr-hdr "k02_a\\(?:-request\\)?@staszic\\.waw\\.pl" "list.k02_a")
+       (,addr-hdr "mn86@\\(?:g?o2\\|tlen\\).pl"               "mail.mn86")
        "mail.misc")))
 
 ;;}}}
@@ -162,26 +160,19 @@
  '(("spam"             (total-expire . t)
                        (expiry-wait  . immediate))
 
-   ("list\\."          (subscribed . t)
+   ("list\\."          (subscribed   . t)
                        (total-expire . t)
-                       (expire-wait . 14))
-   ("list\\.fvwm"      (to-address  . "fvwm@lists.math.uh.edu")
-                       (to-list     . "fvwm@lists.math.uh.edu"))
-;   ("list\\.k02_a"     (to-address . "k02_a@staszic.waw.pl")
-;                       (to-list    . "k02_a@staszic.waw.pl"))
+                       (expire-wait  . 14))
+;   ("list\\.k02_a"     (to-address   . "k02_a@staszic.waw.pl")
+;                       (to-list      . "k02_a@staszic.waw.pl"))
+   ("list\\.dno"       (to-address   . "dno@foch.ircx.net.pl")
+                       (to-list      . "dno@foch.ircx.net.pl"))
 
-   ("mail\\.notify"    (total-expire . t)
-                       (expire-wait . 1))
-   ("mail\\.rootnode"  (total-expire . t)
-                       (expire-wait . 7))
-
-   ("pw\\."            (dictionary . "polish"))
-
-   ("^nnml:list.fvwm"  (dictionary . "british"))
-   ("^nnml:"           (dictionary . "polish"))
-   ("^nnml:mail\\."    (gcc-self . t))
+   ("pw\\."            (dictionary   . "polish"))
+   ("^nnml:"           (dictionary   . "polish"))
+   ("^nnml:mail\\."    (gcc-self     . t))
    ("\\(?:alt\\.\\)?pl\\..*"  (dictionary . "polish"))
-   (""                 (dictionary . "british"))))
+   (""                 (dictionary   . "british"))))
 
 (setq
  gnus-home-score-file
