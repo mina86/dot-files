@@ -46,7 +46,7 @@ use `use-region-p'."
 ;;{{{ System dependend data and directories
 
 ;; Gnus
-(when (eval-when-compile (string-match "^erwin\\." system-name))
+(when (eval-when-compile (string-match "^erwin" system-name))
   (setq gnus-home-directory (expand-file-name "~/.gnus")
         gnus-init-file
         (concat gnus-home-directory
@@ -1083,7 +1083,7 @@ non-nill or `compile' otherwise."
 (if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
 (if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
 (and window-system (load "fringe" t)
-     (set-fringe-mode (if (string-match "^erwin\\." system-name) 7 4)))
+     (set-fringe-mode (if (string-match "^erwin" system-name) 7 4)))
 
 
 ;; Modeline
@@ -1129,9 +1129,10 @@ non-nill or `compile' otherwise."
                                (mouse-2 . describe-mode)
                                (down-mouse-1 . mouse-major-mode-menu))))
         ") "))
-(if (and (string-match "^tuptus\\." system-name)
-         (fboundp 'display-battery-mode))
-    (display-battery-mode 1))     ;show battery on my laptop
+(if (and (string-match "^tuptus" system-name)
+         (fboundp 'display-battery-mode)
+         (not window-system))
+    (display-battery-mode 1))      ;show battery on my laptop but only in TTY
 ;(setq display-time-24hr-format t) ;show time in 24h format
 ;(setq display-time-interval 30)   ;update time & load avg every 30s
 ;(display-time-mode 1)             ;show time in modeline
