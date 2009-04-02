@@ -872,7 +872,7 @@ With a prefix arg sets global dictionary."
 ;;{{{     F9 - Compilation
 
 (defconst -mn-compile-common
-  " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Winline -Wdisabled-optimization -Wstrict-aliasing=2 -pedantic -DMINA86 -ggdb -O0 -Wpointer-arith")
+  " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Winline -Wdisabled-optimization -Wstrict-aliasing=2 -pedantic -DMINA86 -ggdb -O0 -Wpointer-arith -funit-at-a-time")
 
 (defvar mn-compile-vars
   `((("CFLAGS"   "-std=c99 -Werror-implicit-function-declaration -Wunreachable-code -Wstrict-prototypes -Wold-style-definition")
