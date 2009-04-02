@@ -120,6 +120,5 @@ risc-mode.el       ~/.emacs.d/elisp/
 sawfishrc          ~/.
 shellrc            ~/.
 xinitrc            ~/.
-zlogin             ~/.
 zshrc              ~/.
 EOF

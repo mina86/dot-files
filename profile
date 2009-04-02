@@ -1,7 +1,6 @@
 ##                                                      -*- shell-script -*-
 ## .profile
 ## Copyright 2004-2008 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: profile,v 1.3 2008/05/23 09:34:47 mina86 Exp $
 ##
 
 # Set ENV
@@ -11,13 +10,12 @@ export ENV=~/.shellrc
 TMOUT=1200
 
 # Source .shellrc
-if [ -r ~/.shellrc ]; then
-	. ~/.shellrc
-
-	if [ X"$_todo" = Xdefined ]; then
-		todo -v
+if [ x"$1" != xnothing ]; then
+	if [ -n "$1" ] && [ -r "$1" ]; then
+		. "$1"
+	elif [ -r ~/.shellrc ]; then
+		. ~/.shellrc
 	fi
-	unset _todo;
 fi
 
 # 64/32 bit differences

@@ -1,22 +1,23 @@
 ##                                                      -*- shell-script -*-
 ## .zshrc  -- zsh configuration file
 ## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
-## $Id: zshrc,v 1.2 2006/09/10 11:23:54 mina86 Exp $
 ##
+
 
 # Include ~/.shellrc
 if [ -r ~/.shellrc ]; then
 	. ~/.shellrc
 fi
 
+
 # Not interactive?
 [ X"${-#*i}" != X"$-" ] || return
-
 
 
 ##
 ## Prompt
 ##
+#        promptbang promptpercent promptsubst transientrprimpt
 if [ "$TERM" = 'dumb' ]; then    # EMACS' eshell  (no colors)
 	PS1="[%n@%m %30<{<%~]%(!.#.\$) "
 elif [ "$TERM" = 'eterm' ]; then # EMACS' term    (ugly line editing)
@@ -48,26 +49,30 @@ case "$TERM" in xterm*|rxvt*)
 	else PS1="$PS1"$'%{\33]2;%m: %~\007%}'
 	fi
 esac
-export PS1
 
 
 
 ##
 ## Variables
 ##
-[ -z "$EDITOR" ] || FCEDIT="$EDITOR"
-[ -z "$PAGER" ] || READNULLCMD="$PAGER"
+unset FCEDIT
+NULLCMD=cat
+READNULLCMD="$PAGER"
 SAVEHIST=500
 TMPPREFIX="$TMP/zsh"
 HISTFILE="$HOME/.zhistory"
-unset NULLCMD
 
 
 
 ##
 ## Aliases
 ##
-alias -s  {ps,pdf}=gv dvi=xdvi tex=platex c=gcc cpp=g++
+if ! command_exists xrun; then
+	xrun () { "$@" & }
+fi
+
+alias -s ps='xrun gv' pdf='xrun xpdf' dvi='xrun xdvi' 'tex=platex' \
+         c='gcc' cpp='g++'
 alias -s  {jpg,jpeg,png,bmp,gif}=display
 
 
@@ -75,10 +80,31 @@ alias -s  {jpg,jpeg,png,bmp,gif}=display
 ##
 ## Shell options
 ##
-setopt CDABLE_VARS AUTO_LIST LIST_AMBIGUOUS COMPLETE_IN_WORD		\
-	GLOB_COMPLETE AUTO_PARAM_SLASH AUTO_REMOVE_SLASH NO_LIST_BEEP	\
-	LIST_PACKED LIST_ROWS_FIRST LIST_TYPES NUMERIC_GLOB_SORT		\
-	HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE HIST_NO_STORE			\
-	HIST_REDUCE_BLANKS HIST_SAVE_NO_DUPS CORRECT MAIL_WARNING		\
-	RC_QUOTES NO_BG_NICE PROMPT_SUBST PROMPT_PERCENT SH_WORD_SPLIT	\
-	NO_SINGLE_LINE_ZLE EMACS NO_PROMPT_CR
+setopt   autocd pushdsilent pushdtohome alwaystoend listtypes alwaystoend \
+         noautomenu alwaystoend autolist autoparamkeys autoparamslash \
+         globcomplete listambiguous listpacked  listtypes \
+         braceccl caseglob casematch equals glob globassign globsubst \
+         magicequalsubst nomatch numericglobsort rcexpandparam rematch_pcre \
+         shglob unset appendhistory histexpiredupsfirst histfindnodups \
+         histignorealldups histignorespace histnofunctions histnostore \
+         histreduceblanks histsavenodups globalrcs rcs aliases \
+         clobber hashcmds printeightbit rcquotes rmstarsilent bgnice \
+         checkjobs hup longlistjobs monitor notify promptsp cbases bsdecho \
+         ksharrays kshzerosubscript posixidentifiers shfileexpansion \
+         shwordsplit emacs
+
+unsetopt autopushd cdablevars chasedots chaselinks pushdignoredups \
+         pushdminus automenu listbeep listrowsfirst menucomplete recexact \
+         badpattern bareglobqual cshnullglob extendedglob globdots \
+         ignorebraces kshglob markdirs nullglob banghist histallowclobber \
+         histbeep histsavebycopy allexport globalexport correct correctall \
+         flowcontrol ignoreeof interactivecomments mailwarning pathdirs \
+         printexitvalue shortloops promptcr functionargzero multios \
+         octalzeroes verbose xtrace cshjunkieloops cshjunkiequotes \
+         cshnullcmd kshoptionprint shfileexpansion shnullcmd beep \
+         singlelinezle vi autoremoveslash sharehistory
+
+#        alwayslastprompt autonamedirs completealiases hashlistall
+#        histsubstpattern multibyte warncreateglobal histverify
+#        autocontinue autoresume typesetsilent cshjunkiehistory kshautoload
+#        kshtypeset posixbuiltins shoptionletters trapasync overstrike
