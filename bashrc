@@ -1,7 +1,6 @@
 ##                                                      -*- shell-script -*-
 ## .bashrc  -- bash configuration file
 ## Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-## $Id: bashrc,v 1.10 2008/05/23 09:34:47 mina86 Exp $
 ##
 
 # Include ~/.shellrc
@@ -57,7 +56,6 @@ case "$TERM" in xterm*|rxvt*)
 	fi
 esac
 
-export PS1
 unset PROMPT_COMMAND P
 
 

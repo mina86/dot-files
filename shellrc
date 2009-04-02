@@ -15,8 +15,6 @@ fi
 _hostname=X"$HOST"
 if [ "$_hostname" = Xikar ]; then _hostname=Xdedal; fi
 
-umask 0077
-
 
 ##
 ## OHFG! id doesn't work as it should under Solaris
@@ -40,6 +38,18 @@ case "$_hostname" in (Xdedal|Xmion)
 		esac
 	}
 esac
+
+
+##
+## If normal user -> umask 077; if super user -> umask 022
+## Also, set TMOUT when super user
+##
+if [ $(id -u) -eq 0 ]; then
+	umask 0022
+	TMOUT=1200
+else
+	umask 0077
+fi
 
 
 ##
@@ -213,11 +223,6 @@ if [ -n "$LESS" ] || command_exists less; then
 fi
 
 
-# CVS
-export CVS_RSH=ssh
-[ -d "$HOME/.cvsroot" ] && export CVSROOT="$HOME/.cvsroot"
-
-
 # Temp  (wierd config for ikar/dedal and mion)
 if   [ -d /temp ] && [ -w /temp ]
 then export TMP=/temp TEMP=/temp TMPDIR=/temp
@@ -238,9 +243,10 @@ if [ -z "$LS_COLORS" ]; then
 		. ~/bin/dircolors
 	fi
 fi
-if [ -z "$LS_OPTIONS" ]; then
-	export LS_OPTIONS="-FbT0 --color=auto"
-fi
+#if [ -z "$LS_OPTIONS" ]; then
+	LS_OPTIONS="-FbT0 --color=auto"
+	export LS_OPTIONS
+#fi
 
 
 # Compression
