@@ -28,15 +28,25 @@
               ("tuptus"    . tuptus)
               ("pikus"     . pikus))))))
 
-(defun mn-var-filter (variable #!rest list)
+(defun mn-val-filter (value #!rest list)
   (mapcar cdr (filter (lambda (element)
                         (let ((a (car element)))
                           (cond
                            ((not a)           t)
-                           ((not (listp a))   (equal variable a))
+                           ((not (listp a))   (equal value a))
                            ((= (car a) 'eval) (eval (cdr a)))
-                           (t                 (member variable a)))))
+                           (t                 (member value a)))))
                       list)))
+
+(defun case-equal (value #!rest list)
+  (while (and list (not (member value (caar list))))
+    (setq list (cdr list)))
+  (and list (cadar list)))
+
+
+(defun screen-size ()
+  "Screen resolution formatted as WIDTHxHEIGHT."
+  (concat (number->string (screen-width)) "x" (number->string (screen-height))))
 
 ;;}}}
 ;;{{{ Misc small
@@ -53,7 +63,7 @@
 
 ;; Focus and Auto Raise
 (require 'auto-raise)
-(setq focus-mode             'enter-click
+(setq focus-mode             'enter-only
       focus-click-through    t
       raise-windows-on-focus t
       raise-window-timeout   200)
@@ -153,7 +163,6 @@
 (add-hook 'focus-in-hook  (lambda (w fmode) (set-window-alpha w nil nil)))
 (add-hook 'focus-out-hook (lambda (w fmode) (set-window-alpha w nil t  )))
 
-
 ;;}}}
 ;;{{{ Applications & menus
 
@@ -161,16 +170,20 @@
 (require 'customize)
 
 (defvar mn-term-command
-  (case (screen-width) ((1680) "term -T term        -g 80x32+583+0")
-                       ((1024) "term -T term        -g 80x25-64+100")
-                       ((1600) "term -T term        -g 80x35+492+0")))
+  (case-equal (screen-size)
+    '(("1680x1050") "term -T term        -g 80x32+583+0" )
+    '(("1024x768" ) "term -T term        -g 80x25-64+100")
+    '(("1600x1200") "term -T term        -g 80x35+492+0" )
+    '(("1200x1600") "term -T term        -g 80x35-72+100")))
 (defvar mn-mpdshow-command
   (when (= mn-machine 'erwin)
     "term -T mpdshow -mesg -g 80x1-68+0 -e mpd-show -c80"))
 (defvar mn-irssi-command
-  (case (screen-width) ((1680) "term -T irssi -mesg -g 80x10-68+10 -e irssi")
-                       ((1024) "term -T irssi -mesg -g 80x10-64+0  -e irssi")
-                       ((1600) "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
+  (case-equal (screen-size)
+    '(("1680x1050") "term -T irssi -mesg -g 80x10-68+10 -e irssi")
+    '(("1024x768" ) "term -T irssi -mesg -g 80x10-64+0  -e irssi")
+    '(("1600x1200") "term -T irssi -mesg -g 80x10-72+0  -e irssi")
+    '(("1200x1600") "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
 
 
 ;; Get terminal window
@@ -241,14 +254,14 @@
             (mapc (lambda (pair)
                     (unless (and (car pair)(get-window-by-name-re (car pair)))
                       (system (concat (cdr pair) " &"))))
-                  (mn-var-filter mn-machine
+                  (mn-val-filter mn-machine
                    '((erwin pikus)       "Opera"    . "opera")
                    '((erwin pikus)       "Emacs"    . "emacs")
                    `((erwin pikus)       "irssi"    . ,mn-irssi-command)
                    `((eval . mn-mpdshow-command)
                                          "mpdshow"  . ,mn-mpdshow-command)
-                   '(()                  "gkrellm"  . "gkrellm")))))
-
+                   '(()                  "gkrellm"  . "gkrellm")))
+            (set-screen-viewport 0 0)))
 
 ;;}}}
 ;;{{{ Music Player Daemon
@@ -277,53 +290,57 @@
 
 (require 'sawfish.wm.ext.match-window)
 (setq match-window-profile
-      (mn-var-filter (screen-width)
-       '((1680)
-         ((WM_CLASS . "^Opera/opera$"))
-         (ignore-program-position . #t) (position 583 . 350)
-         (dimensions 1096 . 700) (viewport 1 . 1))
-       '((1600)
-         ((WM_CLASS . "^Opera/opera$"))
-         (ignore-program-position . #t) (position 600 . 500)
-         (dimensions 1000 . 700) (viewport 1 . 1))
-       '((1024)
-         ((WM_CLASS . "^Opera/opera$"))
-         (ignore-program-position . #t) (position 0 . 368)
-         (dimensions 1024 . 400) (viewport 1 . 1))
-       '(()
-         ((WM_ICON_NAME . "^GQview$"))
-         (viewport 3 . 1))
-       '((1680)
-         ((WM_CLASS . "^Emacs"))
-         (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 87)
-         (viewport 0 . 0))
-       '((1024)
-         ((WM_CLASS . "^Emacs"))
-         (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 76)
-         (viewport 0 . 0))
-       '((1600)
-         ((WM_CLASS . "^Emacs"))
-         (ignore-program-position . #t) (position 0 . 0) (dimensions 80 . 120)
-         (viewport 0 . 0))
-       '(()
-         ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
-         (alpha . 1))
-       '(()
-         ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
-         (viewport 2 . 1) (group . Gimp))
-       '(()
-         ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
-         (place-mode . centered) (depth . 16)
-         (sticky . #t) (sticky-viewport . #t)
-         (cycle-skip . #t) (window-list-skip . #t) (task-list-skip . #t))
-       '(()
-         ((WM_ICON_NAME . "^mpdshow$"))
-         (focus-when-mapped . #f) (focus-mode . click)
-         (sticky . #t) (sticky-viewport . #t)
-         (cycle-skip . #t) (window-list-skip . #t) (task-list-skip . #t))
-       '(()
-         ((WM_ICON_NAME . "^irssi$"))
-         (sticky . #t) (sticky-viewport . #t))))
+      (mn-val-filter (screen-size)
+       '(("1680x1050") ((WM_CLASS . "^Opera/opera$"))
+                       (ignore-program-position . #t)
+                       (position 583 . 350) (dimensions 1096 . 700)
+                       (viewport 1 . 1))
+       '(("1024x768" ) ((WM_CLASS . "^Opera/opera$"))
+                       (ignore-program-position . #t)
+                       (position 0 . 368) (dimensions 1024 . 400)
+                       (viewport 1 . 1))
+       '(("1600x1200") ((WM_CLASS . "^Opera/opera$"))
+                       (ignore-program-position . #t)
+                       (position 600 . 500) (dimensions 1000 . 700)
+                       (viewport 1 . 1))
+       '(("1200x1600") ((WM_CLASS . "^Opera/opera$"))
+                       (ignore-program-position . #t)
+                       (position 0 . 0) (dimensions 1200 . 1600)
+                       (viewport 2 . 1) (maximize . both))
+       '(()            ((WM_ICON_NAME . "^GQview$"))
+                       (viewport 4 . 1))
+       '(("1680x1050") ((WM_CLASS . "^Emacs"))
+                       (ignore-program-position . #t)
+                       (position 0 . 0) (dimensions 80 . 87)
+                       (viewport 1 . 1) (maximize . vertical))
+       '(("1024x768" ) ((WM_CLASS . "^Emacs"))
+                       (ignore-program-position . #t)
+                       (position 0 . 0) (dimensions 80 . 76)
+                       (viewport 1 . 1) (maximize . vertical))
+       '(("1600x1200") ((WM_CLASS . "^Emacs"))
+                       (ignore-program-position . #t)
+                       (position 0 . 0) (dimensions 80 . 80)
+                       (viewport 1 . 1) (maximize . vertical))
+       '(("1200x1600") ((WM_CLASS . "^Emacs"))
+                       (ignore-program-position . #t)
+                       (position 0 . 0) (dimensions 80 . 106)
+                       (viewport 1 . 1) (maximize . vertical))
+       '(()            ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
+                       (alpha . 1))
+       '(()            ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
+                       (viewport 3 . 1) (group . Gimp))
+       '(()            ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
+                       (place-mode . centered) (depth . 16)
+                       (sticky . #t) (sticky-viewport . #t)
+                       (cycle-skip . #t) (window-list-skip . #t)
+                       (task-list-skip . #t))
+       '(()            ((WM_ICON_NAME . "^mpdshow$"))
+                       (focus-when-mapped . #f) (focus-mode . click)
+                       (sticky . #t) (sticky-viewport . #t)
+                       (cycle-skip . #t) (window-list-skip . #t)
+                       (task-list-skip . #t))
+       '(()            ((WM_ICON_NAME . "^irssi$"))
+                       (sticky . #t) (sticky-viewport . #t))))
 
 ;;}}}
 
