@@ -115,6 +115,7 @@ bash_profile       ~/.
 bashrc             ~/.
 dot-emacs          ~/.emacs.d/init.el
 dot-gnus           ~/.gnus/.gnus.el
+gitconfig          ~/.
 profile            ~/.
 risc-mode.el       ~/.emacs.d/elisp/
 sawfishrc          ~/.

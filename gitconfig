@@ -1,0 +1,29 @@
+[color]
+	ui = auto
+[color "branch"]
+	#current = yellow reverse
+	#local = yellow
+	#remote = green
+	#plain = 
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+	whitespace = red reverse
+[color "status"]
+	added = green
+	changed = red
+	untracked = cyan
+[alias]
+	st = status
+	ci = commit
+	co = checkout
+[user]
+	name = Michal Nazarewicz
+	email = mina86/AT/mina86.com
+;[i18n]
+	;commitencoding = ISO-8859-2
+	;logoutputencoding = ISO-8859-2
+[core]
+	pager = less -FRSX
