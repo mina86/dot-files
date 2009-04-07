@@ -1,6 +1,6 @@
 ##                                                      -*- shell-script -*-
 ## .zshrc  -- zsh configuration file
-## Copyright 2004-2006 by Michal Nazarewicz (mina86/AT/mina86.com)
+## Copyright 2004-2009 by Michal Nazarewicz (mina86/AT/mina86.com)
 ##
 
 
@@ -36,7 +36,7 @@ else                             # FIXME: I need to check if term sup. colors
 	then PS1="$PS1%{${E}1;36;44m%}%m "
 	else PS1="$PS1%{${E}1;33;44m%}%m "
 	fi
-	PS1="$PS1%{${E}1;32;44m%}%50<{<%~"
+	PS1="$PS1%{${E}1;32;44m%}%30<{<%~"
 	PS1="$PS1%{${E}0;37;44m%}]"
 	PS1="$PS1%{${E}0;1;3%0(?.3.5)m%}%(!.#.\$)%{${E}0m%} "
 	unset E

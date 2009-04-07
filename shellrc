@@ -218,7 +218,7 @@ s/::*$//')"
 
 # less
 if [ -n "$LESS" ] || command_exists less; then
-	export PAGER=less LESS=-M
+	export PAGER=less LESS=-MS
 	[ -x ~/bin/lesspipe ] && eval $(~/bin/lesspipe --install-lesspipe)
 fi
 
@@ -243,10 +243,8 @@ if [ -z "$LS_COLORS" ]; then
 		. ~/bin/dircolors
 	fi
 fi
-#if [ -z "$LS_OPTIONS" ]; then
-	LS_OPTIONS="-FbT0 --color=auto"
-	export LS_OPTIONS
-#fi
+LS_OPTIONS="-FT0 --color=auto"
+export LS_OPTIONS
 
 
 # Compression
@@ -255,8 +253,8 @@ export GZIP="-9n"
 
 # Locale, shell config and compilation
 export FIGNORE=".o:~:.bak" CC=gcc CXX=g++
+export LC_COLLATE=C LC_MESSAGES=en_GB
 case "$_hostname" in (Xerwin|Xtuptus)
-	export LANG=pl_PL.ISO8859-2 LC_COLLATE=C LC_MESSAGES=en_GB
 	unset MAILCHECK MAIL
 	if [ x"`uname -m`" = xx86_64 ]; then
 		export ARCH=x86_64
