@@ -104,15 +104,17 @@ esac
 ## Aliases & functions
 ##
 
-# Ikar, Dedal & Mion keep GNU ls in /usr/local/bin/ls
+# Ikar, Dedal & Mion keep GNU ls in /usr/local/bin/ls and it's not
+# first on $PATH
 unalias ls dir vdir ll l 2>/dev/null
 if [ -x /usr/local/bin/ls ]; then
-	ls () { LANG=C /usr/local/bin/ls $LS_OPTIONS "$@"; }
+	alias ls='LANG=C /usr/local/bin/ls $LS_OPTIONS'
 elif [ -x /usr/bin/ls ]; then
-	ls () { LANG=C /usr/bin/ls $LS_OPTIONS "$@"; }
+	alias ls='LANG=C /usr/bin/ls $LS_OPTIONS'
 elif [ -x /bin/ls ]; then
-	ls () { LANG=C /bin/ls $LS_OPTIONS "$@"; }
+	alias ls='LANG=C /bin/ls $LS_OPTIONS'
 fi
+alias ll='ls -l'
 
 ## make and change directory
 unalias md 2>/dev/null
@@ -174,6 +176,22 @@ pd () {
 }
 
 
+# tinyapps stuff
+if ! command_exists xrun; then
+	xrun () { "$@" & }
+fi
+if command_exists cdiff; then
+	alias diff=cdiff
+fi
+
+
+# More colors
+if echo foo | grep --color=auto foo >/dev/null 2>/dev/null; then
+	alias grep='grep --color=auto'
+	alias fgrep='grep -F'
+	alias egrep='grep -E'
+fi
+
 
 
 ##
@@ -210,6 +228,7 @@ fi
 PATH="$(echo ":$PATH:" | sed -e 's~:\(\([^/:][^:]*\)\?:\)*~:~g
 s/^::*//
 s/::*$//')"
+export PATH
 
 
 # Editor
@@ -233,7 +252,7 @@ fi
 
 
 # LS options and colors
-if [ -z "$LS_COLORS" ]; then
+if [ -z "$LS_COLORS" ] && ls --color / >/dev/null 2>&1; then
 	if command_exists dircolors; then
 		if [ -f ~/.dir_colors     ]; then eval `dircolors -b ~/.dir_colors`
 		elif [ -f /etc/DIR_COLORS ]; then eval `dircolors -b /etc/DIR_COLORS`

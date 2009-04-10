@@ -29,25 +29,60 @@ elif [ "$TERM" = 'eterm' ]; then # EMACS' term    (ugly line editing)
 else                             # FIXME: I need to check if term sup. colors
 	E=$'\33['
 	PS1=
-	PS1="$PS1%{${E}0;37;44m%}["
-	PS1="$PS1%{${E}1;3%(!.1.2);44m%}%n"
-	PS1="$PS1%{${E}1;37;44m%}@"
-	if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]
+	PS1="$PS1%{${E}0;37;44m%}["              # "["
+	PS1="$PS1%{${E}1;3%(!.1.2);44m%}%n"      # user
+	PS1="$PS1%{${E}1;37;44m%}@"              # "@"
+	if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]   # host
 	then PS1="$PS1%{${E}1;36;44m%}%m "
 	else PS1="$PS1%{${E}1;33;44m%}%m "
 	fi
-	PS1="$PS1%{${E}1;32;44m%}%30<{<%~"
-	PS1="$PS1%{${E}0;37;44m%}]"
+	PS1="$PS1%{${E}0;32;44m%}{{GIT}}"        # git branch
+	PS1="$PS1%{${E}1;32;44m%}%30<{<%~"       # dir
+	PS1="$PS1%{${E}0;37;44m%}]"              # "]"
 	PS1="$PS1%{${E}0;1;3%0(?.3.5)m%}%(!.#.\$)%{${E}0m%} "
 	unset E
 fi
 
-# Add title to terminals
-case "$TERM" in xterm*|rxvt*)
-	if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]
-	then PS1="$PS1"$'%{\33]2;%~\007%}'
-	else PS1="$PS1"$'%{\33]2;%m: %~\007%}'
-	fi
+
+##
+## Git branch
+##
+if command_exists git; then
+	__PS1=$PS1
+	chpwd () {
+		if git ls-files >/dev/null 2>&1; then
+			GIT_PS1="$(git branch --no-color |sed -ne 's/^* //p') "
+		else
+			GIT_PS1=
+		fi
+		PS1=${__PS1//{{GIT}}/"$GIT_PS1"}
+	}
+	chpwd
+else
+	PS1=${PS1//{{GIT}}/}
+fi
+
+
+##
+## Add title to terminals
+##
+#		screen) print -Pn "\ek$a:$3\e\\"      # screen title (in ^A")
+case $TERM in xterm*|rxvt*)
+	title() {
+		local a="${(V)1//\%/\%\%}"
+		a="$(print -Pn "%40>...>$a" | tr -d "\n")"
+		print -Pn "\e]2;[$2$3]%(!.#.\$) $a\a"
+	}
+
+	case "$(id -nu)@$SSH_CLIENT$SSH_CONNECTION" in
+	mina86@)    _title_=           ;;
+	mina86@?*)  _title_='@%m '     ;;
+	*@)         _title_="$USER "   ;;
+	*@?*)       _title_="$USER@%m ";;
+	esac
+	eval "preexec() { title \"\$1\"  \"$_title_\" \"%40<...<%~\"; }"
+	precmd () { preexec ''; }
+	unset _title_
 esac
 
 
@@ -65,24 +100,11 @@ HISTFILE="$HOME/.zhistory"
 
 
 ##
-## Aliases
-##
-if ! command_exists xrun; then
-	xrun () { "$@" & }
-fi
-
-alias -s ps='xrun gv' pdf='xrun xpdf' dvi='xrun xdvi' 'tex=platex' \
-         c='gcc' cpp='g++'
-alias -s  {jpg,jpeg,png,bmp,gif}=display
-
-
-
-##
 ## Shell options
 ##
 setopt   autocd pushdsilent pushdtohome alwaystoend listtypes alwaystoend \
          noautomenu alwaystoend autolist autoparamkeys autoparamslash \
-         globcomplete listambiguous listpacked  listtypes \
+         globcomplete listpacked  listtypes \
          braceccl caseglob casematch equals glob globassign globsubst \
          magicequalsubst nomatch numericglobsort rcexpandparam rematch_pcre \
          shglob unset appendhistory histexpiredupsfirst histfindnodups \
@@ -102,9 +124,66 @@ unsetopt autopushd cdablevars chasedots chaselinks pushdignoredups \
          printexitvalue shortloops promptcr functionargzero multios \
          octalzeroes verbose xtrace cshjunkieloops cshjunkiequotes \
          cshnullcmd kshoptionprint shfileexpansion shnullcmd beep \
-         singlelinezle vi autoremoveslash sharehistory
+         singlelinezle vi autoremoveslash sharehistory listambiguous
 
-#        alwayslastprompt autonamedirs completealiases hashlistall
-#        histsubstpattern multibyte warncreateglobal histverify
-#        autocontinue autoresume typesetsilent cshjunkiehistory kshautoload
-#        kshtypeset posixbuiltins shoptionletters trapasync overstrike
+bindkey -e
+
+
+##
+## Completion
+##
+
+# Completion stuff
+zmodload -i zsh/complist
+zstyle ':completion:*' completer _expand _complete _ignored
+zstyle ':completion:*' expand prefix suffix
+zstyle ':completion:*' file-sort name
+zstyle ':completion:*' glob 1
+zstyle ':completion:*' ignore-parents parent pwd .. directory
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' remove-all-dups true
+zstyle ':completion:*' squeeze-slashes true
+zstyle ':completion:*' verbose yes
+
+zstyle ':completion:*:processes' command 'ps -aU$USER'
+zstyle ':completion:*:processes' menu select 1
+zstyle ':completion:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+
+zstyle ':completion:*:manuals' verbose no
+zstyle ':completion:*:manuals' menu select 0
+
+zstyle ':completion:*:functions' ignored-patterns '_*'
+
+zstyle ':completion:*:*:configure:*' menu select 1
+
+zstyle ':completion:*:*:ssh:*' tag-order hosts
+if [ "0$(grep -c ^Host ~/.ssh/config 2>/dev/null)" -gt 3 ]; then
+	zstyle ':completion:*:*:ssh:*' hosts 'reply=(
+  ${="$(sed -ne "s/^Host[[:space:]][[:space:]]*\\([^*]\\)/\1/p" ~/.ssh/config)"}
+)'
+fi
+
+# formatting and messages
+zstyle ':completion:*:descriptions' format '>> %B%d%b <<'
+zstyle ':completion:*:messages'     format '%d'
+zstyle ':completion:*:warnings'     format 'No matches for: %d'
+zstyle ':completion:*:corrections'  format '%B%d (errors: %e)%b'
+zstyle ':completion:*' group-name ''
+
+# offer indexes before parameters in subscripts
+zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
+zstyle ':completion:*:*:*:*:*files' ignored-patterns '*.o' '*~' \
+	'*.old' '*.bak'
+
+# ignore completion functions (until the _ignored completer)
+# zstyle ':completion:*:scp:*' tag-order \
+# 	files users 'hosts:-host hosts:-domain:domain hosts:-ipaddr"IP\ Address *'
+# zstyle ':completion:*:scp:*' group-order \
+# 	files all-files users hosts-domain hosts-host hosts-ipaddr
+# zstyle ':completion:*:ssh:*' tag-order \
+# 	users 'hosts:-host hosts:-domain:domain hosts:-ipaddr"IP\ Address *'
+# zstyle ':completion:*:ssh:*' group-order \
+# 	hosts-domain hosts-host users hosts-ipaddr
+
+autoload -U compinit
+compinit
