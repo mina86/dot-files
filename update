@@ -151,11 +151,10 @@ while read FILE DEST; do
 	if match "$@"; then
 		case "$DEST" in '~'*)   DEST=$HOME${DEST#'~'}; esac
 		case "$DEST" in */.|*/) DEST=$DEST$FILE;       esac
-
 		if ! [ -d "${DEST%/*}" ]; then
 			echo "Skipping $FILE"
 		else
-			case "$DIRECTORY" in
+			case "$DIRECTION" in
 			from) cp_backup "$DEST" "$FILE" <&3 ;;
 			to)   cp_backup "$FILE" "$DEST" <&3 ;;
 			esac
