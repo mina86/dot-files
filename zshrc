@@ -15,6 +15,15 @@ fi
 
 
 ##
+## Enable arraies of functions
+##
+typeset -ga preexec_functions
+typeset -ga precmd_functions
+typeset -ga chpwd_functions
+
+
+
+##
 ## Prompt
 ##
 #        promptbang promptpercent promptsubst transientrprimpt
@@ -29,35 +38,110 @@ elif [ "$TERM" = 'eterm' ]; then # EMACS' term    (ugly line editing)
 else                             # FIXME: I need to check if term sup. colors
 	E=$'\33['
 	PS1=
-	PS1="$PS1%{${E}0;37;44m%}["              # "["
-	PS1="$PS1%{${E}1;3%(!.1.2);44m%}%n"      # user
-	PS1="$PS1%{${E}1;37;44m%}@"              # "@"
-	if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]   # host
-	then PS1="$PS1%{${E}1;36;44m%}%m "
-	else PS1="$PS1%{${E}1;33;44m%}%m "
-	fi
-	PS1="$PS1%{${E}0;32;44m%}{{GIT}}"        # git branch
-	PS1="$PS1%{${E}1;32;44m%}%30<{<%~"       # dir
-	PS1="$PS1%{${E}0;37;44m%}]"              # "]"
-	PS1="$PS1%{${E}0;1;3%0(?.3.5)m%}%(!.#.\$)%{${E}0m%} "
+	PS1+="%{${E}0;37;44m%}["              # "["
+	PS1+="%{${E}1;3%(!.1.2);44m%}%n"      # user
+	PS1+="%{${E}1;37;44m%}@"              # "@"
+	case "$SSH_CLIENT$SSH_CONNECTION" in  # host
+	?*) PS1+="%{${E}1;33;44m%}%m " ;;
+	*)  PS1+="%{${E}1;36;44m%}%m " ;;
+	esac
+	PS1+="{{GIT}}"                        # git info
+	PS1+="%{${E}1;32;44m%}%30<{<%~"       # dir
+	PS1+="%{${E}0;37;44m%}]"              # "]"
+	PS1+="%{${E}0;1;3%0(?.3.5)m%}%(!.#.\$)%{${E}0m%} "
 	unset E
 fi
 
 
 ##
-## Git branch
+## Prompt GIT Stuff
 ##
+
+# Sources
+# * http://www.jukie.net/~bart/conf/zsh.d/S55_git
+# * http://blog.madism.org/index.php/2008/05/07/173-git-prompt
+# * http://github.com/jcorbin/zsh-git/
+# * and of course rewritten a lot by myself
+
 if command_exists git; then
 	__PS1=$PS1
-	chpwd () {
-		if git ls-files >/dev/null 2>&1; then
-			GIT_PS1="$(git branch --no-color |sed -ne 's/^* //p') "
+
+	__update_ps1_git () {
+	local dir
+
+	if ! dir=$(git rev-parse --git-dir 2>/dev/null); then
+		PS1=${__PS1//{{GIT}}/}
+	else
+		local branch state E ps flags _flags
+		state=
+		if   [ -d "$dir/rebase-apply" ] ; then
+			if   [ -f "$dir/rebase-apply/rebasing" ]; then state="rb"
+			elif [ -f "$dir/rebase-apply/applying" ]; then state="am"
+			else                                           state="am/rb"
+			fi
+			branch="$(git symbolic-ref HEAD 2>/dev/null)"
+		elif [ -f "$dir/rebase-merge/interactive" ]; then
+			state="rb-i"
+			branch="$(cat "$dir/rebase-merge/head-name")"
+		elif [ -d "$dir/rebase-merge" ]; then
+			state="rb-m"
+			branch="$(cat "$dir/rebase-merge/head-name")"
+		elif [ -f "$dir/MERGE_HEAD" ]; then
+			state="mrg"
+			branch="$(git symbolic-ref HEAD 2>/dev/null)"
 		else
-			GIT_PS1=
+			[ -f "$dir/BISECT_LOG" ] && state="bisect"
+			branch="$(git symbolic-ref HEAD 2>/dev/null)" || \
+				branch="$(git describe --exact-match HEAD 2>/dev/null)" || \
+				branch="$(cut -c1-7 "$dir/HEAD")..."
 		fi
-		PS1=${__PS1//{{GIT}}/"$GIT_PS1"}
+		branch="${branch#refs/heads/}"
+
+		_flags=$(git status 2>/dev/null | sed -ne '
+s/^# Untracked files:.*/u/p
+s/^# Changes to be committed:.*/i/p
+s/^# Changed but not updated:.*/m/p
+s/^# [[:space:]]*unmerged:.*/c/p')
+		flags=
+		case "$_flags" in *'i'*) flags+='+'                    ; esac
+		case "$_flags" in *"c"*) flags+='!';; *"m"*) flags+='*'; esac
+		case "$_flags" in *'u'*) flags+='?'                    ; esac
+
+		E=$'\33['
+		case "$flags$state" in                 # branch
+		?*) ps1="%{${E}1;32;44m%}$branch" ;;
+		*)  ps1="%{${E}0;32;44m%}$branch"
+		esac
+		case "$state" in ?*)                   # (state)
+			ps1+="%{${E}0;37;44m%}("
+			ps1+="%{${E}0;32;44m%}$state"
+			ps1+="%{${E}0;37;44m%})"
+		esac
+		case "$flags" in ?*)                   # flags
+			ps1+="%{${E}1;31;44m%}$flags%{${E}0;37;44m%}"
+		esac
+
+		PS1=${__PS1//{{GIT}}/"$ps1 "}
+	fi
+	unset __PS1_GIT_INVALID
 	}
-	chpwd
+
+	__invalidate_ps1_git_maybe () {
+		case "$1" in *git*)
+			__PS1_GIT_INVALID=yes
+		esac
+	}
+
+	__update_ps1_git_maybe () {
+		case "$__PS1_GIT_INVALID" in yes)
+			__update_ps1_git
+		esac
+	}
+
+	chpwd_functions+=__update_ps1_git
+	preexec_functions+=__invalidate_ps1_git_maybe
+	precmd_functions+=__update_ps1_git_maybe
+	__update_ps1_git
 else
 	PS1=${PS1//{{GIT}}/}
 fi
@@ -68,7 +152,7 @@ fi
 ##
 #		screen) print -Pn "\ek$a:$3\e\\"      # screen title (in ^A")
 case $TERM in xterm*|rxvt*)
-	title() {
+	__title() {
 		local a="${(V)1//\%/\%\%}"
 		a="$(print -Pn "%40>...>$a" | tr -d "\n")"
 		print -Pn "\e]2;[$2$3]%(!.#.\$) $a\a"
@@ -80,8 +164,10 @@ case $TERM in xterm*|rxvt*)
 	*@)         _title_="$USER "   ;;
 	*@?*)       _title_="$USER@%m ";;
 	esac
-	eval "preexec() { title \"\$1\"  \"$_title_\" \"%40<...<%~\"; }"
-	precmd () { preexec ''; }
+
+	eval "__preexec_title() { __title \"\$1\" \"$_title_\" \"%40<...<%~\" }"
+	preexec_functions+=__preexec_title
+	chpwd_functions+=__preexec_title
 	unset _title_
 esac
 
