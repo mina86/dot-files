@@ -291,6 +291,15 @@
 (require 'sawfish.wm.ext.match-window)
 (setq match-window-profile
       (mn-val-filter (screen-size)
+       '(()            ((WM_ICON_NAME . "^mpdshow$"))
+                       (focus-when-mapped . #f) (focus-mode . click)
+                       (sticky . #t) (sticky-viewport . #t)
+                       (cycle-skip . #t) (window-list-skip . #t)
+                       (task-list-skip . #t))
+
+       '(()            ((WM_ICON_NAME . "^irssi$"))
+                       (sticky . #t) (sticky-viewport . #t))
+
        '(("1680x1050") ((WM_CLASS . "^Opera/opera$"))
                        (ignore-program-position . #t)
                        (position 583 . 350) (dimensions 1096 . 700)
@@ -307,8 +316,7 @@
                        (ignore-program-position . #t)
                        (position 0 . 0) (dimensions 1200 . 1600)
                        (viewport 2 . 1) (maximize . both))
-       '(()            ((WM_ICON_NAME . "^GQview$"))
-                       (viewport 4 . 1))
+
        '(("1680x1050") ((WM_CLASS . "^Emacs"))
                        (ignore-program-position . #t)
                        (position 0 . 0) (dimensions 80 . 87)
@@ -325,22 +333,23 @@
                        (ignore-program-position . #t)
                        (position 0 . 0) (dimensions 80 . 106)
                        (viewport 1 . 1) (maximize . vertical))
+
        '(()            ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
                        (alpha . 1))
        '(()            ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
-                       (viewport 3 . 1) (group . Gimp))
+                       (viewport 2 . 1) (group . Gimp))
+       '(("1200x1600") ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
+                       (viewport 3 . 1))
        '(()            ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
                        (place-mode . centered) (depth . 16)
                        (sticky . #t) (sticky-viewport . #t)
                        (cycle-skip . #t) (window-list-skip . #t)
                        (task-list-skip . #t))
-       '(()            ((WM_ICON_NAME . "^mpdshow$"))
-                       (focus-when-mapped . #f) (focus-mode . click)
-                       (sticky . #t) (sticky-viewport . #t)
-                       (cycle-skip . #t) (window-list-skip . #t)
-                       (task-list-skip . #t))
-       '(()            ((WM_ICON_NAME . "^irssi$"))
-                       (sticky . #t) (sticky-viewport . #t))))
+
+       '(()            ((WM_ICON_NAME . "^GQview$"))
+                       (viewport 3 . 1))
+       '(("1200x1600") ((WM_ICON_NAME . "^GQview$"))
+                       (viewport 4 . 1))))
 
 ;;}}}
 
