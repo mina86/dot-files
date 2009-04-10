@@ -115,7 +115,8 @@
         ,(eval-when-compile
            (concat "charset="
                    (regexp-opt '("big5" "iso-2022-jp" "ISO-2022-KR" "euc-kr"
-                                 "gb2312" "ks_c_5601-1987" "windows-1251")
+                                 "gb2312" "ks_c_5601-1987" "windows-1251"
+                                 "koi8-r")
                                t)))
         junk)
        ("Subject" "MSG ID:[0-9][0-9][0-9][0-9][0-9]"          junk)
