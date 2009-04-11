@@ -166,6 +166,7 @@ bashrc             ~/.
 dot-emacs          ~/.emacs.d/init.el
 dot-gnus           ~/.gnus/.gnus.el
 gitconfig          ~/.
+irssi.theme        ~/.irssi/mina.theme
 profile            ~/.
 risc-mode.el       ~/.emacs.d/elisp/
 sawfishrc          ~/.
