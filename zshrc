@@ -97,15 +97,16 @@ if command_exists git; then
 		fi
 		branch="${branch#refs/heads/}"
 
-		_flags=$(git status 2>/dev/null | sed -ne '
-s/^# Untracked files:.*/u/p
-s/^# Changes to be committed:.*/i/p
-s/^# Changed but not updated:.*/m/p
-s/^# [[:space:]]*unmerged:.*/c/p')
-		flags=
-		case "$_flags" in *'i'*) flags+='+'                    ; esac
-		case "$_flags" in *"c"*) flags+='!';; *"m"*) flags+='*'; esac
-		case "$_flags" in *'u'*) flags+='?'                    ; esac
+		# Takes ages on big repositories
+# 		_flags=$(git status 2>/dev/null | sed -ne '
+# s/^# Untracked files:.*/u/p
+# s/^# Changes to be committed:.*/i/p
+# s/^# Changed but not updated:.*/m/p
+# s/^# [[:space:]]*unmerged:.*/c/p')
+# 		flags=
+# 		case "$_flags" in *'i'*) flags+='+'                    ; esac
+# 		case "$_flags" in *"c"*) flags+='!';; *"m"*) flags+='*'; esac
+# 		case "$_flags" in *'u'*) flags+='?'                    ; esac
 
 		E=$'\33['
 		case "$flags$state" in                 # branch
@@ -117,9 +118,9 @@ s/^# [[:space:]]*unmerged:.*/c/p')
 			ps1+="%{${E}0;32;44m%}$state"
 			ps1+="%{${E}0;37;44m%})"
 		esac
-		case "$flags" in ?*)                   # flags
-			ps1+="%{${E}1;31;44m%}$flags%{${E}0;37;44m%}"
-		esac
+		# case "$flags" in ?*)                   # flags
+		# 	ps1+="%{${E}1;31;44m%}$flags%{${E}0;37;44m%}"
+		# esac
 
 		PS1=${__PS1//{{GIT}}/"$ps1 "}
 	fi
