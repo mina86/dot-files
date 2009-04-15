@@ -161,6 +161,7 @@ while read FILE DEST; do
 		fi
 	fi
 done 3<&1 <<EOF
+Xresources         ~/.
 bash_profile       ~/.
 bashrc             ~/.
 dot-emacs          ~/.emacs.d/init.el
@@ -171,6 +172,7 @@ profile            ~/.
 risc-mode.el       ~/.emacs.d/elisp/
 sawfishrc          ~/.
 shellrc            ~/.
+term               ~/bin/
 xinitrc            ~/.
 zshrc              ~/.
 EOF

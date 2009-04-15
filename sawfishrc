@@ -169,21 +169,16 @@
 (require 'menus)
 (require 'customize)
 
-(defvar mn-term-command
-  (case-equal (screen-size)
-    '(("1680x1050") "term -T term        -g 80x32+583+0" )
-    '(("1024x768" ) "term -T term        -g 80x25-64+100")
-    '(("1600x1200") "term -T term        -g 80x35+492+0" )
-    '(("1200x1600") "term -T term        -g 80x35-72+100")))
+(defvar mn-term-command "term -T term -N Term")
 (defvar mn-mpdshow-command
   (when (= mn-machine 'erwin)
-    "term -T mpdshow -mesg -g 80x1-68+0 -e mpd-show -c80"))
+    "term -T mpdshow -N MPD -mesg -g 80x1-68+0 -e mpd-show -c80"))
 (defvar mn-irssi-command
   (case-equal (screen-size)
-    '(("1680x1050") "term -T irssi -mesg -g 80x10-68+10 -e irssi")
-    '(("1024x768" ) "term -T irssi -mesg -g 80x10-64+0  -e irssi")
-    '(("1600x1200") "term -T irssi -mesg -g 80x10-72+0  -e irssi")
-    '(("1200x1600") "term -T irssi -mesg -g 80x10-72+0  -e irssi")))
+    '(("1680x1050") "term -T irssi -N IRC -mesg -g 80x10-68+10 -e irssi")
+    '(("1024x768" ) "term -T irssi -N IRC -mesg -g 80x10-64+0  -e irssi")
+    '(("1600x1200") "term -T irssi -N IRC -mesg -g 80x10-72+0  -e irssi")
+    '(("1200x1600") "term -T irssi -N IRC -mesg -g 80x10-72+0  -e irssi")))
 
 
 ;; Get terminal window
@@ -194,7 +189,8 @@
           (lambda (w)
             (and (not (= w (input-focus)))
                  (not (window-get w 'sticky))
-                 (string-equal "xterm" (aref (get-x-text-property w 'WM_CLASS) 0))))
+                 (string-match "xterm|u?rxvt|Term"
+                               (aref (get-x-text-property w 'WM_CLASS) 0))))
           (window-order current-workspace t nil))))
     (if windows
         (display-window (car windows))
@@ -345,6 +341,19 @@
                        (location    0    0     80   80  1) (maximize . vertical))
        '(("1200x1600") ((WM_CLASS . "^Emacs"))
                        (location    0    0     80  106  1) (maximize . vertical))
+
+       '(("1680x1050") ((WM_CLASS . "/Term"))
+                       (dimenstion 80 . 32) (position 583 . 0)
+                       (ignore-program-position #t))
+       '(("1024x768" ) ((WM_CLASS . "/Term"))
+                       (dimenstion 80 . 25) (position -64 . 100)
+                       (ignore-program-position #t))
+       '(("1600x1200") ((WM_CLASS . "/Term"))
+                       (dimenstion 80 . 35) (position 492 . 0)
+                       (ignore-program-position #t))
+       '(("1200x1600") ((WM_CLASS . "/Term"))
+                       (dimenstion 80 . 35) (position 650 . 100)
+                       (ignore-program-position #t))
 
        '(()            ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
                        (alpha . 1))
