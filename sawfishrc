@@ -169,33 +169,36 @@
 (require 'menus)
 (require 'customize)
 
-(defvar mn-term-command "term -T term -N Term")
+(defvar mn-term-command
+  (case-equal (screen-size)
+    '(("1680x1050") "term -T term -N Term -g 80x32")
+    '(("1024x768" ) "term -T term -N Term -g 80x25")
+    '(("1600x1200") "term -T term -N Term -g 80x35")
+    '(("1200x1600") "term -T term -N Term -g 80x45")))
 (defvar mn-mpdshow-command
   (when (= mn-machine 'erwin)
-    "term -T mpdshow -N MPD -mesg -g 80x1-68+0 -e mpd-show -c80"))
+    "term -T mpdshow -N MPD -mesg -g 80x1-68+0 mpd-show -c80"))
 (defvar mn-irssi-command
   (case-equal (screen-size)
-    '(("1680x1050") "term -T irssi -N IRC -mesg -g 80x10-68+10 -e irssi")
-    '(("1024x768" ) "term -T irssi -N IRC -mesg -g 80x10-64+0  -e irssi")
-    '(("1600x1200") "term -T irssi -N IRC -mesg -g 80x10-72+0  -e irssi")
-    '(("1200x1600") "term -T irssi -N IRC -mesg -g 80x10-72+0  -e irssi")))
+    '(("1680x1050") "term -T irssi -N IRC -mesg -g 80x10-68+10  irssi")
+    '(("1024x768" ) "term -T irssi -N IRC -mesg -g 80x10-64+0   irssi")
+    '(("1600x1200") "term -T irssi -N IRC -mesg -g 80x10-72+0   irssi")
+    '(("1200x1600") "term -T irssi -N IRC -mesg -g 80x10-72+0   irssi")))
 
 
-;; Get terminal window
+;; Jump to term or exec
 (require 'sawfish.wm.util.window-order)
-(defun mn-focus-term ()
+(defun mn-term-or-exec ()
   (let ((windows
          (filter
           (lambda (w)
-            (and (not (= w (input-focus)))
-                 (not (window-get w 'sticky))
+            (and (not (window-get w 'sticky))
                  (string-match "xterm|u?rxvt|Term"
                                (aref (get-x-text-property w 'WM_CLASS) 0))))
           (window-order current-workspace t nil))))
     (if windows
         (display-window (car windows))
       (system (concat mn-term-command " &")))))
-
 
 ;; Inspired by jump-or-exec written by Damien Elmes <resolve@repose.cx>
 (defun mn-jump-or-exec (regexp command)
@@ -231,7 +234,7 @@
            "W-Button3-Click"popup-root-menu)
 
 (bind-keys global-keymap
-           "W-`"            mn-focus-term
+           "W-`"           mn-term-or-exec
            "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   "emacs"))
            "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
            "W-e"           (lambda()(mn-jump-or-exec "^irssi$"  mn-irssi-command))
@@ -293,20 +296,22 @@
           (w (nth 2 value)) (h (nth 3 value))
           (v (nth 4 value)))
       ; Position
-      (when (< x 0) (setq x (+ (screen-width ) x)))
-      (when (< y 0) (setq y (+ (screen-height) y)))
-      (window-put wnd 'ignore-program-position #t)
-      (move-window-to wnd x y)
+      (when (and x y)
+        (when (< x 0) (setq x (+ (screen-width ) x)))
+        (when (< y 0) (setq y (+ (screen-height) y)))
+        (window-put wnd 'ignore-program-position #t)
+        (move-window-to wnd x y))
       ; Dimensions
-      (resize-window-with-hints wnd w h)
+      (when (and w h)
+        (resize-window-with-hints wnd w h))
       ; Viewport (maybe)
       (when v
         (set-screen-viewport     (1- v) 0)
         (set-window-viewport wnd (1- v) 0))
       ; Maximize (maybe)
-      (when (and (= x 0) (= w (screen-width)))
+      (when (and x w (= x 0) (= w (screen-width)))
         (window-put wnd 'queued-horizontal-maximize #t))
-      (when (and (= y 0) (= h (screen-height)))
+      (when (and y h (= y 0) (= h (screen-height)))
         (window-put wnd 'queued-horizontal-maximize #t)))))
 
 (define-match-window-setter 'sticky-and-skip
@@ -342,18 +347,12 @@
        '(("1200x1600") ((WM_CLASS . "^Emacs"))
                        (location    0    0     80  106  1) (maximize . vertical))
 
-       '(("1680x1050") ((WM_CLASS . "/Term"))
-                       (dimenstion 80 . 32) (position 583 . 0)
-                       (ignore-program-position #t))
-       '(("1024x768" ) ((WM_CLASS . "/Term"))
-                       (dimenstion 80 . 25) (position -64 . 100)
-                       (ignore-program-position #t))
-       '(("1600x1200") ((WM_CLASS . "/Term"))
-                       (dimenstion 80 . 35) (position 492 . 0)
-                       (ignore-program-position #t))
-       '(("1200x1600") ((WM_CLASS . "/Term"))
-                       (dimenstion 80 . 35) (position 650 . 100)
-                       (ignore-program-position #t))
+       ; rxvt-unicode ignores geometry's potition when tabbed is enabled
+       ; so sawfish must fix that
+       '(("1680x1050") ((WM_CLASS . "/Term$")) (location  583    0))
+       '(("1024x768" ) ((WM_CLASS . "/Term$")) (location -64   100))
+       '(("1600x1200") ((WM_CLASS . "/Term$")) (location 492     0))
+       '(("1200x1600") ((WM_CLASS . "/Term$")) (location 650   100))
 
        '(()            ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
                        (alpha . 1))
