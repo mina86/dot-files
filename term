@@ -1,21 +1,22 @@
 #!/bin/sh
 
 if which urxvt >/dev/null >&1; then
-	OPTS=urxvt
-	SKIP='-mesg'
+	CMD=urxvt
+	OPTS=
 else
-	SKIP=
-	OPTS='xterm +ah -aw -b 0 -bw 0 +vb +nul -pc +pob -s -si -sk +t'
+	CMD=xterm
+	OPTS='+ah -aw -b 0 -bw 0 +vb +nul -pc +pob -s -si -sk +t'
 fi
 
 while [ $# != 0 ]; do
-	case "$1" in
-	($SKIP)                                shift 1;;
-	(-T|-title) OPTS="$OPTS -title    $2"; shift 2;;
-	(-N|-name)  OPTS="$OPTS -name     $2"; shift 2;;
-	(-*)        break; ;;
-	(*)         OPTS="$OPTS -e"; break; ;;
+	case "$CMD:$1" in
+	urxvt:-mesg)                            shift  ;;
+	*:-mesg)     OPTS="$OPTS $1";           shift  ;;
+	*:-T)        OPTS="$OPTS -title    $2"; shift 2;;
+	*:-N)        OPTS="$OPTS -name     $2"; shift 2;;
+	*:-*)                                   break  ;;
+	*)           OPTS="$OPTS -e";           break  ;;
 	esac
 done
 
-exec $OPTS "$@"
+exec "$CMD" $OPTS "$@"
