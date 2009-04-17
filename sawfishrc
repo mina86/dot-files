@@ -177,13 +177,13 @@
     '(("1200x1600") "term -T term -N Term -g 80x45")))
 (defvar mn-mpdshow-command
   (when (= mn-machine 'erwin)
-    "term -T mpdshow -N MPD -mesg -g 80x1-68+0 mpd-show -c80"))
+    "term -T mpdshow -N MPD -mesg -g 80x1-68+0 -e mpd-show -c80"))
 (defvar mn-irssi-command
   (case-equal (screen-size)
-    '(("1680x1050") "term -T irssi -N IRC -mesg -g 80x10-68+10  irssi")
-    '(("1024x768" ) "term -T irssi -N IRC -mesg -g 80x10-64+0   irssi")
-    '(("1600x1200") "term -T irssi -N IRC -mesg -g 80x10-72+0   irssi")
-    '(("1200x1600") "term -T irssi -N IRC -mesg -g 80x10-72+0   irssi")))
+    '(("1680x1050") "term -T irssi -N IRC -mesg -g 80x10-68+10  -e irssi")
+    '(("1024x768" ) "term -T irssi -N IRC -mesg -g 80x10-64+0   -e irssi")
+    '(("1600x1200") "term -T irssi -N IRC -mesg -g 80x10-72+0   -e irssi")
+    '(("1200x1600") "term -T irssi -N IRC -mesg -g 80x10-72+0   -e irssi")))
 
 
 ;; Jump to term or exec
@@ -349,10 +349,10 @@
 
        ; rxvt-unicode ignores geometry's potition when tabbed is enabled
        ; so sawfish must fix that
-       '(("1680x1050") ((WM_CLASS . "/Term$")) (location  583    0))
-       '(("1024x768" ) ((WM_CLASS . "/Term$")) (location -64   100))
-       '(("1600x1200") ((WM_CLASS . "/Term$")) (location 492     0))
-       '(("1200x1600") ((WM_CLASS . "/Term$")) (location 650   100))
+       '(("1680x1050") ((WM_CLASS . "/Term$")) (position 583 .   0))
+       '(("1024x768" ) ((WM_CLASS . "/Term$")) (position -64 . 100))
+       '(("1600x1200") ((WM_CLASS . "/Term$")) (position 492 .   0))
+       '(("1200x1600") ((WM_CLASS . "/Term$")) (position 650 . 100))
 
        '(()            ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
                        (alpha . 1))
