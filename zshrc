@@ -168,7 +168,7 @@ case $TERM in xterm*|rxvt*)
 
 	eval "__preexec_title() { __title \"\$1\" \"$_title_\" \"%40<...<%~\" }"
 	preexec_functions+=__preexec_title
-	chpwd_functions+=__preexec_title
+	precmd_functions+=__preexec_title
 	unset _title_
 esac
 
@@ -180,7 +180,7 @@ esac
 unset FCEDIT
 NULLCMD=cat
 READNULLCMD="$PAGER"
-SAVEHIST=500
+SAVEHIST=10000
 TMPPREFIX="$TMP/zsh"
 HISTFILE="$HOME/.zhistory"
 
