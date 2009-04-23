@@ -350,7 +350,7 @@
        ; rxvt-unicode ignores geometry's potition when tabbed is enabled
        ; so sawfish must fix that
        '(("1680x1050") ((WM_CLASS . "/Term$")) (position 583 .   0))
-       '(("1024x768" ) ((WM_CLASS . "/Term$")) (position -64 . 100))
+       '(("1024x768" ) ((WM_CLASS . "/Term$")) (position 480 . 100))
        '(("1600x1200") ((WM_CLASS . "/Term$")) (position 492 .   0))
        '(("1200x1600") ((WM_CLASS . "/Term$")) (position 650 . 100))
 
