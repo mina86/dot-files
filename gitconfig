@@ -4,7 +4,7 @@
 	#current = yellow reverse
 	#local = yellow
 	#remote = green
-	#plain = 
+	#plain =
 [color "diff"]
 	meta = yellow bold
 	frag = magenta bold
