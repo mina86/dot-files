@@ -16,9 +16,14 @@
 	changed = red
 	untracked = cyan
 [alias]
-	st = status
+	br = branch
 	ci = commit
 	co = checkout
+	pick = cherry-pick
+	rb = rebase
+	st = status
+	sw = show
+	wc = whatchanged
 [user]
 	name = Michal Nazarewicz
 	email = mina86@mina86.com

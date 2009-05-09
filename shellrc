@@ -147,6 +147,10 @@ fi
 alias mb=mv      # common typo
 alias rmd=rmdir
 command_exists mpc && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
+if command_exists git; then
+	alias g=git
+	alias add='git add'
+fi
 
 
 # LaTeX
