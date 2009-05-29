@@ -101,6 +101,9 @@ URxvt.color15:         #FFFFFF
 ! Terminal in urxvt
 Term.perl-ext-common:  matcher,tabbed,selection-popup,option-popup,searchable-scrollback<M-s>,selection-pastebin
 URxvt.tabbed.new-button: false
+URxvt.tabbed.autohide: true
+URxvt.tabbed.tabs-style: nonum nopipe
+URxvt.tabbed.tabbar-timeouts: 16:::8:+:4:@:-:.
 
 ! Irssi in urxvt
 IRC.title:     IRC
