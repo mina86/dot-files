@@ -42,9 +42,9 @@ esac
 
 ##
 ## If normal user -> umask 077; if super user -> umask 022
-## Also, set TMOUT when super user
+## Also, set TMOUT when super user and not running on pikus
 ##
-if [ $(id -u) -eq 0 ]; then
+if [ $(id -u) -eq 0 ] && [ "$_hostname" != Xpikus ]; then
 	umask 0022
 	TMOUT=1200
 else

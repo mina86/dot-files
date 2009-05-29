@@ -779,7 +779,7 @@ in the current paragraph into a single long line."
                                   user-init-file)))
 (global-set-key [(control f2)] (mn-kbd-find-file "~/.gnus/.gnus.el"))
 (global-set-key [(meta f2)]    (mn-kbd-find-file custom-file))
-(global-set-key [(shift f2)]   (mn-kbd-find-file "~/.bashrc"))
+;(global-set-key [(shift f2)]   (mn-kbd-find-file "~/.bashrc"))
 
 ;;}}}
 ;;{{{     F5 - Gnus
