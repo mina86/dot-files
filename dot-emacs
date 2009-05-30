@@ -1404,7 +1404,7 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
 (eval-when-compile (require 'sgml-mode))
 (eval-after-load "sgml-mode"
   (add-hook 'sgml-mode-hook
-            (lambda () (mn-xml-configure-bindings sgml-mode-map))
+            (lambda () (mn-xml-configure-bindings sgml-mode-map))))
 
 (when (fboundp 'nxml-mode)
   (eval-when-compile (require 'nxml-mode))

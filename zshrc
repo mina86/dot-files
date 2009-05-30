@@ -180,7 +180,8 @@ esac
 unset FCEDIT
 NULLCMD=cat
 READNULLCMD="$PAGER"
-SAVEHIST=10000
+SAVEHIST=1000
+HISTSIZE=1000
 TMPPREFIX="$TMP/zsh"
 HISTFILE="$HOME/.zhistory"
 
@@ -200,12 +201,12 @@ setopt   autocd pushdsilent pushdtohome alwaystoend listtypes alwaystoend \
          clobber hashcmds printeightbit rcquotes rmstarsilent bgnice \
          checkjobs hup longlistjobs monitor notify promptsp cbases bsdecho \
          ksharrays kshzerosubscript posixidentifiers shfileexpansion \
-         shwordsplit emacs
+         shwordsplit emacs banghist
 
 unsetopt autopushd cdablevars chasedots chaselinks pushdignoredups \
          pushdminus automenu listbeep listrowsfirst menucomplete recexact \
          badpattern bareglobqual cshnullglob extendedglob globdots \
-         ignorebraces kshglob markdirs nullglob banghist histallowclobber \
+         ignorebraces kshglob markdirs nullglob histallowclobber \
          histbeep histsavebycopy allexport globalexport correct correctall \
          flowcontrol ignoreeof interactivecomments mailwarning pathdirs \
          printexitvalue shortloops promptcr functionargzero multios \
@@ -274,3 +275,9 @@ zstyle ':completion:*:*:*:*:*files' ignored-patterns '*.o' '*~' \
 
 autoload -U compinit
 compinit
+
+
+##
+## Bindings
+##
+bindkey '^D' delete-char
