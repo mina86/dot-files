@@ -119,10 +119,12 @@
                                  "koi8-r")
                                t)))
         junk)
-       ("Subject" "MSG ID:[0-9][0-9][0-9][0-9][0-9]"          junk)
        (: spam-split)
-       (,addr-hdr "dno\\(?:-request\\)?@foch\\.\\(?:ircx\\.net\\|hdtv\\)\\.pl" "list.dno")
+       ("X-Mailing-List"
+        "linux-\\([-a-z0-9-]*?\\)\\(?:-request\\)?@vger.kernel.org"
+        "list.linux.\\1")
        ("X-Gnus-Mail-Source" "mion\\.elka\\.pw\\.edu\\.pl"    "mail.mion")
+       (,addr-hdr "rxvt-unicode@lists\\.schmorp\\.de"         "list.urxvt")
        (,addr-hdr "k02_a\\(?:-request\\)?@staszic\\.waw\\.pl" "list.k02_a")
        (,addr-hdr "mn86@\\(?:g?o2\\|tlen\\).pl"               "mail.mn86")
        "mail.misc")))
@@ -155,34 +157,6 @@
 (add-hook 'message-mode-hook (function (lambda () (flyspell-mode 1))))
 
 ;;}}}
-
-(setq
- gnus-parameters
- '(("spam"             (total-expire . t)
-                       (expiry-wait  . immediate))
-
-   ("list\\."          (subscribed   . t)
-                       (total-expire . t)
-                       (expire-wait  . 14))
-;   ("list\\.k02_a"     (to-address   . "k02_a@staszic.waw.pl")
-;                       (to-list      . "k02_a@staszic.waw.pl"))
-   ("list\\.dno"       (to-address   . "dno@foch.ircx.net.pl")
-                       (to-list      . "dno@foch.ircx.net.pl"))
-
-   ("pw\\."            (dictionary   . "polish"))
-   ("^nnml:"           (dictionary   . "polish"))
-   ("^nnml:mail\\."    (gcc-self     . t))
-   ("\\(?:alt\\.\\)?pl\\..*"  (dictionary . "polish"))
-   (""                 (dictionary   . "british"))))
-
-(setq
- gnus-home-score-file
- (list (list "^nnml:" (concat gnus-home-directory "/Mail/all.SCORE"))
-       "all.SCORE")
-
- gnus-gcc-mark-as-read t
- message-subscribed-address-functions '(gnus-find-subscribed-addresses))
-
 ;;{{{ Signatures
 
 ;; Based on randomsig.el
@@ -271,25 +245,39 @@ called with prefix argument will prompt for any file."
 
 ;;}}}
 
-;; Posting styles
 (setq
+ gnus-parameters
+ '(("spam"             (total-expire . t)
+                       (expiry-wait  . immediate))
+
+   ("^nnml:mail\\."    (gcc-self     . t))
+
+   ("list\\."          (subscribed   .  t)
+                       (total-expire .  t)
+                       (expire-wait  . 14))
+   ("list\\.linux\\."  (expire-wait  .  7))
+
+   ("list\\.dno"       (to-address   . "dno@foch.ircx.net.pl")
+                       (to-list      . "dno@foch.ircx.net.pl"))
+
+   ("^nnml:list\\.\\(?:linux\\|git\\)" (dictionary . "british"))
+   ("^nnml:"                           (dictionary . "polish" ))
+   ("\\(?:alt\\.\\)?pl\\..*"           (dictionary . "polish" ))
+   (""                                 (dictionary . "british")))
+
  gnus-posting-styles
  '((".*"
     ("X-PGP" "B7C6DF1E")
-;    ("PGP"   "B7C6DF1E")
-;    ("X-GPG" "B7C6DF1E")
-;    ("GPG"   "B7C6DF1E")
     ("X-PGP-FP"      "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
-;    ("X-GPG-FP"      "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
-;    ("X-Fingerprint" "9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E")
 
-;    ("X-Accept-Language" "pl, en")
     (signature-file (concat sig-dir "/english"))
     (x-url "http://mina86.com/"))
    ("^pl\\.\\|^alt\\.pl\\.\\|pw\\."
     (signature-file (concat sig-dir "/polish")))
    ("^nnml:"
     (signature-file (concat sig-dir "/polish")))
+   ("^nnml:list\\.\\(linux\\|git\\)"
+    (signature-file (concat sig-dir "/english")))
    ("^nnml:mail\\.mion"
     (address (eval-when-compile
                (concat "M.Nazarewicz" "@" "stud.elka.pw.edu.pl"))))
@@ -297,6 +285,14 @@ called with prefix argument will prompt for any file."
     (address (eval-when-compile (concat "mn86" "@" "o2.pl"))))
    ("^nnml:list.k02_a"
     (address (eval-when-compile (concat "mina86" "@" "tlen.pl"))))))
+
+(setq
+ gnus-home-score-file
+ (list (list "^nnml:" (concat gnus-home-directory "/Mail/all.SCORE"))
+       "all.SCORE")
+
+ gnus-gcc-mark-as-read t
+ message-subscribed-address-functions '(gnus-find-subscribed-addresses))
 
 ;;{{{ SMTP
 

@@ -330,7 +330,7 @@
                        (sticky . #t) (sticky-viewport . #t))
 
        '(("1680x1050") ((WM_CLASS . "^Opera/opera$"))
-                       (location  583  350   1096  700  1))
+                       (location  500  350   1180  700  1))
        '(("1024x768" ) ((WM_CLASS . "^Opera/opera$"))
                        (location    0  368   1024  400  1))
        '(("1600x1200") ((WM_CLASS . "^Opera/opera$"))
@@ -339,7 +339,7 @@
                        (location    0    0   1200 1600  2))
 
        '(("1680x1050") ((WM_CLASS . "^Emacs"))
-                       (location    0    0     80   80  1) (maximize . vertical))
+                       (location    0    0     80  105  1) (maximize . vertical))
        '(("1024x768" ) ((WM_CLASS . "^Emacs"))
                        (location    0    0     80   76  1) (maximize . vertical))
        '(("1600x1200") ((WM_CLASS . "^Emacs"))
@@ -349,7 +349,7 @@
 
        ; rxvt-unicode ignores geometry's potition when tabbed is enabled
        ; so sawfish must fix that
-       '(("1680x1050") ((WM_CLASS . "/Term$")) (position 583 .   0))
+       '(("1680x1050") ((WM_CLASS . "/Term$")) (position 500 .   0))
        '(("1024x768" ) ((WM_CLASS . "/Term$")) (position 480 . 100))
        '(("1600x1200") ((WM_CLASS . "/Term$")) (position 492 .   0))
        '(("1200x1600") ((WM_CLASS . "/Term$")) (position 650 . 100))
@@ -363,7 +363,7 @@
                        (viewport 3 . 1))
        '(()            ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
                        (place-mode . centered) (depth . 16)
-                       (focus-when-mapped . #f) (focus-mode . never)
+                       (focus-when-mapped . #f) (never-focus . #t)
                        (sticky-and-skip . #t))
 
        '(()            ((WM_ICON_NAME . "^GQview$"))
