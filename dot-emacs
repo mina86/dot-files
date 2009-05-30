@@ -1274,7 +1274,7 @@ See `sort-regexp-fields'."
     (add-hook 'c-common-mode-hook 'cc-make-compile-command)))
 
 ;;}}}
-;;{{{   HTML Mode
+;;{{{   HTML/XML & comapny Mode
 
 ;; Create a link out of the preceeding word if it appears to be a URL
 (if (load "thingatpt" t)
@@ -1338,71 +1338,81 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
      (lambda () (interactive ,"*")
        (mn-magick-self-insert-command ,spec ,default ,when-prefix))))
 
+(defun mn-xml-configure-bindings (mode-map)
+  (mn-magick-self-insert-define mode-map " "
+                                '(("[^<]\\b\\w" 2 "\\&&nbsp;")
+                                  ("^\\w"       1 "\\&&nbsp;")
+                                  ("&nbsp;"     6 " "))
+                                (lambda (n)
+                                  (mn-linkify-maybe)
+                                  (self-insert-command n)))
+  (mn-magick-self-insert-define mode-map "<"
+                                '(("<"          1 "&lt;")
+                                  ("&lt;"       4 "&#xab;")))
+  (mn-magick-self-insert-define mode-map ">"
+                                '(("&nbsp;&#8211;" 13 " -->")
+                                  (">"          1 "&gt;")
+                                  ("&gt;"       4 "&#xbb;")))
+  (mn-magick-self-insert-define mode-map "&"
+                                '(("&"          1 "&amp;")))
+  (mn-magick-self-insert-define mode-map "."
+                                '(("\\.\\."     2 "&#8230;")))
+  (mn-magick-self-insert-define mode-map "\""
+                                '(("\""         1 "&quot;")))
+  (mn-magick-self-insert-define mode-map "~"
+                                '(("~"          1 "&nbsp;")))
+  (mn-magick-self-insert-define mode-map "'"
+                                '(("'"          1 "&#8221;")))
+  (mn-magick-self-insert-define mode-map "`"
+                                '(("`"          1 "&#8220;")))
+  (mn-magick-self-insert-define mode-map ","
+                                '((","          1 "&#8222;")))
+  (mn-magick-self-insert-define mode-map "."
+                                '(("\\.\\."     2 "&#8230;")))
+  (mn-magick-self-insert-define mode-map "-"
+                                '(("[-!]-"      2 nil)
+                                  (" -"         2 "&nbsp;&#8211;")
+                                  ("-"          1 "&nbsp;&#8211;")
+                                  ("&#8211;"    7 "&#8212;")
+                                  ("\\\\"       1 "&8209;")))
+  ;; (mn-magick-self-insert-define mode-map "/"
+  ;;                               '(("<"          1
+  ;;                                  (lambda (n)
+  ;;                                    (backward-delete-char 1)
+  ;;                                    (sgml-close-tag)))))
+  (mn-magick-self-insert-define mode-map [(backspace)]
+                                '(("&lt;"       4 "<")
+                                  ("&#xab;"     6 "&lt;")
+                                  ("&gt;"       4 ">")
+                                  ("&#xbb;"     6 "&gt;")
+                                  ("&amp;"      5 "&")
+                                  ("&quot;"     6 "\"")
+                                  ("&#8230;"    7 "..")
+                                  ("&#8220;"    7 "`")
+                                  ("&#8221;"    7 "'")
+                                  ("&#8222;"    7 ",")
+                                  ("&#8212;"    7 "&#8211;")
+                                  ("&#82\\(?:11\\|09\\);" 7 "-")
+                                  ("&.....;"    7 "")
+                                  ("&....;"     6 "")
+                                  ("&...;"      5 "")
+                                  ("&..;"       4 ""))
+                                'delete-backward-char
+                                'delete-backward-char)
+  (setq indent-tabs-mode ()))
 
 (eval-when-compile (require 'sgml-mode))
 (eval-after-load "sgml-mode"
-  (add-hook 'sgml-mode-hook (lambda ()
-    (mn-magick-self-insert-define sgml-mode-map " "
-                                  '(("[^<]\\b\\w" 2 "\\&&nbsp;")
-                                    ("^\\w"       1 "\\&&nbsp;")
-                                    ("&nbsp;"     6 " "))
-                                  (lambda (n)
-                                    (mn-linkify-maybe)
-                                    (self-insert-command n)))
-    (mn-magick-self-insert-define sgml-mode-map "<"
-                                  '(("<"          1 "&lt;")
-                                    ("&lt;"       4 "&#xab;")))
-    (mn-magick-self-insert-define sgml-mode-map ">"
-                                  '(("&nbsp;&#8211;" 13 " -->")
-                                    (">"          1 "&gt;")
-                                    ("&gt;"       4 "&#xbb;")))
-    (mn-magick-self-insert-define sgml-mode-map "&"
-                                  '(("&"          1 "&amp;")))
-    (mn-magick-self-insert-define sgml-mode-map "."
-                                  '(("\\.\\."     2 "&#8230;")))
-    (mn-magick-self-insert-define sgml-mode-map "\""
-                                  '(("\""         1 "&quot;")))
-    (mn-magick-self-insert-define sgml-mode-map "~"
-                                  '(("~"          1 "&nbsp;")))
-    (mn-magick-self-insert-define sgml-mode-map "'"
-                                  '(("'"          1 "&#8221;")))
-    (mn-magick-self-insert-define sgml-mode-map "`"
-                                  '(("`"          1 "&#8220;")))
-    (mn-magick-self-insert-define sgml-mode-map ","
-                                  '((","          1 "&#8222;")))
-    (mn-magick-self-insert-define sgml-mode-map "."
-                                  '(("\\.\\."     2 "&#8230;")))
-    (mn-magick-self-insert-define sgml-mode-map "-"
-                                  '(("[-!]-"      2 nil)
-                                    (" -"         2 "&nbsp;&#8211;")
-                                    ("-"          1 "&nbsp;&#8211;")
-                                    ("&#8211;"    7 "&#8212;")
-                                    ("\\\\"       1 "&8209;")))
-    (mn-magick-self-insert-define sgml-mode-map "/"
-                                  '(("<"          1
-                                     (lambda (n)
-                                       (backward-delete-char 1)
-                                       (sgml-close-tag)))))
-    (mn-magick-self-insert-define sgml-mode-map [(backspace)]
-                                  '(("&lt;"       4 "<")
-                                    ("&#xab;"     6 "&lt;")
-                                    ("&gt;"       4 ">")
-                                    ("&#xbb;"     6 "&gt;")
-                                    ("&amp;"      5 "&")
-                                    ("&quot;"     6 "\"")
-                                    ("&#8230;"    7 "..")
-                                    ("&#8220;"    7 "`")
-                                    ("&#8221;"    7 "'")
-                                    ("&#8222;"    7 ",")
-                                    ("&#8212;"    7 "&#8211;")
-                                    ("&#82\\(?:11\\|09\\);" 7 "-")
-                                    ("&.....;"    7 "")
-                                    ("&....;"     6 "")
-                                    ("&...;"      5 "")
-                                    ("&..;"       4 ""))
-                                  'delete-backward-char
-                                  'delete-backward-char)
-    (setq indent-tabs-mode ()))))
+  (add-hook 'sgml-mode-hook
+            (lambda () (mn-xml-configure-bindings sgml-mode-map))
+
+(when (fboundp 'nxml-mode)
+  (eval-when-compile (require 'nxml-mode))
+  (add-to-list 'auto-mode-alist '("\\.\\(?:x\\|ht\\)ml\\'" . nxml-mode))
+  (eval-after-load "nxml-mode"
+    (add-hook 'nxml-mode-hook
+              (lambda () (mn-xml-configure-bindings nxml-mode-map)))))
+
 
 
 
