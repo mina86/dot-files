@@ -32,3 +32,5 @@
 	;logoutputencoding = ISO-8859-2
 [core]
 	pager = less -FRSX
+[push]
+	default = current
