@@ -4,6 +4,43 @@
 ##
 
 
+##
+## Shell options
+##
+
+#
+# This is here because normally ZSH is not a (POSIX) shell
+# but... something.  It has it's own ideas regarding variables
+# substitution and such.  Some of the options will make ZSH behave.
+#
+
+setopt   autocd pushdsilent pushdtohome alwaystoend listtypes alwaystoend \
+         noautomenu alwaystoend autolist autoparamkeys autoparamslash \
+         globcomplete listpacked  listtypes \
+         braceccl caseglob casematch equals glob globassign globsubst \
+         magicequalsubst nomatch numericglobsort rcexpandparam rematch_pcre \
+         shglob unset appendhistory histexpiredupsfirst histfindnodups \
+         histignorealldups histignorespace histnofunctions histnostore \
+         histreduceblanks histsavenodups globalrcs rcs aliases \
+         clobber hashcmds printeightbit rcquotes rmstarsilent bgnice \
+         checkjobs hup longlistjobs monitor notify promptsp cbases bsdecho \
+         ksharrays kshzerosubscript posixidentifiers shfileexpansion \
+         shwordsplit emacs banghist
+
+unsetopt autopushd cdablevars chasedots chaselinks pushdignoredups \
+         pushdminus automenu listbeep listrowsfirst menucomplete recexact \
+         badpattern bareglobqual cshnullglob extendedglob globdots \
+         ignorebraces kshglob markdirs nullglob histallowclobber \
+         histbeep histsavebycopy allexport globalexport correct correctall \
+         flowcontrol ignoreeof interactivecomments mailwarning pathdirs \
+         printexitvalue shortloops promptcr functionargzero multios \
+         octalzeroes verbose xtrace cshjunkieloops cshjunkiequotes \
+         cshnullcmd kshoptionprint shfileexpansion shnullcmd beep \
+         singlelinezle vi autoremoveslash sharehistory listambiguous
+
+bindkey -e
+
+
 # Include ~/.shellrc
 if [ -r ~/.shellrc ]; then
 	. ~/.shellrc
@@ -63,7 +100,7 @@ fi
 # * http://github.com/jcorbin/zsh-git/
 # * and of course rewritten a lot by myself
 
-if command_exists git; then
+if ehich git >/dev/null 2>&1; then
 	__PS1=$PS1
 
 	__update_ps1_git () {
@@ -185,36 +222,6 @@ HISTSIZE=1000
 TMPPREFIX="$TMP/zsh"
 HISTFILE="$HOME/.zhistory"
 
-
-
-##
-## Shell options
-##
-setopt   autocd pushdsilent pushdtohome alwaystoend listtypes alwaystoend \
-         noautomenu alwaystoend autolist autoparamkeys autoparamslash \
-         globcomplete listpacked  listtypes \
-         braceccl caseglob casematch equals glob globassign globsubst \
-         magicequalsubst nomatch numericglobsort rcexpandparam rematch_pcre \
-         shglob unset appendhistory histexpiredupsfirst histfindnodups \
-         histignorealldups histignorespace histnofunctions histnostore \
-         histreduceblanks histsavenodups globalrcs rcs aliases \
-         clobber hashcmds printeightbit rcquotes rmstarsilent bgnice \
-         checkjobs hup longlistjobs monitor notify promptsp cbases bsdecho \
-         ksharrays kshzerosubscript posixidentifiers shfileexpansion \
-         shwordsplit emacs banghist
-
-unsetopt autopushd cdablevars chasedots chaselinks pushdignoredups \
-         pushdminus automenu listbeep listrowsfirst menucomplete recexact \
-         badpattern bareglobqual cshnullglob extendedglob globdots \
-         ignorebraces kshglob markdirs nullglob histallowclobber \
-         histbeep histsavebycopy allexport globalexport correct correctall \
-         flowcontrol ignoreeof interactivecomments mailwarning pathdirs \
-         printexitvalue shortloops promptcr functionargzero multios \
-         octalzeroes verbose xtrace cshjunkieloops cshjunkiequotes \
-         cshnullcmd kshoptionprint shfileexpansion shnullcmd beep \
-         singlelinezle vi autoremoveslash sharehistory listambiguous
-
-bindkey -e
 
 
 ##
