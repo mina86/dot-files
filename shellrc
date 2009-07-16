@@ -13,31 +13,6 @@ if [ -z "$HOST" ]; then
 	HOST="${HOST%%.*}"
 fi
 _hostname=X"$HOST"
-if [ "$_hostname" = Xikar ]; then _hostname=Xdedal; fi
-
-
-##
-## OHFG! id doesn't work as it should under Solaris
-##
-case "$_hostname" in (Xdedal|Xmion)
-	# This function is a little wrapper for id command. It's not POSIX
-	# compatible but have some features which make it behave almost
-	# like modern POSIX id utility. It understends fallowing arguments:
-	# id [ -u | -un | -g | -gn ] [ user ].  Anything else will be
-	# passed directly to system id utility.
-	unalias id 2>/dev/null
-	id () {
-		if [ $# -gt 2 ]; then /bin/id "$@"; return; fi
-
-		case "$1" in
-		(-u ) shift; /bin/id "$@" | sed 's/^uid=\([1-9][0-9]*\)(.*/\1/' ;;
-		(-un) shift; /bin/id "$@" | sed 's/^uid=[^(]*(\([^)]*\)).*/\1/' ;;
-		(-g ) shift; /bin/id "$@" | sed 's/^gid=\([1-9][0-9]*\)(.*/\1/' ;;
-		(-gn) shift; /bin/id "$@" | sed 's/^gid=[^(]*(\([^)]*\)).*/\1/' ;;
-		(*)          /bin/id "$@"                                       ;;
-		esac
-	}
-esac
 
 
 ##
@@ -50,22 +25,6 @@ if [ $(id -u) -eq 0 ] && [ "$_hostname" != Xpikus ]; then
 else
 	umask 0077
 fi
-
-
-##
-## 'which' does not return exit status on Solaris
-##
-unalias command_exists 2>/dev/null
-if which foobarbaz42-command-which-does-not-exist >/dev/null 2>&1; then
-	command_exists () {
-		test -f "`which \"$1\"`"
-	}
-else
-	command_exists () {
-		which "$1" >/dev/null 2>&1
-	}
-fi
-
 
 
 ##
@@ -87,7 +46,7 @@ fi
 ## Prompt
 ##
 
-# Default prompt (most likely will be overwritten)
+# Default prompt (most likely will be overwritten in shell specific rc files)
 if [ X"$UID" = X0 ]; then PS1='# '; else export PS1='$ '; fi
 if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then PS1="[$(hostname)]$PS1"; fi
 export PS1
@@ -104,16 +63,9 @@ esac
 ## Aliases & functions
 ##
 
-# Ikar, Dedal & Mion keep GNU ls in /usr/local/bin/ls and it's not
-# first on $PATH
+# ls
 unalias ls dir vdir ll l 2>/dev/null
-if [ -x /usr/local/bin/ls ]; then
-	alias ls='LANG=C /usr/local/bin/ls $LS_OPTIONS'
-elif [ -x /usr/bin/ls ]; then
-	alias ls='LANG=C /usr/bin/ls $LS_OPTIONS'
-elif [ -x /bin/ls ]; then
-	alias ls='LANG=C /bin/ls $LS_OPTIONS'
-fi
+alias ls='LANG=C ls $LS_OPTIONS'
 alias ll='ls -l'
 
 ## make and change directory
@@ -139,28 +91,16 @@ l () {
 }
 
 # Other
-if command_exists run-emacs; then
+if which run-emacs >/dev/null 2>&1; then
 	alias e=run-emacs
-elif command_exists emacsclient; then
+elif which emacsclient >/dev/null 2>&1; then
 	alias e='emacsclient -n'
 fi
-alias mb=mv      # common typo
 alias rmd=rmdir
-command_exists mpc && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
-if command_exists git; then
+which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
+if which git >/dev/null 2>&1; then
 	alias g=git
-	alias add='git add'
-fi
-
-
-# LaTeX
-TEX=`which platex 2>/dev/null`
-[ -n "$TEX" ] || TEX=`which latex 2>/dev/null`
-[ -n "$TEX" ] || TEX=`which tex 2>/dev/null`
-if [ -z "$TEX" ]; then
-	unset TEX
-else
-	export TEX
+	alias -- '+=git add'
 fi
 
 
@@ -171,20 +111,21 @@ pf () {
 }
 
 pd () {
-	if   [ $# -eq 0              ]; then perldoc perl
-	elif [ X"$1" != X"${1#*::}"  ]; then perldoc "$@"
-	elif [ X"$1" != X"${1#-}"    ]; then perldoc "$@"
-	elif [ X"$1" != X"${1#perl}" ]; then perldoc "$@"
-	else                                 perldoc perl"$1"
-	fi
+	case "$1" in
+		perl*|*::*|-*|*[A-Z]*)
+			perldoc "$@"
+			;;
+		*)
+			perldoc "perl$1"
+	esac
 }
 
 
 # tinyapps stuff
-if ! command_exists xrun; then
+if ! which xrun >/dev/null 2>&1; then
 	xrun () { "$@" & }
 fi
-if command_exists cdiff; then
+if which cdiff >/dev/null 2>&1; then
 	alias diff=cdiff
 fi
 
@@ -236,28 +177,30 @@ export PATH
 
 
 # Editor
-[ -z "$EDITOR" ] && command_exists nano && export EDITOR=nano VISUAL=nano
+[ -z "$EDITOR" ] && which nano >/dev/null 2>&1 && export EDITOR=nano VISUAL=nano
 
 
 # less
-if [ -n "$LESS" ] || command_exists less; then
+if [ -n "$LESS" ] || which less >/dev/null 2>&1; then
 	export PAGER=less LESS=-MS
 	[ -x ~/bin/lesspipe ] && eval $(~/bin/lesspipe --install-lesspipe)
 fi
 
 
-# Temp  (wierd config for ikar/dedal and mion)
-if   [ -d /temp ] && [ -w /temp ]
-then export TMP=/temp TEMP=/temp TMPDIR=/temp
-elif [ -d /tmp2 ] && [ -w /tmp2 ]
-then export TMP=/tmp2 TEMP=/tmp2 TMPDIR=/tmp2
-else export TMP=/tmp TEMP=/tmp TMPDIR=/tmp
+# LaTeX
+TEX=`which platex 2>/dev/null`
+[ -n "$TEX" ] || TEX=`which latex 2>/dev/null`
+[ -n "$TEX" ] || TEX=`which tex 2>/dev/null`
+if [ -z "$TEX" ]; then
+	unset TEX
+else
+	export TEX
 fi
 
 
 # LS options and colors
 if [ -z "$LS_COLORS" ] && ls --color / >/dev/null 2>&1; then
-	if command_exists dircolors; then
+	if which dircolors >/dev/null 2>&1; then
 		if [ -f ~/.dir_colors     ]; then eval `dircolors -b ~/.dir_colors`
 		elif [ -f /etc/DIR_COLORS ]; then eval `dircolors -b /etc/DIR_COLORS`
 		else                              eval `dircolors -b`
@@ -270,11 +213,8 @@ LS_OPTIONS="-FT0 --color=auto"
 export LS_OPTIONS
 
 
-# Compression
+# Various
 export GZIP="-9n"
-
-
-# Locale, shell config and compilation
 export FIGNORE=".o:~:.bak" CC=gcc CXX=g++
 export LC_COLLATE=C LC_MESSAGES=en_GB
 case "$_hostname" in (Xerwin|Xtuptus)
@@ -286,8 +226,6 @@ case "$_hostname" in (Xerwin|Xtuptus)
 	fi
 	flags init
 esac
-
-
 
 
 unset _hostname
