@@ -100,7 +100,7 @@ fi
 # * http://github.com/jcorbin/zsh-git/
 # * and of course rewritten a lot by myself
 
-if ehich git >/dev/null 2>&1; then
+if which git >/dev/null 2>&1; then
 	__PS1=$PS1
 
 	__update_ps1_git () {
