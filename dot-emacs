@@ -1258,20 +1258,30 @@ See `sort-regexp-fields'."
 ;;}}}
 ;;{{{ Major Modes
 
-;;{{{   C Default compile command
+;;{{{   C Mode
 
 (eval-after-load "compile"
-  (progn
-    (defun cc-make-compile-command ()
-      "Sets `compile-command' to \"make -k <file-name-no-ext>\"."
-      (let ((fn buffer-file-name) p)
-        (when fn
-          (setq fn (file-name-nondirectory fn)
-                p (string-match "\\.[^\\.]*$" fn 1))
-          (set (make-local-variable 'compile-command)
-               (concat "make -k " (substring fn 0 p))))))
+  (add-hook 'c-common-mode-hook
+            (lambda ()
+              (when buffer-file-name
+                (let ((fn (file-name-nondirectory buffer-file-name)))
+                  (set (make-local-variable 'compile-command)
+                       (concat "make -k "
+                               (substring
+                                fn 0 (string-match "\\.[^\\.]*$" fn 1)))))))))
 
-    (add-hook 'c-common-mode-hook 'cc-make-compile-command)))
+; For editing Linux source code
+(defun linux-mode (no-check-mode)
+  (interactive "p")
+  (unless (or no-check-mode (eq major-mode 'c-mode)) (c-mode))
+  (setq indent-tabs-mode t
+        c-basic-offset   8
+        tab-width        8))
+
+(add-hook 'c-mode-hook (lambda ()
+                         (when (and buffer-file-name
+                                    (string-match "linux" buffer-file-name))
+                           (linux-mode t))))
 
 ;;}}}
 ;;{{{   HTML/XML & comapny Mode
