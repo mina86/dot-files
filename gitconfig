@@ -21,7 +21,7 @@
 	co = checkout
 	pick = cherry-pick
 	rb = rebase
-	st = status
+	st = status -uno
 	sw = show
 	wc = whatchanged
 [user]
