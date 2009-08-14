@@ -265,14 +265,20 @@
 ;;}}}
 ;;{{{ Music Player Daemon
 
-(when (member mn-machine '(erwin tuptus))
+(when (member mn-machine '(erwin tuptus pikus))
   (when (and (= mn-machine 'tuptus) (not (getenv "MPD_HOST")))
     (setenv "MPD_HOST" "erwin"))
 
-  (defun mn-mpd (command)
-    (system
-     (concat "echo '" command
-             "\nclose\n' >/dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}")))
+  (if (eq mn-machine 'pikus)
+      (defun mn-mpd (command)
+        (system
+         (concat "echo '" command
+                 "\nclose\n' | nc ${MPD_HOST-localhost} ${MPD_PORT-6600} >/dev/null")))
+    (defun mn-mpd (command)
+      (system
+       (concat "echo '" command
+               "\nclose\n' >/dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}"))))
+
 
   (defmacro mn-mpd-lambda (command)
     (list 'lambda () (list 'mn-mpd command)))
@@ -281,8 +287,8 @@
              "W-z"            (mn-mpd-lambda "previous")
              "W-x"            (mn-mpd-lambda "play")
              "W-c"            (mn-mpd-lambda "pause")
-             "W-v"            (mn-mpd-lambda "stop")
-             "W-b"            (mn-mpd-lambda "next")))
+;             "W-v"            (mn-mpd-lambda "stop")
+             "W-v"            (mn-mpd-lambda "next")))
 
 ;;}}}
 ;;{{{ Matcher
