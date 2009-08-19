@@ -336,7 +336,7 @@
                        (sticky . #t) (sticky-viewport . #t))
 
        '(("1680x1050") ((WM_CLASS . "^Opera/opera$"))
-                       (location  500  350   1180  700  1))
+                       (location  500  350   1179  700  1))
        '(("1024x768" ) ((WM_CLASS . "^Opera/opera$"))
                        (location    0  368   1024  400  1))
        '(("1600x1200") ((WM_CLASS . "^Opera/opera$"))
