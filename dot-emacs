@@ -390,14 +390,36 @@ three times - beginning of buffer; four times - back to where it was."
 (add-hook 'help-mode-hook
           (function (lambda () (define-key help-mode-map "l" 'help-go-back))))
 
-;; Copy to X-clipboard on C-x C-c
+;; Copy to X-clipboard on C-x c or C-x w
 (defun x-set-clipboard-content-from-selection (begin end)
   "Sets X clipboard content to selected text."
   (interactive "r")
   (let ((x-select-enable-clipboard t))
     (x-select-text (buffer-substring begin end))))
 
+;; Paste from X-clipboard on C-x y
+(defun x-yank-clipboard (&optional arg)
+  "Yanks cntents of X clipboard to current buffer."
+  (interactive "*P")
+  (let ((text (x-selection-value 'CLIPBOARD)))
+    (when text
+      ;; Copied from yank
+      (push-mark (point))
+      (insert-for-yank text)
+      (if (consp arg)
+          ;; This is like exchange-point-and-mark, but doesn't
+          ;; activate the mark.  It is cleaner to avoid activation,
+          ;; even though the command loop would deactivate the mark
+          ;; because we inserted text.
+          (goto-char (prog1 (mark t)
+                       (set-marker (mark-marker) (point) (current-buffer)))))
+      ;; Pretend we are yank.
+      (setq this-command 'yank)
+      nil)))
+
 (global-set-key "\C-xc"        'x-set-clipboard-content-from-selection)
+(global-set-key "\C-xw"        'x-set-clipboard-content-from-selection)
+(global-set-key "\C-xy"        'x-yank-clipboard)
 
 ;;}}}
 ;;{{{   DWIW %
@@ -922,6 +944,9 @@ non-nill or `compile' otherwise."
 (global-set-key [(meta f9)]                            ; M-F9  force alt comp.
                 (function (lambda (a) (interactive "P") (mn-compile (not a) t t))))
 
+(setq compilation-scroll-output 'first-error  ; scroll until first error
+      compilation-window-height 12)           ; keep it readable
+
 ;;}}}
 
 ;;}}}
@@ -1021,50 +1046,164 @@ non-nill or `compile' otherwise."
     (setq auto-byte-compile-files-list
           (cons custom-file auto-byte-compile-files-list)))
 
-
 ;; Other
 (setq query-replace-highlight t)  ;highlight during query
 (setq search-highlight t)         ;highlight incremental search
 (show-paren-mode t)               ;show matching parenthesis.
 (setq blink-matching-paren-distance nil) ;search for open-paren till point-min
 
+;;{{{ Set faces
+
+;; Code based on color-theme but simplified
+(dolist
+    (entry
+     '((default
+         (t (:stipple nil
+             :background "black"
+             :foreground "#CCC"
+             :inverse-video nil
+             :box nil
+             :strike-through nil
+             :overline nil
+             :underline nil
+             :slant normal
+             :weight normal
+             :height 80
+             :width normal
+             :family "courier"
+             :foundry "adobe")))
+
+       (region
+        (((type x-toolkit)) (:foreground nil :background "blue"))
+        (t (:foreground nil :background nil :inverse-video t)))
+       (secondary-selection
+        (((type x-toolkit)) (:foreground nil :background "SkyBlue4"))
+        (t (:foreground nil :background nil :inverse-video t)))
+       (tooltip
+        (t (:inherit variable-pitch :background "lightyellow" :foreground "black")))
+
+       (completions-common-part
+        (t (:inherit default :foreground "yellow")))
+       (completions-first-difference
+        (t (:inherit default :foreground "cyan" :weight bold)))
+
+       (custom-button
+        (t (:foreground "cyan")))
+       (custom-button-face
+        (t (:foreground "cyan")))
+       (custom-documentation
+        (t (:foreground "yellow" :weight bold)))
+       (custom-documentation-face
+        (t (:foreground "yellow" :weight bold)))
+       (custom-group-tag
+        (t (:foreground "cyan" :underline t :weight bold)))
+       (custom-group-tag-face
+        (t (:foreground "cyan" :underline t :weight bold)))
+       (custom-variable-tag
+        (t (:foreground "cyan" :underline t :weight bold)))
+       (custom-variable-tag-face
+        (t (:foreground "cyan" :underline t :weight bold)))
+
+       (diff-added
+        (t (:inherit diff-changed :foreground "green")))
+       (diff-added-face
+        (t (:foreground "green" :weight bold)))
+       (diff-changed
+        (t (:foreground "yellow")))
+       (diff-changed-face
+        (t (:foreground "yellow" :weight bold)))
+       (diff-indicator-added
+        (t (:inherit diff-added)))
+       (diff-removed
+        (t (:inherit diff-changed :foreground "red")))
+       (diff-removed-face
+        (t (:foreground "red" :weight bold)))
+
+       (font-lock-builtin-face
+        (t (:foreground "#99F")))
+       (font-lock-comment-face
+        (t (:foreground "green" :slant italic)))
+       (font-lock-constant-face
+        (t (:foreground "aquamarine")))
+       (font-lock-doc-face
+        (t (:inherit font-lock-comment-face :foreground "#CF0")))
+       (font-lock-function-name-face
+        (t (:foreground "lightskyblue")))
+       (font-lock-keyword-face
+        (t (:foreground "#0FF")))
+       (font-lock-negation-char-face
+        (t nil))
+       (font-lock-string-face
+        (t (:foreground "lightsalmon")))
+       (font-lock-type-face
+        (t (:foreground "palegreen")))
+       (font-lock-variable-name-face
+        (t (:foreground "lightgoldenrod")))
+       (font-lock-warning-face
+        (t (:foreground "pink" :weight bold)))
+       (fringe
+        (t (:background "#002")))
+       (header-line
+        (t (:inherit mode-line :background "#006" :foreground "#FFF" :box nil)))
+       (help-argument-name
+        (t (:inherit font-lock-variable-name-face)))
+       (highlight
+        (t (:background "#060" :underline "#0F0")))
+       (hl-line
+        (t (:background "#003")))
+       (lazy-highlight
+        (t (:background "paleturquoise4")))
+       (link
+        (t (:foreground "cyan" :underline t)))
+       (link-visited
+        (t (:inherit link :foreground "#96F")))
+       (match
+        (t (:background "RoyalBlue3")))
+
+       (mode-line
+        (t (:background "#009" :foreground "white" :box nil)))
+       (mode-line-buffer-id
+        (t (:foreground "#9FF" :weight bold)))
+       (mode-line-highlight
+        (t (:background "#00F")))
+       (mode-line-inactive
+        (t (:inherit mode-line :box nil :background nil :foreground "#CCC")))
+
+       (widget-button
+        (t (:background "blue" :foreground "cyan" :weight bold)))
+       (widget-button-face
+        (t (:background "blue" :foreground "cyan" :weight bold)))
+       (widget-field
+        (t (:background "blue")))
+       (widget-field-face
+        (t (:background "blue")))
+
+       (my-tab-face
+        (((class color) (min-colors 216)) (:background "#666"))
+        (t (:background "yellow")))
+       (my-big-indent-face
+        (((class color) (min-colors 216)) (:background "#966"))
+        (t (:background "red")))
+       (my-huge-indent-face
+        (((class color) (min-colors 216)) (:background "#C66"))
+        (t (:background "magenta")))
+       (my-fixme-face
+        (t :background "red" :foreground "white" :weight bold))
+       (my-todo-face
+        (t :foreground "red" :weight bold))))
+  (let ((face (car entry)) (spec (cdr entry)))
+    (unless (facep face)
+      (make-empty-face face))
+    (condition-case var
+        (progn
+          (put face 'face-override-spec spec)
+          (face-spec-set face spec))
+      (error (message "Error using spec %S: %S" spec var)))))
+
+;;}}}
+
 ;; Show blanks and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
-
-(defface my-tab-face
-  '((((type graphical) (class color) (min-colors 216)) (:underline "#666"))
-    (((class color) (min-colors 216)) (:background "#666"))
-    (((class color) (min-colors  16)) (:background "yellow")))
-  "Face for showing TABs."
-  :group 'basic-faces)
-
-(defface my-big-indent-face
-  '((((type graphical) (class color) (min-colors 216)) (:underline "#966"))
-    (((class color) (min-colors 216)) (:background "#966"))
-    (((class color) (min-colors  16)) (:background "red"))
-    (t :inverse-video t))
-  "Face for showing sequence of four or five TAB characters in a row."
-  :group 'basic-faces)
-
-(defface my-huge-indent-face
-  '((((type graphical) (class color) (min-colors 216)) (:underline "#F00"))
-    (((class color) (min-colors 216)) (:background "#C66"))
-    (((class color) (min-colors  16)) (:background "magenta"))
-    (t :inverse-video t))
-  "Face for showing sequence of at least six five TAB characters in a row."
-  :group 'basic-faces)
-
-(defface my-fixme-face
-  '((t :background "red" :foreground "white" :weight bold))
-  "Font for showing FIXME and XXX words."
-  :group 'basic-faces)
-
-(defface my-todo-face
-  '((t :foreground "red" :weight bold))
-  "Font for showing TODO words."
-  :group 'basic-faces)
-
-
 (add-hook 'font-lock-mode-hook (function (lambda ()
   (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
     (font-lock-add-keywords nil
@@ -1077,14 +1216,23 @@ non-nill or `compile' otherwise."
 ;;}}}
 ;;{{{ Misc small config
 
-;;Save some space
 (setq use-dialog-box nil)         ;never use dialog boxes
+
+;; Frame apperence
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
 (if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
-(and window-system (load "fringe" t)
-     (set-fringe-mode (if (string-match "^erwin" system-name) 7 4)))
-
+(let ((fringe
+       (if (eval-when-compile (string-match "^erwin" system-name)) 7 4)))
+  (setq default-frame-alist `((width . 80)
+                              (right-fringe . ,fringe)
+                              (left-fringe  . ,fringe)
+                              (menu-bar-lines . 0)
+                              (tool-bar-lines . 0)
+                              (vertical-scroll-bars)
+                              (foreground-color . "gray")
+                              (background-color . "black")
+                              (background-mode . dark))))
 
 ;; Modeline
 (setq line-number-mode t)         ;show line number in modeline
@@ -1129,17 +1277,11 @@ non-nill or `compile' otherwise."
                                (mouse-2 . describe-mode)
                                (down-mouse-1 . mouse-major-mode-menu))))
         ") "))
-(if (and (string-match "^tuptus" system-name)
-         (fboundp 'display-battery-mode)
-         (not window-system))
-    (display-battery-mode 1))      ;show battery on my laptop but only in TTY
-;(setq display-time-24hr-format t) ;show time in 24h format
-;(setq display-time-interval 30)   ;update time & load avg every 30s
-;(display-time-mode 1)             ;show time in modeline
 
 
 ;; Other
 (icomplete-mode 1)                ;nicer completion in minibuffer
+(setq icomplete-prospects-height 2) ; don't spam my minibuffer
 (define-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
   (lambda () (interactive) (delete-minibuffer-contents)))
 (setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
@@ -1162,12 +1304,12 @@ non-nill or `compile' otherwise."
 ;(setq mouse-autoselect-window nil)  ;focus follows mouse
 (when (boundp 'compilation-auto-jump-to-first-error)
   (setq compilation-auto-jump-to-first-error t))
-(if (boundp 'line-move-visual)
-    (setq line-move-visual nil))  ;move by logical lines not screen lines
+(when (boundp 'line-move-visual)
+  (setq line-move-visual nil))  ;move by logical lines not screen lines
 
 ;; Saving etc
-(if (fboundp recentf-mode)
-    (recentf-mode nil))           ;no recent files
+(when (fboundp recentf-mode)
+  (recentf-mode nil))           ;no recent files
 (setq backup-by-copying-when-linked t) ;preserve hard links
 (auto-compression-mode 1)         ;automatic compression
 (setq make-backup-files nil)      ;no backup
@@ -1177,25 +1319,28 @@ non-nill or `compile' otherwise."
 
 
 ;; Indention
-(defun tab-stop-list (&optional width columns)
+(defmacro tab-stop-list (&optional width columns)
   "Returns list of all positive integers ordered from smallest to
 largest which are multiplications of WIDTH and are lower or equal
 COLUMNS.  WIDTH defaults to `tab-width' and COLUMNS to 120."
+  (list 'eval-when-compile (list 'tab-stop-list-do width columns)))
+
+(defun tab-stop-list-do (&optional width columns)
   (if (not width) (setq width tab-width))
   (when (<= width (or columns 120))
-    (let* (l (n (/ (or columns 120) width )))
+    (let* (l (n (/ (or columns 120) width)))
       (while (> (setq l (cons (* n width) l) n (1- n)) 0)) l)))
 
 (setq indent-tabs-mode t)         ;indent using tabs
 (setq c-basic-offset 4)           ;4 char indent in cc-mode
 (setq tab-width 4)                ;tab width
-(setq tab-stop-list (eval-when-compile (tab-stop-list 4)))
+(setq tab-stop-list (tab-stop-list 4))
 ;; One could add this to check if tab-width and c-basic-offset correspond
 ;(if (not (= 0 (% c-basic-offset tab-width)))
 ;    (warn "`tab-width' does not divide `c-basic-offset'"))
 
 
-;; Regionsm selections and marks
+;; Regions, selections and marks
 (setq mouse-yank-at-point t)      ;mouse yank at point not at cursor   (X-win)
 (setq kill-read-only-ok t)        ;be silent when killing text from RO buffer
 (delete-selection-mode 1)         ;deleting region by typing or del (like Win)
@@ -1542,16 +1687,14 @@ argument ommited returns that number."
 (add-hook 'text-mode-hook (function (lambda ()
     (auto-fill-mode t)
     (setq tab-width 8)
-    (setq tab-stop-list
-    (set (make-local-variable 'tab-stop-list)
-         (eval-when-compile (tab-stop-list 8)))))))
+    (setq tab-stop-list (tab-stop-list 8)))))
 
 
 ;; Assembler mode
 (add-hook 'asm-mode-hook (function (lambda ()
-    (set-variable 'tab-width 8)
-    (set-variable 'tab-stop-list (tab-stop-list 16))
-    (set-variable 'comment-column 40))))
+    (setq tab-width 8)
+    (setq tab-stop-list (tab-stop-list 16))
+    (setq comment-column 40))))
 
 
 ;; Org mode
@@ -1564,7 +1707,8 @@ argument ommited returns that number."
 
 
 ;; JavaScript mode
-(add-to-list 'auto-mode-alist '("\\.js\\'" . c-mode))
+(unless (fboundp 'js2-mode)
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . c-mode)))
 
 
 ;; Shell mode
@@ -1575,8 +1719,8 @@ argument ommited returns that number."
 
 
 ;; Lisp/Scheme mode
-;; No tabs!
-(let ((func (function (lambda () (setq indent-tabs-mode ())))))
+;; No tabs! and if opening file with tabs, assume 8-char wide
+(let ((func (function (lambda () (setq indent-tabs-mode () tab-width 8)))))
   (add-hook 'emacs-lisp-mode-hook func)
   (add-hook 'lisp-mode-hook       func)
   (add-hook 'scheme-mode-hook     func))
@@ -1586,12 +1730,6 @@ argument ommited returns that number."
 (autoload 'sawfish-mode "sawfish" "Mode for editing Sawfish config files")
 (add-to-list 'auto-mode-alist '(".*sawfishrc\\'" . sawfish-mode))
 (add-to-list 'auto-mode-alist '(".*\\.jl\\'" . sawfish-mode))
-
-
-;; FVWM mode
-;; http://groups.google.fr/groups?threadm=mailman.2630.1083314129.1061.help-gnu-emacs%40gnu.org
-(autoload 'fvwm-mode "fvwm-mode" "Mode fore editing fvwm's config files" t)
-(add-to-list 'auto-mode-alist '("\\.fv\\(wm2?\\(rc\\)?\\)?$" . fvwm-mode))
 
 
 ;; Bison mode
@@ -1606,10 +1744,6 @@ argument ommited returns that number."
 (add-to-list 'auto-mode-alist '("\\.l$" . flex-mode))
 
 
-;; Script mode
-;(autoload 'script-mode "script-mode" "Mode fore editing scripts" t)
-
-
 ;; LSL mode
 (autoload 'lsl-mode "lsl-mode" "Load LSL mode." t)
 (add-to-list 'auto-mode-alist '("\\.lsl$" . lsl-mode))
@@ -1617,16 +1751,16 @@ argument ommited returns that number."
 
 
 ;; Haskell mode
-(when (eval-when-compile
-        (file-directory-p (concat user-emacs-directory "elisp/haskell-mode")))
-  (load (concat user-emacs-directory "elisp/haskell-mode/haskell-site-file"))
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
-  ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
-   (add-hook 'haskell-mode-hook
-             (lambda ()
-               (setq comment-padding  " "
-                     comment-start    "--"))))
+;; (when (eval-when-compile
+;;         (file-directory-p (concat user-emacs-directory "elisp/haskell-mode")))
+;;   (load (concat user-emacs-directory "elisp/haskell-mode/haskell-site-file"))
+;;   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+;;   (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+;;   ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
+;;    (add-hook 'haskell-mode-hook
+;;              (lambda ()
+;;                (setq comment-padding  " "
+;;                      comment-start    "--"))))
 
 ;;}}}
 
@@ -1691,15 +1825,17 @@ argument ommited returns that number."
 
 (add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
 
+(set-cursor-color (setq hcz-set-cursor-color-color "yellow"))
+
 ;;}}}
 ;;{{{   Command Frequency mode
 
-(require 'command-frequency)
-(setq command-frequency-table-file
-      (concat user-emacs-directory "frequencies"))
-(command-frequency-table-load)
-(command-frequency-mode 1)
-(command-frequency-autosave-mode 1)
+(when (load "command-frequency")
+  (setq command-frequency-table-file
+        (concat user-emacs-directory "frequencies"))
+  (command-frequency-table-load)
+  (command-frequency-mode 1)
+  (command-frequency-autosave-mode 1))
 
 ;;}}}
 ;;{{{   Notes in *scratch*
@@ -1752,7 +1888,8 @@ argument ommited returns that number."
 ;;}}}
 
 ;; Start server
-(server-start)
+(unless (and (fboundp 'daemonp) (daemonp))
+  (server-start))
 
 (random t)
 
