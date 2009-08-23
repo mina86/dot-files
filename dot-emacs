@@ -454,131 +454,7 @@ the point."
                            (current-global-map))
 
 ;;}}}
-;;{{{   Tab - indent or rotate or complete
-
-;; Rotate Text + indent-or-complete
-;; v0.3 by Michal Nazarewicz <mina86@tlen.pl>
-;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
-;; http://www.emacswiki.org/cgi-bin/wiki/RotateText
-
-;; Definition of words
-(defvar rotate-text-rotations
-  '(("mina86" "mina86@tlen.pl" "mina86@mina86.com" "http://mina86.com/")
-    ("max" "min")
-    ("north" "east" "south" "west")
-    ("left" "top" "right" "bottom"))
-  "List of lists of words to rotate between.")
-
-
-;; Rotates text
-(defun rotate-text (text &optional rotations)
-  "Rotates given string, ie. find string which follows given
-string in ROTATIONS or nil if there is no such string.  If
-ROTATION is nil `rotate-text-rotations' is used."
-  (rotate-text--in text (or rotations rotate-text-rotations)))
-
-;; Internal rotates text
-(defun rotate-text--in (text rotations)
-  "Similar to `rotate-text' but if ROTATIONS is nil returns nil."
-  (and rotations
-       (or (rotate-text--in-list text (car rotations))
-           (rotate-text--in      text (cdr rotations)))))
-
-;; Internal rotates text in list
-(defun rotate-text--in-list (text list)
-  "Searches for TEXT in LIST and returns string which is follows
-it (or the first string in the list if TEXT is the last one).  If
-string is not found on the list returns nil."
-  (let ((l list))
-    (while (and l (not (string-equal text (car l))))
-      (setq l (cdr l)))
-    (and l (or (cadr l) (car list)))))
-
-
-;; Roatetes text in buffer
-(defun rotate-region (&optional beg end)
-  "Rotates string in buffer between BEG and END.  If string was
-not found in `rotate-text-rotations' returns nil otherwise t.  If
-BEG is nil either `region-beginning' (if `use-region-p') or
-begining of word is used as the default.  If END is nil either
-`region-end' or end of word is used as the default.  If function
-was called interactivly and mark was active it lets it active."
-  (let ((use-region-p (use-region-p)))
-    (save-excursion
-      (setq beg
-            (or beg
-                (and use-region-p (region-beginning))
-                (progn (or (looking-at "\\<") (forward-word -1)) (point))))
-      (setq end
-            (or end
-                (and use-region-p (region-end))
-                (progn (or (looking-at "\\>") (forward-word  1)) (point)))))
-    (let ((str (rotate-text (buffer-substring beg end))))
-      (when str
-        (delete-region beg end)
-        (goto-char beg)
-        (insert str)
-        (setq deactivate-mark (not (and (interactive-p) use-region-p)))
-        t))))
-
-;; hippie-expand try function
-(defvar try-rotate-string--rotations)
-(defvar try-rotate-string--num)
-(defvar try-rotate-string--beg)
-(defvar try-rotate-string--text)
-
-(defun try-rotate-string (old)
-  "Try to rotates text.  The argument OLD has to be nil the first
-call of this function, and t for subsequent calls (for further
-possible completions of the same string).  It returns t if a new
-completion is found, nil otherwise.
-
-This function can be added to `hippie-expand-try-functions-list'
-or used interactivly.  To do the former use:
-
-  (setq hippie-expand-try-functions-list
-        (append (list 'try-rotate-string) hippie-expand-try-functions-list))"
-  (interactive (list (eq this-command last-command)))
-  (if old
-      (when (>= (setq try-rotate-string--num (1+ try-rotate-string--num))
-                (length (car try-rotate-string--rotations)))
-        (setq try-rotate-string--rotations (cdr try-rotate-string--rotations)
-              try-rotate-string--num       0))
-    (setq try-rotate-string--rotations rotate-text-rotations
-          try-rotate-string--num       1
-          try-rotate-string--beg (save-excursion (forward-word -1) (point))
-          try-rotate-string--text
-          (buffer-substring try-rotate-string--beg (point))))
-
-  (let ((text (buffer-substring try-rotate-string--beg (point)))
-        replace ret)
-    (while (and (not replace) try-rotate-string--rotations)
-      (unless (setq replace (rotate-text--in-list
-                             text (car try-rotate-string--rotations)))
-        (setq try-rotate-string--rotations (cdr try-rotate-string--rotations)
-              try-rotate-string--num       0
-              text                         try-rotate-string--text)))
-
-    (when (or replace old)
-      (delete-region try-rotate-string--beg (point))
-      (goto-char try-rotate-string--beg)
-      (insert (or replace try-rotate-string--text)))
-    replace))
-
-(setq hippie-expand-try-functions-list
-      '(try-rotate-string
-;        try-expand-all-abbrevs
-;        try-expand-list
-;        try-expand-line
-        try-expand-dabbrev
-        try-expand-dabbrev-all-buffers
-        try-expand-dabbrev-from-kill
-        try-complete-file-name-partially
-        try-complete-file-name
-        try-complete-lisp-symbol-partially
-        try-complete-lisp-symbol)
-      hippie-expand-verbose nil)
-
+;;{{{   Tab - indent or complete
 
 ;; Indent or complete
 (defvar indent-or-complete-complete-function 'hippie-expand
@@ -1961,19 +1837,6 @@ argument ommited returns that number."
 (add-to-list 'auto-mode-alist '("\\.lsl$" . lsl-mode))
 (add-hook 'lsl-mode-hook (function (lambda nil (setq indent-tabs-mode nil))))
 
-
-;; Haskell mode
-;; (when (eval-when-compile
-;;         (file-directory-p (concat user-emacs-directory "elisp/haskell-mode")))
-;;   (load (concat user-emacs-directory "elisp/haskell-mode/haskell-site-file"))
-;;   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-;;   (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
-;;   ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
-;;    (add-hook 'haskell-mode-hook
-;;              (lambda ()
-;;                (setq comment-padding  " "
-;;                      comment-start    "--"))))
-
 ;;}}}
 
 ;;}}}
@@ -2106,26 +1969,8 @@ argument ommited returns that number."
 (random t)
 
 ;;}}}
-;;{{{ Fun stuff ;)
-
-(defconst q   "This is EMACS not vi!  Use C-x C-c instead.")
-(defconst w   "This is EMACS not vi!  Use C-x C-s instead.")
-(defconst q!  q)
-(defconst wq  q)
-(defconst wq! q)
-
-
-;;}}}
 
 ;; Clear messages
 ;; You may want to comment it out for debuging
 (setq message-log-max nil)        ;disable messages
 (kill-buffer "*Messages*")        ;kill buffer with messages
-
-;(when (file-directory-p gnus-home-directory) (gnus))
-
-(if (fboundp 'emacs-init-time)
-    (add-hook 'after-init-hook
-              (function (lambda ()
-                          (message "Emacs initialization took %s"
-                                   (emacs-init-time))))))
