@@ -1,8 +1,0 @@
-DestroyMenu	MenuFvwmRoot_Exit
-AddToMenu	MenuFvwmRoot_Exit
-+ "E&xit%exit.png%"			Exit
-+ "Reboot"					ExitAndRun /sbin/reboot
-+ "Reboot to Windows"			ExitAndRun /sbin/reboot-w
-+ "Power Off%kill.png%"		ExitAndRun /sbin/halt
-#+ "&Restart"				Restart
-#+ "Just an Xterm%display1.png%"		Restart term -T '"X Console"'

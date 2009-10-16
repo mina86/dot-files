@@ -1,5 +1,0 @@
-KillModule	FvwmAuto
-Module		FvwmAuto 200 Raise Nop
-
-KillModule	FvwmCommandS
-Module		FvwmCommandS

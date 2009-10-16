@@ -1,8 +1,0 @@
-DestroyFunc	InitFunction
-AddToFunc	InitFunction
-+ I ExecOnce opera opera
-+ I ExecOnce emacs emacs
-+ I ExecOnce xterm term
-+ I ExecOnce irssi "term -T irssi -mesg -e irssi"
-+ I FvwmConsole-Run
-+ I Exec Esetroot -scale /root/nightelfboxart-1600x.bmp
