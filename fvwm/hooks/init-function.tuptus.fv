@@ -1,9 +1,0 @@
-DestroyFunc	InitFunction
-AddToFunc	InitFunction
-#+ I ExecOnce opera opera
-#+ I ExecOnce mpdshow "term -T mpdshow -mesg -e /home/mina86/code/tinyapps/mpd-show -c69"
-#+ I ExecOnce irssi "term -T irssi -mesg -e irssi-starter.sh"
-+ I ExecOnce gkrellm gkrellm
-#+ I Exec xystray -bg gray60 -iconrows 1 -iconcols 3
-+ I FvwmConsole-Run
-+ I Exec fvwm-setbg.sh random

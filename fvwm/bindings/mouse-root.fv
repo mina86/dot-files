@@ -1,6 +1,0 @@
-Mouse 1 R       N       Call  Nop  "Exec exec term" "Scroll reverse"
-Mouse 2 R       N       WindowList Mouse 0 0 NoGeometry, IconifiedAtEnd
-Mouse 3 R       N       Menu MenuFvwmRoot Nop
-Mouse 1 A       C4      Call  Nop  "Exec exec term" "Scroll reverse"
-Mouse 2 A       C4      WindowList Mouse 0 0 NoGeometry, IconifiedAtEnd
-Mouse 3 A       C4      Menu MenuFvwmRoot Nop
