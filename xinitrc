@@ -39,7 +39,6 @@ tuptus*)
 	;;
 *)
 	run_xcompmgr
-	setxkbmap pl
 	if [ -f ~/.wallpaper.bmp ] && which Esetroot >/dev/null 2>/dev/null; then
 		nice Esetroot -scale ~/.wallpaper.bmp &
 	fi
