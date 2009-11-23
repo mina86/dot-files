@@ -174,16 +174,16 @@
     '(("1680x1050") "term -N Term -g 80x32")
     '(("1024x768" ) "term -N Term -g 80x25")
     '(("1600x1200") "term -N Term -g 80x35")
-    '(("1200x1600") "term -N Term -g 80x45")))
+    '(("1200x1600" "2400x1600") "term -N Term -g 80x150")))
 (defvar mn-mpdshow-command
-  (when (= mn-machine 'erwin)
-    "term -N MPD -mesg -g 80x1-68+0 -e mpd-show -c80"))
+  (when (member mn-machine '(erwin pikus))
+    "term -N MPD -mesg -g 80x1 -e mpd-show -c80"))
 (defvar mn-irssi-command
   (case-equal (screen-size)
-    '(("1680x1050") "term -N IRC -mesg -g 80x10-68+10  -e irssi")
-    '(("1024x768" ) "term -N IRC -mesg -g 80x10-64+0   -e irssi")
-    '(("1600x1200") "term -N IRC -mesg -g 80x10-72+0   -e irssi")
-    '(("1200x1600") "term -N IRC -mesg -g 80x10-72+0   -e irssi")))
+    '(("1680x1050") "term -N IRC -mesg -g 80x10 -e irssi")
+    '(("1024x768" ) "term -N IRC -mesg -g 80x10 -e irssi")
+    '(("1600x1200") "term -N IRC -mesg -g 80x10 -e irssi")
+    '(("1200x1600" "2400x1600") "term -N IRC -mesg -g 80x10 -e ssh -D 12312 live")))
 
 
 ;; Jump to term or exec
@@ -328,13 +328,33 @@
 
 (setq match-window-profile
       (mn-val-filter (screen-size)
-       '(()            ((WM_CLASS . "/MPD$"))
+       ;; Various terminals, size is specified via -g in command
+       '(("1680x1050") ((WM_CLASS . "/Term$")) (position 500 .   0))
+       '(("1024x768" ) ((WM_CLASS . "/Term$")) (position 480 . 100))
+       '(("1600x1200") ((WM_CLASS . "/Term$")) (position 492 .   0))
+       '(("1200x1600" "2400x1600")
+                       ((WM_CLASS . "/Term$")) (position 650 . 100))
+
+       '(("1680x1050") ((WM_CLASS . "/IRC$" )) (position 500 .   0))
+       '(("1024x768" ) ((WM_CLASS . "/IRC$" )) (position 480 .  10))
+       '(("1600x1200") ((WM_CLASS . "/IRC$" )) (position 492 .   0))
+       '(("1200x1600" "2400x1600")
+                       ((WM_CLASS . "/IRC$" )) (position 650 .  10))
+
+       '(("1680x1050") ((WM_CLASS . "/MPD$" )) (position 500 .   0))
+       '(("1024x768" ) ((WM_CLASS . "/MPD$" )) (position 480 .   0))
+       '(("1600x1200") ((WM_CLASS . "/MPD$" )) (position 492 .   0))
+       '(("1200x1600" "2400x1600")
+                       ((WM_CLASS . "/MPD$" )) (position 650 .   0))
+
+       '(()            ((WM_CLASS . "/MPD$" ))
                        (focus-when-mapped . #f) (focus-mode . click)
                        (sticky-and-skip . #t))
 
        '(()            ((WM_CLASS . "/IRC$"))
                        (sticky . #t) (sticky-viewport . #t))
 
+       ;; Opera
        '(("1680x1050") ((WM_CLASS . "^Opera/opera$"))
                        (location  500  350   1179  700  1))
        '(("1024x768" ) ((WM_CLASS . "^Opera/opera$"))
@@ -343,26 +363,24 @@
                        (location  600  500   1000  700  1))
        '(("1200x1600") ((WM_CLASS . "^Opera/opera$"))
                        (location    0    0   1200 1600  2))
+       '(("2400x1600") ((WM_CLASS . "^Opera/opera$"))
+                       (location 1200    0   1200 1600  1))
 
+       ;; Emacs
        '(("1680x1050") ((WM_CLASS . "^Emacs"))
                        (location    0    0     80  105  1) (maximize . vertical))
        '(("1024x768" ) ((WM_CLASS . "^Emacs"))
                        (location    0    0     80   76  1) (maximize . vertical))
        '(("1600x1200") ((WM_CLASS . "^Emacs"))
                        (location    0    0     80   80  1) (maximize . vertical))
-       '(("1200x1600") ((WM_CLASS . "^Emacs"))
-                       (location    0    0     80  106  1) (maximize . vertical))
-
-       ; rxvt-unicode ignores geometry's potition when tabbed is enabled
-       ; so sawfish must fix that
-       '(("1680x1050") ((WM_CLASS . "/Term$")) (position 500 .   0))
-       '(("1024x768" ) ((WM_CLASS . "/Term$")) (position 480 . 100))
-       '(("1600x1200") ((WM_CLASS . "/Term$")) (position 492 .   0))
-       '(("1200x1600") ((WM_CLASS . "/Term$")) (position 650 . 100))
-
+       '(("1200x1600" "2400x1600")
+                       ((WM_CLASS . "^Emacs"))
+                       (location    0    0     80  123  1) (maximize . vertical))
+       ;; Some windows do not like alpha
        '(()            ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
                        (alpha . 1))
 
+       ;; GIMP
        '(()            ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
                        (viewport 2 . 1) (group . Gimp))
        '(("1200x1600") ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
@@ -372,6 +390,7 @@
                        (focus-when-mapped . #f) (never-focus . #t)
                        (sticky-and-skip . #t))
 
+       ;; GQview
        '(()            ((WM_ICON_NAME . "^GQview$"))
                        (viewport 3 . 1))
        '(("1200x1600") ((WM_ICON_NAME . "^GQview$"))
