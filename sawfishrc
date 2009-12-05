@@ -238,8 +238,8 @@
            "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   "emacsclient -c"))
            "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
            "W-e"           (lambda()(mn-jump-or-exec "^IRC$"     mn-irssi-command))
-           "W-r"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
-           "W-t"           (lambda()(mn-jump-or-exec "^GQview$" "gqview")))
+           "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
+           "W-s"           (lambda()(mn-jump-or-exec "^GQview$" "gqview")))
 
 (bind-keys window-keymap
            "W-Space"        (lambda () (popup-window-menu (input-focus))))
