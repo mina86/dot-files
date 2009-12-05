@@ -28,3 +28,8 @@ for dir in ~/.gkrellm2/plugins ~/.fvwm/modules ~/.irssi/modules; do
 		rm "$dir" && ln -s "${dir##*/}$bits" "$dir"
 	fi
 done
+
+# Start emacs if not running
+if ! [ -e /tmp/emacs$UID/server ]; then
+    emacs --daemon
+fi
