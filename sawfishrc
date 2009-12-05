@@ -208,7 +208,7 @@
 ;; Menus
 (setq apps-menu
       '(("_irssi"     (mn-jump-or-exec "^IRC$"     mn-irssi-command))
-        ("_Emacs"     (mn-jump-or-exec "^Emacs"   "emacs"))
+        ("_Emacs"     (mn-jump-or-exec "^Emacs"   "emacsclient -c"))
         ("The _GIMP"  (mn-jump-or-exec "^GIMP$"   "gimp"))
         ("GQ_View"    (mn-jump-or-exec "^GQview$" "gqview"))
         ("_Opera"     (mn-jump-or-exec "Opera$"   "opera")))
@@ -235,7 +235,7 @@
 
 (bind-keys global-keymap
            "W-`"           mn-term-or-exec
-           "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   "emacs"))
+           "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   "emacsclient -c"))
            "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
            "W-e"           (lambda()(mn-jump-or-exec "^IRC$"     mn-irssi-command))
            "W-r"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
@@ -255,7 +255,7 @@
                       (system (concat (cdr pair) " &"))))
                   (mn-val-filter mn-machine
                    '((erwin pikus)       "Opera"    . "opera")
-                   '((erwin pikus)       "Emacs"    . "emacs")
+                   '((erwin pikus)       "Emacs"    . "emacsclient -c")
                    `((erwin pikus)       "IRC"      . ,mn-irssi-command)
                    `((eval . mn-mpdshow-command)
                                          "mpdshow"  . ,mn-mpdshow-command)

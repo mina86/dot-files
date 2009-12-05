@@ -91,10 +91,12 @@ l () {
 }
 
 # Other
-if which run-emacs >/dev/null 2>&1; then
-	alias e=run-emacs
-elif which emacsclient >/dev/null 2>&1; then
-	alias e='emacsclient -n'
+if which emacsclient >/dev/null 2>&1; then
+	e () {
+		if emacsclient -n -a '' "$@" 2>/dev/null; then
+			emacsclient -ne '(make-frame-visible)'
+		fi
+	}
 fi
 alias rmd=rmdir
 which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
@@ -188,12 +190,13 @@ fi
 
 
 # LaTeX
-if	TEX=`which platex 2>/dev/null` || \
-	TEX=`which latex 2>/dev/null`  || \
-	TEX=`which tex 2>/dev/null`; then
-	export TEX
-else
+TEX=`which platex 2>/dev/null`
+[ -n "$TEX" ] || TEX=`which latex 2>/dev/null`
+[ -n "$TEX" ] || TEX=`which tex 2>/dev/null`
+if [ -z "$TEX" ]; then
 	unset TEX
+else
+	export TEX
 fi
 
 

@@ -351,7 +351,8 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   Misc
 
-(when window-system (global-unset-key "\C-z"))
+(global-set-key "\C-x\C-C"      'kill-emacs) ; Kill while daemon
+(global-set-key "\C-z"          'undo) ; I like undo better; never used C-z
 
 
 (global-set-key "\C-h"          'delete-backward-char)
@@ -1943,8 +1944,8 @@ argument ommited returns that number."
   (set-buffer (get-buffer-create "*scratch*"))
   (if (file-readable-p scratch-file)
       (if (and (file-readable-p scratch-file-autosave)
-               (file-newer-than-file-p scratch-file-autosave scratch-file)
-               (y-or-n-p "Recover scratch file? "))
+               (file-newer-than-file-p scratch-file-autosave scratch-file))
+;               (y-or-n-p "Recover scratch file? "))
           (insert-file-contents scratch-file-autosave nil nil nil t)
         (insert-file-contents scratch-file nil nil nil t)
         (set-buffer-modified-p nil)))
