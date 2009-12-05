@@ -326,76 +326,71 @@
     (mapc (lambda (prp) (window-put w prp value))
           '(sticky sticky-viewport cycle-skip window-list-skip task-list-skip))))
 
-(setq match-window-profile
-      (mn-val-filter (screen-size)
-       ;; Various terminals, size is specified via -g in command
-       '(("1680x1050") ((WM_CLASS . "/Term$")) (position 500 .   0))
-       '(("1024x768" ) ((WM_CLASS . "/Term$")) (position 480 . 100))
-       '(("1600x1200") ((WM_CLASS . "/Term$")) (position 492 .   0))
-       '(("1200x1600" "2400x1600")
-                       ((WM_CLASS . "/Term$")) (position 650 . 100))
+(setq
+ match-window-profile
+ (let ((size (screen-size)))
+   (mapcar (lambda (wnd-rule)
+             (cons (car wnd-rule)
+                   (apply nconc
+                          (mapcar
+                           (lambda (rule)
+                             (and (string-match (car rule) size) (cdr rule)))
+                           (cdr wnd-rule)))))
+    '(;; Various terminals, size is specified via -g in command
+      (((WM_CLASS . "/Term$"))
+       ("1680x1050" (position  500 .   0))
+       ("1024x768"  (position  480 . 100))
+       ("1600x1200" (position  492 .   0))
+       (".*x1600"   (position  650 . 100)))
 
-       '(("1680x1050") ((WM_CLASS . "/IRC$" )) (position 500 .   0))
-       '(("1024x768" ) ((WM_CLASS . "/IRC$" )) (position 480 .  10))
-       '(("1600x1200") ((WM_CLASS . "/IRC$" )) (position 492 .   0))
-       '(("1200x1600" "2400x1600")
-                       ((WM_CLASS . "/IRC$" )) (position 650 .  10))
+      (((WM_CLASS . "/IRC$"))
+       ("1680x1050" (position 1132 .  10))
+       ("1024x768"  (position  480 .  10))
+       ("1600x1200" (position  492 .   0))
+       (".*x1600"   (position  650 .  10))
+       (""          (sticky . #t) (sticky-viewport . #t)))
 
-       '(("1680x1050") ((WM_CLASS . "/MPD$" )) (position 500 .   0))
-       '(("1024x768" ) ((WM_CLASS . "/MPD$" )) (position 480 .   0))
-       '(("1600x1200") ((WM_CLASS . "/MPD$" )) (position 492 .   0))
-       '(("1200x1600" "2400x1600")
-                       ((WM_CLASS . "/MPD$" )) (position 650 .   0))
+      (((WM_CLASS . "/MPD$" ))
+       ("1680x1050" (position 1132 .   0))
+       ("1024x768"  (position  480 .   0))
+       ("1600x1200" (position  492 .   0))
+       (".*x1600"   (position  650 .   0))
+       (""          (focus-when-mapped . #f) (focus-mode . click)
+                    (sticky-and-skip . #t)))
 
-       '(()            ((WM_CLASS . "/MPD$" ))
-                       (focus-when-mapped . #f) (focus-mode . click)
-                       (sticky-and-skip . #t))
-
-       '(()            ((WM_CLASS . "/IRC$"))
-                       (sticky . #t) (sticky-viewport . #t))
-
-       ;; Opera
-       '(("1680x1050") ((WM_CLASS . "^Opera/opera$"))
-                       (location  500  350   1179  700  1))
-       '(("1024x768" ) ((WM_CLASS . "^Opera/opera$"))
-                       (location    0  368   1024  400  1))
-       '(("1600x1200") ((WM_CLASS . "^Opera/opera$"))
-                       (location  600  500   1000  700  1))
-       '(("1200x1600") ((WM_CLASS . "^Opera/opera$"))
-                       (location    0    0   1200 1600  2))
-       '(("2400x1600") ((WM_CLASS . "^Opera/opera$"))
-                       (location 1200    0   1200 1600  1))
+      ;; Opera
+      (((WM_CLASS . "^Opera/opera$"))
+       ("1680x1050" (location  500  350   1179  700  1))
+       ("1024x768"  (location    0  368   1024  400  1))
+       ("1600x1200" (location  600  500   1000  700  1))
+       ("1200x1600" (location    0    0   1200 1600  2))
+       ("2400x1600" (location 1200    0   1200 1600  1)))
 
        ;; Emacs
-       '(("1680x1050") ((WM_CLASS . "^Emacs"))
-                       (location    0    0     80  105  1) (maximize . vertical))
-       '(("1024x768" ) ((WM_CLASS . "^Emacs"))
-                       (location    0    0     80   76  1) (maximize . vertical))
-       '(("1600x1200") ((WM_CLASS . "^Emacs"))
-                       (location    0    0     80   80  1) (maximize . vertical))
-       '(("1200x1600" "2400x1600")
-                       ((WM_CLASS . "^Emacs"))
-                       (location    0    0     80  123  1) (maximize . vertical))
-       ;; Some windows do not like alpha
-       '(()            ((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
-                       (alpha . 1))
+      (((WM_CLASS . "^Emacs"))
+       ("1680x1050" (location    0    0     80  105  1) (maximize . vertical))
+       ("1024x768"  (location    0    0     80   76  1) (maximize . vertical))
+       ("1600x1200" (location    0    0     80   80  1) (maximize . vertical))
+       (".*x1600"   (location    0    0     80  123  1) (maximize . vertical)))
 
-       ;; GIMP
-       '(()            ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
-                       (viewport 2 . 1) (group . Gimp))
-       '(("1200x1600") ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
-                       (viewport 3 . 1))
-       '(()            ((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
-                       (place-mode . centered) (depth . 16)
-                       (focus-when-mapped . #f) (never-focus . #t)
-                       (sticky-and-skip . #t))
+      ;; Some windows do not like alpha
+      (((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
+       (""          (alpha . 1)))
+
+      ;; GIMP
+      (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
+       (""          (viewport 2 . 1) (group . Gimp))
+       ("1200x1600" (viewport 3 . 1)))
+
+      (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
+       (""          (place-mode . centered) (depth . 16)
+                    (focus-when-mapped . #f) (never-focus . #t)
+                    (sticky-and-skip . #t)))
 
        ;; GQview
-       '(()            ((WM_ICON_NAME . "^GQview$"))
-                       (viewport 3 . 1))
-       '(("1200x1600") ((WM_ICON_NAME . "^GQview$"))
-                       (viewport 4 . 1))))
-
+      (((WM_ICON_NAME . "^GQview$"))
+       (""          (viewport 3 . 1))
+       ("1200x1600" (viewport 4 . 1)))))))
 ;;}}}
 
 ; (restart)
