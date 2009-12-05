@@ -1853,6 +1853,17 @@ argument ommited returns that number."
 (add-to-list 'auto-mode-alist '("\\.lsl$" . lsl-mode))
 (add-hook 'lsl-mode-hook (function (lambda nil (setq indent-tabs-mode nil))))
 
+
+;; Haskell mode
+(when (eval-when-compile
+        (file-directory-p (concat user-emacs-directory "elisp/haskell-mode")))
+  (setq load-path (cons (concat user-emacs-directory "elisp/haskell-mode") load-path))
+;  (require 'haskell-indentation)
+  (autoload 'haskell-mode "haskell-mode" "Load Haskell mode." t)
+  (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation))
+
 ;;}}}
 
 ;;}}}
