@@ -256,6 +256,24 @@ command from COMMANDS."
   `(eval (nth (seq-times ,name ,(length commands) ,body) ',commands)))
 
 ;;}}}
+;;{{{   Movement
+
+; Recently I started using Programmers' Dvorak keyboard layout and so
+; I had some problems moving in the text.  However I've noticed that
+; I never use C-o and o is placed simetrically to n on Dvorak layout
+; so it's a perfect candidate for previous line!
+(global-set-key "\C-o" 'previous-line)
+
+; Now, I've also got an ergonomic keyboard wich Back/Forward buttons
+; under my thumbs -- they seem perfect for horizontal movemetn.
+(global-set-key [(XF86Back)]    'backward-char)
+(global-set-key [(XF86Forward)] 'forward-char)
+; Also adding control bindings so I don't have to release it when
+; using C-o and C-n
+(global-set-key [(control XF86Back)]    'backward-char)
+(global-set-key [(control XF86Forward)] 'forward-char)
+
+;;}}}
 ;;{{{   Home/End
 
 ;; My home
@@ -273,11 +291,6 @@ three times - beginning of buffer; four times - back to where it was."
 
 (substitute-key-definition 'move-beginning-of-line 'my-home
                            (current-global-map))
-;(global-set-key "\C-a"          'my-home)
-;(global-set-key [(home)]        'my-home)
-;(global-set-key [(kp-home)]     'my-home)
-;(global-set-key [(f27)]         'my-home)
-;(global-set-key "\e[1~"         'my-home)
 
 
 ;; My end
@@ -289,12 +302,6 @@ three times - beginning of buffer; four times - back to where it was."
     (goto-char my-home-end--point)))
 
 (substitute-key-definition 'move-end-of-line 'my-end (current-global-map))
-;(global-set-key "\C-e"          'my-end)
-;(global-set-key [(end)]         'my-end)
-;(global-set-key [(kp-end)]      'my-end)
-;(global-set-key [(select)]      'my-end)
-;(global-set-key [(f33)]         'my-end)
-;(global-set-key "\e[4~"         'my-end)
 
 ;;}}}
 ;;{{{   Pager/Scrolling
@@ -307,12 +314,6 @@ three times - beginning of buffer; four times - back to where it was."
 
 (substitute-key-definition 'scroll-down 'pager-page-up   (current-global-map))
 (substitute-key-definition 'scroll-up   'pager-page-down (current-global-map))
-;(global-set-key "\ev"           'pager-page-up)     ; Page Up
-;(global-set-key [(prior)]       'pager-page-up)
-;(global-set-key [(f29)]         'pager-page-up)
-;(global-set-key "\C-v"          'pager-page-down)   ; Page Down
-;(global-set-key [(next)]        'pager-page-down)
-;(global-set-key [(f35)]         'pager-page-down)
 
 (set-key-lambda [(meta up)]     (scroll-down 1))    ; Alt+Up
 (set-key-lambda [(meta kp-8)]   (scroll-down 1))
@@ -426,17 +427,22 @@ three times - beginning of buffer; four times - back to where it was."
 ;;{{{   DWIW %
 
 ;; Based on http://www.zafar.se/bkz/Articles/EmacsTips
-(global-set-key [(control ?%)] 'match-paren)
-
 (defun match-paren ()
   "Go to the matching parenthesis if on parenthesis."
   (interactive)
   (cond ((and (not (= (point) (point-max)))
               (equal ?( (char-syntax (char-after))))
-         (forward-list 1))
+         (forward-list 1) t)
         ((and (not (= (point) (point-min)))
               (equal ?) (char-syntax (char-before))))
-         (backward-list 1))))
+         (backward-list 1) t)))
+
+(defun dwim-match-paren (arg)
+  (interactive "*p")
+  (or (match-paren) (self-insert-command (or arg 1))))
+
+(global-set-key [(control ?%)] 'match-paren)
+(global-set-key "%" 'dwim-match-paren)
 
 ;;}}}
 ;;{{{   Just one space
@@ -701,10 +707,10 @@ in the current paragraph into a single long line."
 
 ;; http://www.emacswiki.org/cgi-bin/wiki/SwitchToGnus
 
-(defun switch-to-gnus-or-get-new-news (&optional arg)
-  "If already in Gnus group retrive new news otherwise, if Gnus
-is running, switch to Gnus group buffer, otherwise start Gnus"
-  (interactive "p")
+(defun switch-to-gnus-or-get-new-news ()
+  "If already in Gnus group retrive new news otherwise, if Gnus is
+running, switch to Gnus group buffer, otherwise start Gnus."
+  (interactive)
   (cond
    ((eq major-mode 'gnus-group-mode)
     (and (fboundp 'gnus-group-get-new-news) (gnus-group-get-new-news)))
@@ -778,10 +784,9 @@ With a prefix arg sets global dictionary."
 ;;}}}
 ;;{{{     F8 - Keyboard macros
 
-(global-set-key [(f8)]         'kmacro-end-or-call-macro)
-(global-set-key [(control f8)] 'kmacro-start-macro-or-insert-counter)
-; Note also that as of EMACS 22.1 those are bind to F4 and F3
-; respectively; I like mine bindings more though
+; since 22.1 this is on by defaault
+(global-set-key [(f3)] 'kmacro-start-macro-or-insert-counter)
+(global-set-key [(f4)] 'kmacro-end-or-call-macro)
 
 ;;}}}
 ;;{{{     F9 - Compilation
@@ -836,6 +841,7 @@ non-nill or `compile' otherwise."
                 (function (lambda (a) (interactive "P") (mn-compile a t))))
 (global-set-key [(meta f9)]                            ; M-F9  force alt comp.
                 (function (lambda (a) (interactive "P") (mn-compile (not a) t t))))
+(global-set-key [(shift f9)] 'next-error)
 
 (setq compilation-scroll-output 'first-error  ; scroll until first error
       compilation-window-height 12)           ; keep it readable
@@ -1128,8 +1134,8 @@ non-nill or `compile' otherwise."
                               (background-mode . dark))))
 
 ;; Modeline
-(setq line-number-mode t)         ;show line number in modeline
-(setq column-number-mode t)       ;show column number in modeline
+(setq line-number-mode t          ;show line number in modeline
+      column-number-mode t)       ;show column number in modeline
 
 (setq mode-line-format
       '("%e"
@@ -1179,16 +1185,17 @@ non-nill or `compile' otherwise."
   (lambda () (interactive) (delete-minibuffer-contents)))
 (setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
 (setq frame-title-format "Emacs") ;frame title format
-(setq history-delete-duplicates t);don't show splash screen
-(setq inhibit-splash-screen   t)  ;don't show splash screen
-(setq inhibit-startup-echo-area-message "mina86") ;don't show "For info..." message
-(setq inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
+(setq history-delete-duplicates t)
+(setq inhibit-splash-screen   t   ;don't show splash screen
+      inhibit-startup-echo-area-message "mina86" ;don't show "For info..." message
+      inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
                                   ; many files               (EMACS 21.4+)
-(setq sentence-end-double-space 1);sentance end with double space
+(setq sentence-end-double-space 1 ;sentance end with double space
+      require-final-newline t)    ;always end file with NL
 (setq truncate-lines nil)         ;wrap lines
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
-(setq require-final-newline t)    ;always end file with NL
-(setq indicate-empty-lines t)     ;show empty lines at the end of file
+(set-default 'indicate-empty-lines t) ;show empty lines at the end of file
+(set-default 'indicate-buffer-boundaries t) ;show buffer boundries on fringe
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
 (setq gc-cons-threshold 4000000)  ;bytes before garbage collection
 (setq ange-ftp-try-passive-mode t);passive FTP
@@ -1242,11 +1249,6 @@ during expansion."
 ;(setq scroll-preserve-screen-position t) ;keep point's position on screen
 (setq hscroll-step 1)             ;scroll one column
 (setq next-line-add-newlines nil) ;no new lines with down arrow key
-
-
-;; Coding system
-(set-keyboard-coding-system 'iso-8859-2)
-(set-terminal-coding-system 'iso-8859-2)
 
 
 ;; Blink Scroll Lock LED instead of beep
@@ -1869,16 +1871,6 @@ argument ommited returns that number."
 ;;}}}
 ;;{{{ Various features
 
-;;{{{   git
-
-(when (eval-when-compile (not (string-match "^pikus" system-name)))
-  (autoload 'git-status "git" "Entry point into git-status mode." t)
-  ;(add-to-list 'vc-handled-backends 'GIT)
-  (setq vc-handled-backends '(CVS SVN Git GIT))
-  (autoload 'git-blame-mode "git-blame"
-    "Minor mode for incremental blame for Git." t))
-
-;;}}}
 ;;{{{   HTMLize
 
 ;; http://fly.srk.fer.hr/~hniksic/emacs/htmlize.el
@@ -1928,16 +1920,6 @@ argument ommited returns that number."
 (add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
 
 (set-cursor-color (setq hcz-set-cursor-color-color "yellow"))
-
-;;}}}
-;;{{{   Command Frequency mode
-
-(when (load "command-frequency")
-  (setq command-frequency-table-file
-        (concat user-emacs-directory "frequencies"))
-  (command-frequency-table-load)
-  (command-frequency-mode 1)
-  (command-frequency-autosave-mode 1))
 
 ;;}}}
 ;;{{{   Notes in *scratch*
