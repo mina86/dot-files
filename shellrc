@@ -93,8 +93,12 @@ l () {
 # Other
 if which emacsclient >/dev/null 2>&1; then
 	e () {
-		if emacsclient -n -a '' "$@" 2>/dev/null; then
-			emacsclient -ne '(make-frame-visible)'
+		if emacsclient -n "$@" 2>/dev/null; then
+			: ok
+		elif [ -n "$DISPLAY" ]; then
+			emacsclient -a '' -c -n "$@"
+		else
+			emacsclient -a '' "$@"
 		fi
 	}
 fi
