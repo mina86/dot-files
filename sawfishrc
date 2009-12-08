@@ -299,12 +299,12 @@
 ;;}}}
 ;;{{{ Music Player Daemon
 
-(when (member mn-machine '(erwin tuptus pikus))
-  (when (and (= mn-machine 'tuptus) (not (getenv "MPD_HOST")))
-    (setenv "MPD_HOST" "erwin"))
+(when (= mn-machine 'tuptus)
+  (unless (getenv "MPD_HOST")
+    (setenv "MPD_HOST" "erwin")))
 
-  (defmacro mn-mpd-lambda (command)
-    (list 'lambda () (list 'system (concat "mpc " command " >/dev/null"))))
+(defmacro mn-mpd-lambda (command)
+  (list 'lambda () (list 'system (concat "mpc " command " >/dev/null"))))
 
   (bind-keys global-keymap
              "W-z"            (mn-mpd-lambda "prev")
@@ -366,7 +366,7 @@
     '(;; Various terminals, size is specified via -g in command
       (((WM_CLASS . "/Term$"))
        ("1680x1050" (position  500 .   0))
-       ("1024x768"  (position  480 . 100))
+       ("1024x.*"   (position  480 . 100))
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 . 100))
        (".*x1600"   (position  648 . 110))
@@ -375,6 +375,7 @@
       (((WM_CLASS . "/IRC$"))
        ("1680x1050" (position 1132 .  10))
        ("1024x768"  (position  480 .  10))
+       ("1024x600"  (position  480 .   0))
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 .  10))
        (".*x1600"   (position  648 .  10))
@@ -383,7 +384,7 @@
 
       (((WM_CLASS . "/MPD$" ))
        ("1680x1050" (position 1132 .   0))
-       ("1024x768"  (position  480 .   0))
+       ("1024x.*"   (position  480 .   0))
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 .   0))
        (".*x1600"   (position  648 .   0))
@@ -395,6 +396,7 @@
       (((WM_CLASS . "^Opera/opera$"))
        ("1680x1050" (location  500  350   1179  700  1))
        ("1920x1080" (location  500  350   1419  730  1))
+       ("1024x600"  (location    0    0   1024  600  2))
        ("1024x768"  (location    0  368   1024  400  1))
        ("1600x1200" (location  600  500   1000  700  1))
        ("1200x1600" (location    0    0   1200 1600  2))
@@ -405,6 +407,7 @@
       (((WM_CLASS . "^Emacs"))
        ("1680x1050" (location    0    0     80  105  1) (maximize . vertical))
        ("1920x1080" (location    0    0     80  108  1) (maximize . vertical))
+       ("1024x600"  (location    0    0     78   46  1) (maximize . vertical))
        ("1024x768"  (location    0    0     80   76  1) (maximize . vertical))
        ("1600x1200" (location    0    0     80  120  1) (maximize . vertical))
        ("3200x1200" (location   72    0    170  118  1) (maximize . vertical))
@@ -418,7 +421,7 @@
       ;; GIMP
       (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
        (""          (viewport 2 . 1) (group . Gimp))
-       ("1200x1600" (viewport 3 . 1)))
+       ("1200x1600|1024x600" (viewport 3 . 1)))
 
       (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
        (""          (place-mode . centered) (depth . 16)

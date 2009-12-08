@@ -28,15 +28,6 @@ erwin*)
 #	exec /usr/bin/gpg-agent --enable-ssh-support --daemon sawfish
 	exec /usr/bin/gpg-agent --daemon sawfish
 	;;
-tuptus*)
-	(
-		sleep 1
-		[ -e ~/current-bg ] && rm -f -- ~/current-bg
-		[ -x ~/bin/setbg ] && ~/bin/setbg random
-		synergyc erwin
-	) &
-	exec sawfish
-	;;
 *)
 	run_xcompmgr
 	if [ -f ~/.wallpaper.bmp ] && which Esetroot >/dev/null 2>/dev/null; then
