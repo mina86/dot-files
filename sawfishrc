@@ -58,7 +58,7 @@
 
 ;; Hyper (win key) as prefix
 (custom-set-typed-variable
- (quote wm-modifier-value) (quote (hyper)) (quote modifier-list))
+ (quote wm-modifier-value) (quote (super)) (quote modifier-list))
 
 
 ;; Focus and Auto Raise
@@ -188,63 +188,82 @@
 
 ;; Jump to term or exec
 (require 'sawfish.wm.util.window-order)
-(defun mn-term-or-exec ()
-  (let ((windows
-         (filter
-          (lambda (w)
-            (and (not (window-get w 'sticky))
-                 (string-match "xterm|u?rxvt|Term"
-                               (aref (get-x-text-property w 'WM_CLASS) 0))))
-          (window-order current-workspace t nil))))
-    (if windows
-        (display-window (car windows))
-      (system (concat mn-term-command " &")))))
+(let (;; Inspired by jump-or-exec written by Damien Elmes <resolve@repose.cx>
+      (mn-jump-or-exec
+       (lambda (regexp command)
+         (let ((w (get-window-by-name-re regexp)))
+           (if w (display-window w) (system (concat command " &")))))))
 
-;; Inspired by jump-or-exec written by Damien Elmes <resolve@repose.cx>
-(defun mn-jump-or-exec (regexp command)
-  (let ((w (get-window-by-name-re regexp)))
-    (if w (display-window w) (system (concat command " &")))))
-
-;; Menus
-(setq apps-menu
-      '(("_irssi"     (mn-jump-or-exec "^IRC$"     mn-irssi-command))
-        ("_Emacs"     (mn-jump-or-exec "^Emacs"   "emacsclient -c"))
-        ("The _GIMP"  (mn-jump-or-exec "^GIMP$"   "gimp"))
-        ("GQ_View"    (mn-jump-or-exec "^GQview$" "gqview"))
-        ("_Opera"     (mn-jump-or-exec "Opera$"   "opera")))
-      root-menu
-      (nconc
-       '(("_Customize" customize)
-         ("Re_start"   restart)
-         ()
-         ("_Quit"      quit)
-         ("_Reboot"    (progn (system "( sleep 2; /sbin/reboot )") (quit))))
-       (and (file-exists-p "/usr/local/sbin/reboot-w")
-            '(("Reboot _Windows"
-               (progn (system "( sleep 2; /usr/local/sbin/reboot-w )") (quit)))))
-       '(("Power _Off" (progn (system "( sleep 2; /sbin/halt   )") (quit))))))
+  ;; Menus
+  (setq apps-menu
+        '(("_irssi"     (mn-jump-or-exec "^IRC$"     mn-irssi-command))
+          ("_Emacs"     (mn-jump-or-exec "^Emacs"   "emacsclient -c -n"))
+          ("The _GIMP"  (mn-jump-or-exec "^GIMP$"   "gimp"))
+          ("GQ_View"    (mn-jump-or-exec "^GQview$" "gqview"))
+          ("_Opera"     (mn-jump-or-exec "Opera$"   "opera")))
+        root-menu
+        (nconc
+         '(("_Customize" customize)
+           ("Re_start"   restart)
+           ()
+           ("_Quit"      quit)
+           ("_Reboot"    (progn (system "( sleep 2; /sbin/reboot )") (quit))))
+         (and (file-exists-p "/usr/local/sbin/reboot-w")
+              '(("Reboot _Windows"
+                 (progn (system "( sleep 2; /usr/local/sbin/reboot-w )") (quit)))))
+         '(("Power _Off" (progn (system "( sleep 2; /sbin/halt   )") (quit))))))
 
 
-;; Application and menu bindings
-(bind-keys root-window-keymap
-           "Button1-Click2" (lambda () (system (concat mn-term-command " &")))
-           "Button2-Click"  (lambda () (popup-menu window-menu))
-           "Button3-Click"  popup-apps-menu
-           "W-Space"        popup-apps-menu
-           "W-Button3-Click"popup-root-menu)
+  ;; Application and menu bindings
+  (bind-keys
+   root-window-keymap
+   "Button1-Click2" (lambda () (system (concat mn-term-command " &")))
+   "Button2-Click"  (lambda () (popup-menu window-menu))
+   "Button3-Click"  popup-apps-menu
+   "W-Space"        popup-apps-menu
+   "W-Button3-Click"popup-root-menu)
 
-(bind-keys global-keymap
-           "W-`"           mn-term-or-exec
-           "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   "emacsclient -c"))
-           "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
-           "W-e"           (lambda()(mn-jump-or-exec "^IRC$"     mn-irssi-command))
-           "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
-           "W-s"           (lambda()(mn-jump-or-exec "^GQview$" "gqview")))
+  (bind-keys
+   global-keymap
+   "W-`"
+   (lambda ()
+     (catch 'term
+       (mapc
+        (lambda (w)
+          (and (not (window-get w 'sticky))
+               (let ((cls (get-x-text-property w 'WM_CLASS)))
+                 (and cls (string-match "xterm|u?rxvt|Term" (aref cls 0))))
+               (throw 'term (display-window w))))
+        (window-order current-workspace t nil))
+       (system (concat mn-term-command " &"))))
 
-(bind-keys window-keymap
-           "W-Space"        (lambda () (popup-window-menu (input-focus))))
-;; (bind-keys window-keymap
-;;            "W-Button3-Click"(lambda () (popup-window-menu (input-focus))))
+   "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   "emacsclient -c -n"))
+   "XF86HomePage"  (lambda()(mn-jump-or-exec "Opera$"   "opera"))
+   "XF86Search"    (lambda()(system "opera http://google.com/ &"))
+   "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
+   "W-e"           (lambda()(mn-jump-or-exec "^IRC$"     mn-irssi-command))
+   "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
+   "W-s"           (lambda()(mn-jump-or-exec "^GQview$" "gqview"))
+
+   "XF86Mail"
+   (lambda ()
+     (mn-jump-or-exec "^Emacs" "emacsclient -c -n")
+     (system "emacsclient -ne '(if (fboundp '\\''switch-to-gnus-or-get-new-news) (switch-to-gnus-or-get-new-news))'"))
+   "XF86Calculator"
+   (lambda ()
+     (mn-jump-or-exec "^Emacs"   "emacsclient -c -n")
+     (system "emacsclient -a '' -ne '(calc)'"))
+
+   "XF86AudioMute"
+   (lambda () (system "/usr/bin/amixer set Master\\ Front toggle"))
+   "XF86AudioLowerVolume"
+   (lambda () (system "/usr/bin/amixer set Master\\ Front 5%-"))
+   "XF86AudioRaiseVolume"
+   (lambda () (system "/usr/bin/amixer set Master\\ Front 5%+")))
+
+  (bind-keys
+   window-keymap
+   "W-Space"        (lambda () (popup-window-menu (input-focus)))))
 
 
 ;; Run some applications
@@ -255,7 +274,7 @@
                       (system (concat (cdr pair) " &"))))
                   (mn-val-filter mn-machine
                    '((erwin pikus)       "Opera"    . "opera")
-                   '((erwin pikus)       "Emacs"    . "emacsclient -c")
+                   '((erwin pikus)       "Emacs"    . "emacsclient -c -n")
                    `((erwin pikus)       "IRC"      . ,mn-irssi-command)
                    `((eval . mn-mpdshow-command)
                                          "mpdshow"  . ,mn-mpdshow-command)
@@ -269,25 +288,14 @@
   (when (and (= mn-machine 'tuptus) (not (getenv "MPD_HOST")))
     (setenv "MPD_HOST" "erwin"))
 
-  (if (eq mn-machine 'pikus)
-      (defun mn-mpd (command)
-        (system
-         (concat "echo '" command
-                 "\nclose\n' | nc ${MPD_HOST-localhost} ${MPD_PORT-6600} >/dev/null")))
-    (defun mn-mpd (command)
-      (system
-       (concat "echo '" command
-               "\nclose\n' >/dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}"))))
-
-
   (defmacro mn-mpd-lambda (command)
-    (list 'lambda () (list 'mn-mpd command)))
+    (list 'lambda () (list 'system (concat "mpc " command " >/dev/null"))))
 
   (bind-keys global-keymap
-             "W-z"            (mn-mpd-lambda "previous")
+             "W-z"            (mn-mpd-lambda "prev")
              "W-x"            (mn-mpd-lambda "play")
              "W-c"            (mn-mpd-lambda "pause")
-;             "W-v"            (mn-mpd-lambda "stop")
+             "XF86AudioPlay"  (mn-mpd-lambda "toggle")
              "W-v"            (mn-mpd-lambda "next")))
 
 ;;}}}
