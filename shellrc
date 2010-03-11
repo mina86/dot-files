@@ -168,11 +168,11 @@ export MINA86RC=done
 
 # PATH
 if ! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1; then
-	if [ -d ~/code/tinyapps ]; then PATH="$HOME/code/tinyapps:$PATH"; fi
-	if [ -d ~/bin ]; then PATH="$HOME/bin:$PATH"; fi
-	if [ -d ~/bin64 ] && [ x"`uname -m`" = xx86_64 ]; then
-		PATH="$HOME/bin64:$PATH"
-	fi
+	uname_m=`uname -m`
+	test -d ~/bin-$uname_m && PATH="$PATH:$HOME/bin-$uname_m"
+	test -d ~/bin && PATH="$PATH:$HOME/bin"
+	test -d ~/code/tinyapps && PATH="$PATH:$HOME/code/tinyapps"
+	unset uname_m
 fi
 
 # Remove relative paths
