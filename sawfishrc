@@ -28,18 +28,8 @@
               ("tuptus"    . tuptus)
               ("pikus"     . pikus))))))
 
-(defun mn-val-filter (value #!rest list)
-  (mapcar cdr (filter (lambda (element)
-                        (let ((a (car element)))
-                          (cond
-                           ((not a)           t)
-                           ((not (listp a))   (equal value a))
-                           ((= (car a) 'eval) (eval (cdr a)))
-                           (t                 (member value a)))))
-                      list)))
-
 (defun case-equal (value #!rest list)
-  (while (and list (not (member value (caar list))))
+  (while (and list (caar list) (not (member value (caar list))))
     (setq list (cdr list)))
   (and list (cadar list)))
 
@@ -107,7 +97,7 @@
            "W-F7"           (lambda () (set-screen-viewport 6 0))
            "W-F8"           (lambda () (set-screen-viewport 7 0))
            "W-F9"           (lambda () (set-screen-viewport 8 0))
-           "W-F9"           (lambda () (set-screen-viewport 9 0)))
+           "W-F10"          (lambda () (set-screen-viewport 9 0)))
 
 (defmacro set-current-window-viewport-x-0 (x)
   (list 'lambda nil (list 'set-window-viewport (list 'input-focus) x '0)))
@@ -171,19 +161,19 @@
 
 (defvar mn-term-command
   (case-equal (screen-size)
-    '(("1680x1050") "term -N Term -g 80x32")
-    '(("1024x768" ) "term -N Term -g 80x25")
-    '(("1600x1200") "term -N Term -g 80x35")
-    '(("1200x1600" "2400x1600") "term -N Term -g 80x150")))
-(defvar mn-mpdshow-command
-  (when (member mn-machine '(erwin pikus))
-    "term -N MPD -mesg -g 80x1 -e mpd-show -c80"))
-(defvar mn-irssi-command
-  (case-equal (screen-size)
-    '(("1680x1050") "term -N IRC -mesg -g 80x10 -e irssi")
-    '(("1024x768" ) "term -N IRC -mesg -g 80x10 -e irssi")
-    '(("1600x1200") "term -N IRC -mesg -g 80x10 -e irssi")
-    '(("1200x1600" "2400x1600") "term -N IRC -mesg -g 80x10 -e ssh -D 12312 live")))
+    '(("1680x1050" "1920x1080" "1600x1200") "term -N Term -g 80x35" )
+    '(("1024x768" "1024x600")               "term -N Term -g 80x25" )
+    '(("1200x1600" "2400x1600")             "term -N Term -g 80x150")
+    '(("3600x1080")                         "term -N Term -g 80x105")
+    '(()                                    "term -N Term -g 80x25" )))
+(defvar mn-emacs-command
+  "if ! emacsclient -c -n; then emacs --daemon; emacsclient -c -n; fi")
+(let ((w (if (equal "3600x1080" (screen-size)) "117" "80")))
+  (defvar mn-mpdshow-command
+    (concat "term -N MPD -mesg -g " w "x1 -e mpd-show"))
+  (defvar mn-irssi-command
+    (concat "term -N IRC -mesg -g " w "x10 -e "
+            (if (eq mn-machine 'pikus) "ssh -D 12312 live" "irssi"))))
 
 
 ;; Jump to term or exec
@@ -196,8 +186,8 @@
 
   ;; Menus
   (setq apps-menu
-        '(("_irssi"     (mn-jump-or-exec "^IRC$"     mn-irssi-command))
-          ("_Emacs"     (mn-jump-or-exec "^Emacs"   "emacsclient -c -n"))
+        '(("_irssi"     (mn-jump-or-exec "^IRC"     mn-irssi-command))
+          ("_Emacs"     (mn-jump-or-exec "^Emacs"   mn-emacs-command))
           ("The _GIMP"  (mn-jump-or-exec "^GIMP$"   "gimp"))
           ("GQ_View"    (mn-jump-or-exec "^GQview$" "gqview"))
           ("_Opera"     (mn-jump-or-exec "Opera$"   "opera")))
@@ -237,21 +227,21 @@
         (window-order current-workspace t nil))
        (system (concat mn-term-command " &"))))
 
-   "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   "emacsclient -c -n"))
+   "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   mn-emacs-command))
    "XF86HomePage"  (lambda()(mn-jump-or-exec "Opera$"   "opera"))
    "XF86Search"    (lambda()(system "opera http://google.com/ &"))
    "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
-   "W-e"           (lambda()(mn-jump-or-exec "^IRC$"     mn-irssi-command))
+   "W-e"           (lambda()(mn-jump-or-exec "^IRC"      mn-irssi-command))
    "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
    "W-s"           (lambda()(mn-jump-or-exec "^GQview$" "gqview"))
 
    "XF86Mail"
    (lambda ()
-     (mn-jump-or-exec "^Emacs" "emacsclient -c -n")
+     (mn-jump-or-exec "^Emacs" mn-emacs-command)
      (system "emacsclient -ne '(if (fboundp '\\''switch-to-gnus-or-get-new-news) (switch-to-gnus-or-get-new-news))'"))
    "XF86Calculator"
    (lambda ()
-     (mn-jump-or-exec "^Emacs"   "emacsclient -c -n")
+     (mn-jump-or-exec "^Emacs"   mn-emacs-command)
      (system "emacsclient -a '' -ne '(calc)'"))
 
    "XF86AudioMute"
@@ -265,20 +255,22 @@
    window-keymap
    "W-Space"        (lambda () (popup-window-menu (input-focus)))))
 
-
 ;; Run some applications
 (add-hook 'after-initialization-hook
           (lambda ()
-            (mapc (lambda (pair)
-                    (unless (and (car pair)(get-window-by-name-re (car pair)))
-                      (system (concat (cdr pair) " &"))))
-                  (mn-val-filter mn-machine
-                   '((erwin pikus)       "Opera"    . "opera")
-                   '((erwin pikus)       "Emacs"    . "emacsclient -c -n")
-                   `((erwin pikus)       "IRC"      . ,mn-irssi-command)
-                   `((eval . mn-mpdshow-command)
-                                         "mpdshow"  . ,mn-mpdshow-command)
-                   '(()                  "gkrellm"  . "gkrellm")))
+            (mapc (lambda (spec)
+                    (let ((cnd  (car  spec))
+                          (name (cadr spec))
+                          (cmd  (cddr spec)))
+                      (and cmd
+                           (or (not cnd) (member mn-machine cnd))
+                           (not (and name (get-window-by-name-re name)))
+                           (system (concat cmd " &")))))
+                  `(((erwin pikus)       "Opera"    . "opera")
+                    (()                  "Emacs"    . ,mn-emacs-command)
+                    ((erwin pikus)       "IRC"      . ,mn-irssi-command)
+                    ((erwin pikus)       "mpdshow"  . ,mn-mpdshow-command)
+                    (()                  "gkrellm"  . "gkrellm")))
             (set-screen-viewport 0 0)))
 
 ;;}}}
@@ -349,13 +341,15 @@
        ("1680x1050" (position  500 .   0))
        ("1024x768"  (position  480 . 100))
        ("1600x1200" (position  492 .   0))
-       (".*x1600"   (position  650 . 100)))
+       (".*x1600"   (position  650 . 100))
+       ("3600x1080" (position 2420 .   0)))
 
       (((WM_CLASS . "/IRC$"))
        ("1680x1050" (position 1132 .  10))
        ("1024x768"  (position  480 .  10))
        ("1600x1200" (position  492 .   0))
        (".*x1600"   (position  650 .  10))
+       ("3600x1080" (position 2900 .  10))
        (""          (sticky . #t) (sticky-viewport . #t)))
 
       (((WM_CLASS . "/MPD$" ))
@@ -363,26 +357,31 @@
        ("1024x768"  (position  480 .   0))
        ("1600x1200" (position  492 .   0))
        (".*x1600"   (position  650 .   0))
+       ("3600x1080" (position 2900 .   0))
        (""          (focus-when-mapped . #f) (focus-mode . click)
                     (sticky-and-skip . #t)))
 
       ;; Opera
       (((WM_CLASS . "^Opera/opera$"))
        ("1680x1050" (location  500  350   1179  700  1))
+       ("1920x1080" (location  500  350   1419  730  1))
        ("1024x768"  (location    0  368   1024  400  1))
        ("1600x1200" (location  600  500   1000  700  1))
        ("1200x1600" (location    0    0   1200 1600  2))
-       ("2400x1600" (location 1200    0   1200 1600  1)))
+       ("2400x1600" (location 1200    0   1200 1600  1))
+       ("3600x1080" (location    0    0   1920 1080  1) (maximize . both)))
 
        ;; Emacs
       (((WM_CLASS . "^Emacs"))
        ("1680x1050" (location    0    0     80  105  1) (maximize . vertical))
+       ("1920x1080" (location    0    0     80  108  1) (maximize . vertical))
        ("1024x768"  (location    0    0     80   76  1) (maximize . vertical))
        ("1600x1200" (location    0    0     80   80  1) (maximize . vertical))
-       (".*x1600"   (location    0    0     80  123  1) (maximize . vertical)))
+       (".*x1600"   (location    0    0     80  123  1) (maximize . vertical))
+       ("3600x1080" (location    0    0     80  105  1) (maximize . vertical)))
 
       ;; Some windows do not like alpha
-      (((WM_CLASS . "^Gimp/gimp|MPlayer/.*|openttd/openttd$"))
+      (((WM_CLASS . "^Gimp/|^MPlayer/|^openttd/|^Inkscape/"))
        (""          (alpha . 1)))
 
       ;; GIMP
