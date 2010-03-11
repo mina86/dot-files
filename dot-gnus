@@ -53,7 +53,8 @@
 ;;{{{ Select methods & Mail sources
 
 (setq
- gnus-select-method '(nntp "news.neostrada.pl")
+; gnus-select-method '(nntp "news.neostrada.pl")
+ gnus-select-method '(nntp "news.internetia.pl")
  gnus-always-read-dribble-file t
 
  gnus-secondary-select-methods
@@ -94,7 +95,7 @@
  spam-junk-mailgroups '("nnml:spam" "spam")
  spam-split-group     "spam"
 
- gnus-ham-process-destinations  '(("*.spam"  "nnml:mail.misc"))
+ gnus-ham-process-destinations  '((".*spam"  "nnml:mail.misc"))
  gnus-spam-process-destinations '(("nnml:.*" "nnml:spam"))
 
  gnus-spam-process-newsgroups
