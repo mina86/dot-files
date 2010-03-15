@@ -280,8 +280,19 @@
   (when (and (= mn-machine 'tuptus) (not (getenv "MPD_HOST")))
     (setenv "MPD_HOST" "erwin"))
 
+  (if (eq mn-machine 'pikus)
+      (defun mn-mpd (command)
+        (system
+         (concat "echo '" command
+                 "\nclose\n' | nc ${MPD_HOST-localhost} ${MPD_PORT-6600} >/dev/null")))
+    (defun mn-mpd (command)
+      (system
+       (concat "echo '" command
+               "\nclose\n' >/dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}"))))
+
+
   (defmacro mn-mpd-lambda (command)
-    (list 'lambda () (list 'system (concat "mpc " command " >/dev/null"))))
+    (list 'lambda () (list 'mn-mpd command)))
 
   (bind-keys global-keymap
              "W-z"            (mn-mpd-lambda "prev")
@@ -341,13 +352,14 @@
        ("1680x1050" (position  500 .   0))
        ("1024x768"  (position  480 . 100))
        ("1600x1200" (position  492 .   0))
-       (".*x1600"   (position  650 . 100))
+       ("3200x1200" (position 1120 . 100))
        ("3600x1080" (position 2420 .   0)))
 
       (((WM_CLASS . "/IRC$"))
        ("1680x1050" (position 1132 .  10))
        ("1024x768"  (position  480 .  10))
        ("1600x1200" (position  492 .   0))
+       ("3200x1200" (position 1120 .  10))
        (".*x1600"   (position  650 .  10))
        ("3600x1080" (position 2900 .  10))
        (""          (sticky . #t) (sticky-viewport . #t)))
@@ -356,6 +368,7 @@
        ("1680x1050" (position 1132 .   0))
        ("1024x768"  (position  480 .   0))
        ("1600x1200" (position  492 .   0))
+       ("3200x1200" (position 1120 .   0))
        (".*x1600"   (position  650 .   0))
        ("3600x1080" (position 2900 .   0))
        (""          (focus-when-mapped . #f) (focus-mode . click)
@@ -376,9 +389,10 @@
        ("1680x1050" (location    0    0     80  105  1) (maximize . vertical))
        ("1920x1080" (location    0    0     80  108  1) (maximize . vertical))
        ("1024x768"  (location    0    0     80   76  1) (maximize . vertical))
-       ("1600x1200" (location    0    0     80   80  1) (maximize . vertical))
-       (".*x1600"   (location    0    0     80  123  1) (maximize . vertical))
-       ("3600x1080" (location    0    0     80  105  1) (maximize . vertical)))
+       ("1600x1200" (location    0    0     80  120  1) (maximize . vertical))
+       ("3200x1200" (location   72    0    170  118  1) (maximize . vertical))
+       ("3600x1080" (location    0    0     80  105  1) (maximize . vertical))
+       (".*x1600"   (location    0    0     80  160  1) (maximize . vertical)))
 
       ;; Some windows do not like alpha
       (((WM_CLASS . "^Gimp/|^MPlayer/|^openttd/|^Inkscape/"))
