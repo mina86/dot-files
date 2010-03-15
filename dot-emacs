@@ -1793,7 +1793,8 @@ argument ommited returns that number."
 (add-hook 'text-mode-hook (function (lambda ()
     (auto-fill-mode t)
     (setq tab-width 8)
-    (set-tab-stop-list 8))))
+    (set-tab-stop-list 8)
+    (if (boundp 'word-wrap) (seq word-wrap t)))))
 
 
 ;; Assembler mode
@@ -1871,6 +1872,16 @@ argument ommited returns that number."
 ;;}}}
 ;;{{{ Various features
 
+;;{{{   git
+
+(when (eval-when-compile (not (string-match "^pikus" system-name)))
+  (autoload 'git-status "git" "Entry point into git-status mode." t)
+  ;(add-to-list 'vc-handled-backends 'GIT)
+  (setq vc-handled-backends '(CVS SVN Git GIT))
+  (autoload 'git-blame-mode "git-blame"
+    "Minor mode for incremental blame for Git." t))
+
+;;}}}
 ;;{{{   HTMLize
 
 ;; http://fly.srk.fer.hr/~hniksic/emacs/htmlize.el
