@@ -1,0 +1,23 @@
+#!/bin/sh
+
+have_sudo () {
+	sudo=`which sudo 2>/dev/null`
+	test x"$sudo" != x
+}
+
+if [ $# -eq 0 ]; then
+	if have_sudo; then
+		"$sudo" -s
+	else
+		su
+	fi
+elif have_sudo; then
+	"$sudo" "$@"
+else
+	cmd=
+	while [ $# -ne 0 ]; do
+		cmd="$cmd '$(printf %s "$1" | sed -e "s/'/'\\\\''/g")'"
+		shift
+	done
+	su -c "$cmd"
+fi

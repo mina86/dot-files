@@ -173,7 +173,8 @@ risc-mode.el       ~/.emacs.d/elisp/
 sawfishrc          ~/.
 shellrc            ~/.
 statuses           ~/.irssi/
-term               ~/bin/
 xinitrc            ~/.
 zshrc              ~/.
+bin/term           ~/
+bin/s              ~/
 EOF
