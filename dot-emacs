@@ -1794,7 +1794,7 @@ argument ommited returns that number."
     (auto-fill-mode t)
     (setq tab-width 8)
     (set-tab-stop-list 8)
-    (if (boundp 'word-wrap) (seq word-wrap t)))))
+    (if (boundp 'word-wrap) (setq word-wrap t)))))
 
 
 ;; Assembler mode

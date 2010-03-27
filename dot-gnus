@@ -156,6 +156,9 @@
 
 (add-hook 'gnus-message-setup-hook 'gnus-setup-dictionary)
 (add-hook 'message-mode-hook (function (lambda () (flyspell-mode 1))))
+(if (boundp 'word-wrap)
+    (add-hook 'gnus-article-mode-hook (function (lambda ()
+                                                  (setq word-wrap t)))))
 
 ;;}}}
 ;;{{{ Signatures
