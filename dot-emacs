@@ -1206,18 +1206,21 @@ non-nill or `compile' otherwise."
 
 
 ;; Indention
-(defmacro set-tab-stop-list (width)
+(defmacro set-tab (tab &optional stop-list)
   "Sets `tab-stop-list' to a list of all positive from smallest to
 largest which are multiplications of WIDTH and are lower or equal 120.
 WIDTH must be a literal number because this macro evaluates the list
 during expansion."
-  (let* ((w width) (n (/ 120 w)) l)
-    (while (> (setq l (cons (* n w) l) n (1- n)) 0))
-    `(setq tab-stop-list ',l)))
+  (let* ((w (or tab stop-list))
+         (n (- 120 (% 120 w)))
+         l)
+    (while (> (setq l (cons n l)
+                    n (- n w))
+              0))
+    `(setq tab-width ,tab tab-stop-list ',l)))
 
 (setq indent-tabs-mode t)         ;indent using tabs
-(setq tab-width 4)                ;tab width
-(set-tab-stop-list 4)
+(set-tab 4)                       ;tab width and stop list
 ;; One could add this to check if tab-width and c-basic-offset correspond
 ;(if (not (= 0 (% c-basic-offset tab-width)))
 ;    (warn "`tab-width' does not divide `c-basic-offset'"))
@@ -1779,15 +1782,13 @@ argument ommited returns that number."
 ;; Text mode
 (add-hook 'text-mode-hook (function (lambda ()
     (auto-fill-mode t)
-    (setq tab-width 8)
-    (set-tab-stop-list 8)
+    (set-tab 8)
     (if (boundp 'word-wrap) (setq word-wrap t)))))
 
 
 ;; Assembler mode
 (add-hook 'asm-mode-hook (function (lambda ()
-    (setq tab-width 8)
-    (set-tab-stop-list 16)
+    (set-tab 8 16)
     (setq comment-column 40))))
 
 
@@ -1814,7 +1815,7 @@ argument ommited returns that number."
 
 ;; Lisp/Scheme mode
 ;; No tabs! and if opening file with tabs, assume 8-char wide
-(let ((func (function (lambda () (setq indent-tabs-mode () tab-width 8)))))
+(let ((func (function (lambda () (setq indent-tabs-mode nil) (set-tab 8)))))
   (add-hook 'emacs-lisp-mode-hook func)
   (add-hook 'lisp-mode-hook       func)
   (add-hook 'scheme-mode-hook     func))
