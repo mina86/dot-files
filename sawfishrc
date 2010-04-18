@@ -280,19 +280,8 @@
   (when (and (= mn-machine 'tuptus) (not (getenv "MPD_HOST")))
     (setenv "MPD_HOST" "erwin"))
 
-  (if (eq mn-machine 'pikus)
-      (defun mn-mpd (command)
-        (system
-         (concat "echo '" command
-                 "\nclose\n' | nc ${MPD_HOST-localhost} ${MPD_PORT-6600} >/dev/null")))
-    (defun mn-mpd (command)
-      (system
-       (concat "echo '" command
-               "\nclose\n' >/dev/tcp/${MPD_HOST-localhost}/${MPD_PORT-6600}"))))
-
-
   (defmacro mn-mpd-lambda (command)
-    (list 'lambda () (list 'mn-mpd command)))
+    (list 'lambda () (list 'system (concat "mpc " command " >/dev/null"))))
 
   (bind-keys global-keymap
              "W-z"            (mn-mpd-lambda "prev")
