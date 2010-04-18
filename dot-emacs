@@ -1,6 +1,6 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
-;; Copyright 2004-2008 by Michal Nazarewicz (mina86/AT/mina86.com)
+;; Copyright 2004-2010 by Michal Nazarewicz (mina86/AT/mina86.com)
 ;;
 ;;{{{ Compatibility with old Emacses
 
@@ -306,28 +306,17 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   Pager/Scrolling
 
-;; Makes paging functions work the way god intended
-;; http://www.docs.uu.se/~mic/emacs.html
-;; pager.el was modified by me
-(require 'pager)
-(setq pager-goto-edge t)
+(if (boundp 'scroll-error-top-bottom)
+    (setq scroll-error-top-bottom t)
 
-(substitute-key-definition 'scroll-down 'pager-page-up   (current-global-map))
-(substitute-key-definition 'scroll-up   'pager-page-down (current-global-map))
+  ;; Makes paging functions work the way god intended
+  ;; http://www.docs.uu.se/~mic/emacs.html
+  ;; pager.el was modified by me
+  (require 'pager)
+  (setq pager-goto-edge t)
 
-(set-key-lambda [(meta up)]     (scroll-down 1))    ; Alt+Up
-(set-key-lambda [(meta kp-8)]   (scroll-down 1))
-(set-key-lambda "\M-p"          (scroll-down 1))
-(set-key-lambda [(meta down)]   (scroll-up   1))    ; Alt+Dn
-(set-key-lambda [(meta kp-2)]   (scroll-up   1))
-(set-key-lambda "\M-n"          (scroll-up   1))
-
-(global-set-key [(meta shift up)]   'pager-row-up)  ; Alt+Shift+Up
-(global-set-key [(meta shift kp-8)] 'pager-row-up)
-(global-set-key "\M-P"              'pager-row-up)
-(global-set-key [(meta shift down)] 'pager-row-down); Alt+Shift+Down
-(global-set-key [(meta shift kp-2)] 'pager-row-down)
-(global-set-key "\M-N"              'pager-row-down)
+  (substitute-key-definition 'scroll-down 'pager-page-up   (current-global-map))
+  (substitute-key-definition 'scroll-up   'pager-page-down (current-global-map)))
 
 ;;}}}
 ;;{{{   Save with no blanks
