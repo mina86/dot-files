@@ -426,12 +426,10 @@ three times - beginning of buffer; four times - back to where it was."
               (equal ?) (char-syntax (char-before))))
          (backward-list 1) t)))
 
-(defun dwim-match-paren (arg)
-  (interactive "*p")
-  (or (match-paren) (self-insert-command (or arg 1))))
-
 (global-set-key [(control ?%)] 'match-paren)
-(global-set-key "%" 'dwim-match-paren)
+;; (global-set-key "%" (function (lambda (arg) (interactive "p")
+;;                                 (or (match-paren)
+;;                                     (self-insert-command (or arg 1))))))
 
 ;;}}}
 ;;{{{   Just one space
