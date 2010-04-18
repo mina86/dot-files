@@ -355,8 +355,14 @@ three times - beginning of buffer; four times - back to where it was."
 ;(global-set-key "\C-xg"         'goto-line)             ; C-x g  goto line
 ;Since 22.1 M-g M-g and M-g g are goto line
 (global-set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
-(global-set-key "\C-xk"         'kill-this-buffer)      ; don't ask which
-                                                        ; buffer to kill
+; don't ask which buffer to kill
+; kill-this-buffer caused problems
+(set-key-lambda "\C-xk"
+  (let* ((buffer (current-buffer))
+         (ws (get-buffer-window-list buffer t)))
+    (if (and ws (window-minibuffer-p (car ws)))
+        (abort-recursive-edit)
+      (kill-buffer buffer))))
 (global-set-key "\C-cr"         'revert-buffer)         ; Reload buffer
 (set-key-lambda "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
 (global-set-key [(control ";")] 'comment-dwim)          ; C-; comments
