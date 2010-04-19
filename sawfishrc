@@ -162,13 +162,17 @@
 (defvar mn-term-command
   (case-equal (screen-size)
     '(("1680x1050" "1920x1080" "1600x1200") "term -N Term -g 80x35" )
+    '(("3200x1200")                         "term -N Term -g 80x109")
     '(("1024x768" "1024x600")               "term -N Term -g 80x25" )
-    '(("1200x1600" "2400x1600")             "term -N Term -g 80x150")
+    '(("1200x1600" "2400x1600")             "term -N Term -g 80x149")
     '(("3600x1080")                         "term -N Term -g 80x94" )
     '(()                                    "term -N Term -g 80x25" )))
 (defvar mn-emacs-command
   "if ! emacsclient -c -n; then emacs --daemon; emacsclient -c -n; fi")
-(let ((w (if (equal "3600x1080" (screen-size)) "117" "80")))
+(let ((w (case-equal (screen-size)
+                     '(("3600x1080") "117")
+                     '(("2400x1600")  "92")
+                     '(()             "80"))))
   (defvar mn-mpdshow-command
     (concat "term -N MPD -mesg -g " w "x1 -e mpd-show"))
   (defvar mn-irssi-command
@@ -268,7 +272,7 @@
                            (system (concat cmd " &")))))
                   `(((erwin pikus)       "Opera"    . "opera")
                     (()                  "Emacs"    . ,mn-emacs-command)
-                    ((erwin pikus)       "IRC"      . ,mn-irssi-command)
+                    ((erwin)             "IRC"      . ,mn-irssi-command)
                     ((erwin pikus)       "mpdshow"  . ,mn-mpdshow-command)
                     (()                  "gkrellm"  . "gkrellm")))
             (set-screen-viewport 0 0)))
@@ -342,6 +346,7 @@
        ("1024x768"  (position  480 . 100))
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 . 100))
+       (".*x1600"   (position  648 . 110))
        ("3600x1080" (position 2900 . 110)))
 
       (((WM_CLASS . "/IRC$"))
@@ -349,7 +354,7 @@
        ("1024x768"  (position  480 .  10))
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 .  10))
-       (".*x1600"   (position  650 .  10))
+       (".*x1600"   (position  648 .  10))
        ("3600x1080" (position 2900 .  10))
        (""          (sticky . #t) (sticky-viewport . #t)))
 
@@ -358,7 +363,7 @@
        ("1024x768"  (position  480 .   0))
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 .   0))
-       (".*x1600"   (position  650 .   0))
+       (".*x1600"   (position  648 .   0))
        ("3600x1080" (position 2900 .   0))
        (""          (focus-when-mapped . #f) (focus-mode . click)
                     (sticky-and-skip . #t)))
