@@ -1636,11 +1636,11 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
                                   ("-"          1 "&#160;&#8211;")
                                   ("&#8211;"    7 "&#8212;")
                                   ("\\\\"       1 "&8209;")))
-  ;; (mn-magick-self-insert-define mode-map "/"
-  ;;                               '(("<"          1
-  ;;                                  (lambda (n)
-  ;;                                    (backward-delete-char 1)
-  ;;                                    (sgml-close-tag)))))
+  (mn-magick-self-insert-define mode-map "/"
+                                '(("<"          1
+                                   (lambda (n)
+                                     (backward-delete-char 1)
+                                     (nxml-finish-element)))))
   (mn-magick-self-insert-define mode-map [(backspace)]
                                 '(("&lt;"       4 "<")
                                   ("&#xab;"     6 "&lt;")
@@ -1660,7 +1660,13 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
                                   ("&..;"       4 ""))
                                 'delete-backward-char
                                 'delete-backward-char)
-  (setq indent-tabs-mode ()))
+  (setq indent-tabs-mode nil
+        next-error-function 'nxml-next-error))
+
+;; http://github.com/nelhage/elisp/blob/master/dot-emacs
+(defun nxml-next-error (arg reset)
+  (if reset (rng-first-error))
+  (rng-next-error arg))
 
 (eval-when-compile (require 'sgml-mode))
 (eval-after-load "sgml-mode"
