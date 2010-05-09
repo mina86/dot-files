@@ -164,7 +164,7 @@
     '(("1680x1050" "1920x1080" "1600x1200") "term -N Term -g 80x35" )
     '(("1024x768" "1024x600")               "term -N Term -g 80x25" )
     '(("1200x1600" "2400x1600")             "term -N Term -g 80x150")
-    '(("3600x1080")                         "term -N Term -g 80x105")
+    '(("3600x1080")                         "term -N Term -g 80x94" )
     '(()                                    "term -N Term -g 80x25" )))
 (defvar mn-emacs-command
   "if ! emacsclient -c -n; then emacs --daemon; emacsclient -c -n; fi")
@@ -342,7 +342,7 @@
        ("1024x768"  (position  480 . 100))
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 . 100))
-       ("3600x1080" (position 2420 .   0)))
+       ("3600x1080" (position 2900 . 110)))
 
       (((WM_CLASS . "/IRC$"))
        ("1680x1050" (position 1132 .  10))
@@ -380,7 +380,7 @@
        ("1024x768"  (location    0    0     80   76  1) (maximize . vertical))
        ("1600x1200" (location    0    0     80  120  1) (maximize . vertical))
        ("3200x1200" (location   72    0    170  118  1) (maximize . vertical))
-       ("3600x1080" (location    0    0     80  105  1) (maximize . vertical))
+       ("3600x1080" (location 1920    0    160  105  1) (maximize . vertical))
        (".*x1600"   (location    0    0     80  160  1) (maximize . vertical)))
 
       ;; Some windows do not like alpha
