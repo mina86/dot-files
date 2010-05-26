@@ -16,6 +16,8 @@
 [alias]
 	br     = branch
 	ci     = commit
+	amend  = commit --amend
+	fixup  = commit --amend -C HEAD
 	co     = checkout
 	df     = diff
 	cached = diff --cached
@@ -29,6 +31,9 @@
 	sw     = show
 	wc     = whatchanged
 	l      = log
+	lg     = log
+	lp     = log -p
+	k      = !gitk
 [user]
 	name = Michal Nazarewicz
 	email = mina86@mina86.com
@@ -50,5 +55,4 @@
 	from = Michal Nazarewicz <mina86@mina86.com>
 	; format-patch takes care of threading
 	thread = no
-[sendemail "smg"]
-	from = Michal Nazarewicz <m.nazarewicz@samsung.com>
+	confirm = always
