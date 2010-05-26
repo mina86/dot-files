@@ -1,6 +1,6 @@
 ##                                                      -*- shell-script -*-
 ## .bashrc  -- bash configuration file
-## Copyright 2004-2008 by Michal Nazarewicz (mina86/AT/mina86.com)
+## Copyright 2004-2010 by Michal Nazarewicz (mina86/AT/mina86.com)
 ##
 
 # Include ~/.shellrc
@@ -88,9 +88,7 @@ export PS1 PS2
 if which git >/dev/null 2>&1; then
 	__PS1=$PS1
 	__git_prompt () {
-		case "$PWD" in "$__GIT_PROMPT_PWD" )
-			return 0
-		esac
+		test "$PWD" = "$__GIT_PROMPT_PWD" && return 0
 
 		__GIT_PROMPT_PWD=$PWD
 		local dir
@@ -101,11 +99,9 @@ if which git >/dev/null 2>&1; then
 		fi
 
 		case "$__GIT_PROMPT_GITDIR" in [^/]*)
-				__GIT_PROMPT_GITDIR=$PWD/$__GIT_PROMPT_GITDIR
+			__GIT_PROMPT_GITDIR=$PWD/$__GIT_PROMPT_GITDIR
 		esac
-		case "$dir" in "$__GIT_PROMPT_GITDIR")
-			return 0
-		esac
+		test "$dir" = "$__GIT_PROMPT_GITDIR" && return 0
 
 		local branch state E ps flags _flags
 		state=
@@ -161,11 +157,20 @@ if which git >/dev/null 2>&1; then
 
 	unalias g
 	function g () {
-		if [ $# -eq 0 ]; then
-			unset __GIT_PROMPT_PWD __GIT_PROMPT_GITDIR
-		else
-			git "$@"
-		fi
+		local cmds='rebase|commit|branch|checkout|cherry-pick'
+		cmds=$cmds"|''"$(git config --get-regexp 'alias\..*' | \
+			awk -F '[. ]' 'END { print cmds }
+				$3 ~ /'"$cmds"'/ { cmds = cmds "|" $2 }')
+
+		eval "function g() {
+			case \"\$1\" in $cmds)
+				unset __GIT_PROMPT_PWD __GIT_PROMPT_GITDIR
+			esac
+			case \"\$1\" in ?*)
+				git \"\$@\"
+			esac
+		}; g \"\$@\""
+
 	}
 
 	PROMPT_COMMAND='__git_prompt'
