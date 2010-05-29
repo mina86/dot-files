@@ -342,7 +342,10 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   Misc
 
-(global-set-key "\C-x\C-C"      'kill-emacs) ; Kill while daemon
+(global-set-key "\C-x\C-C"
+                (lambda (arg) (interactive "P")
+                  (when (yes-or-no-p "Do you really want to quit? ")
+                    (save-buffers-kill-emacs arg)))) ; Never kill by mistake
 (global-set-key "\C-z"          'undo) ; I like undo better; never used C-z
 
 
