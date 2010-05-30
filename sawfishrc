@@ -193,8 +193,8 @@
         '(("_irssi"     (mn-jump-or-exec "^IRC"     mn-irssi-command))
           ("_Emacs"     (mn-jump-or-exec "^Emacs"   mn-emacs-command))
           ("The _GIMP"  (mn-jump-or-exec "^GIMP$"   "gimp"))
-          ("GQ_View"    (mn-jump-or-exec "^GQview$" "gqview"))
-          ("_Opera"     (mn-jump-or-exec "Opera$"   "opera")))
+          ("Gee_qie"    (mn-jump-or-exec "Geeqie$"  "geeqie"))
+          ("_Opera"     (mn-jump-or-exec "- Opera$" "opera")))
         root-menu
         (nconc
          '(("_Customize" customize)
@@ -231,13 +231,13 @@
         (window-order current-workspace t nil))
        (system (concat mn-term-command " &"))))
 
-   "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   mn-emacs-command))
-   "XF86HomePage"  (lambda()(mn-jump-or-exec "Opera$"   "opera"))
+   "W-q"           (lambda()(mn-jump-or-exec "^Emacs$"  mn-emacs-command))
+   "XF86HomePage"  (lambda()(mn-jump-or-exec "- Opera$" "opera"))
    "XF86Search"    (lambda()(system "opera http://google.com/ &"))
    "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
    "W-e"           (lambda()(mn-jump-or-exec "^IRC"      mn-irssi-command))
    "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
-   "W-s"           (lambda()(mn-jump-or-exec "^GQview$" "gqview"))
+   "W-s"           (lambda()(mn-jump-or-exec "Geeqie$"  "geeqie"))
 
    "XF86Mail"
    (lambda ()
@@ -402,8 +402,8 @@
                     (focus-when-mapped . #f) (never-focus . #t)
                     (sticky-and-skip . #t)))
 
-       ;; GQview
-      (((WM_ICON_NAME . "^GQview$"))
+       ;; Geeqie
+      (((WM_ICON_NAME . "Geeqie$"))
        (""          (viewport 3 . 1))
        ("1200x1600" (viewport 4 . 1)))))))
 ;;}}}
