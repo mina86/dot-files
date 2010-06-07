@@ -48,7 +48,7 @@
 
 ;; Hyper (win key) as prefix
 (custom-set-typed-variable
- (quote wm-modifier-value) (quote (super)) (quote modifier-list))
+ (quote wm-modifier-value) (quote (hyper)) (quote modifier-list))
 
 
 ;; Focus and Auto Raise
@@ -104,15 +104,25 @@
 
 (bind-keys window-keymap
            "W-1"            (set-current-window-viewport-x-0 0)
+           "W-&"            (set-current-window-viewport-x-0 0)
            "W-2"            (set-current-window-viewport-x-0 1)
+           "W-{"            (set-current-window-viewport-x-0 1)
            "W-3"            (set-current-window-viewport-x-0 2)
+           "W-}"            (set-current-window-viewport-x-0 2)
            "W-4"            (set-current-window-viewport-x-0 3)
+           "W-("            (set-current-window-viewport-x-0 3)
            "W-5"            (set-current-window-viewport-x-0 4)
+           "W-="            (set-current-window-viewport-x-0 4)
            "W-6"            (set-current-window-viewport-x-0 5)
+           "W-*"            (set-current-window-viewport-x-0 5)
            "W-7"            (set-current-window-viewport-x-0 6)
+           "W-)"            (set-current-window-viewport-x-0 6)
            "W-8"            (set-current-window-viewport-x-0 7)
+           "W-+"            (set-current-window-viewport-x-0 7)
            "W-9"            (set-current-window-viewport-x-0 8)
-           "W-0"            (set-current-window-viewport-x-0 9))
+           "W-]"            (set-current-window-viewport-x-0 8)
+           "W-0"            (set-current-window-viewport-x-0 9)
+           "W-!"            (set-current-window-viewport-x-0 9))
 
 ;;}}}
 ;;{{{ Transparency
@@ -217,27 +227,36 @@
    "W-Space"        popup-apps-menu
    "W-Button3-Click"popup-root-menu)
 
+  (let ((term
+         (lambda ()
+           (catch 'term
+             (mapc
+              (lambda (w)
+                (and (not (window-get w 'sticky))
+                     (let ((cls (get-x-text-property w 'WM_CLASS)))
+                       (and cls (string-match "xterm|u?rxvt|Term" (aref cls 0))))
+                     (throw 'term (display-window w))))
+              (window-order current-workspace t nil))
+             (system (concat mn-term-command " &"))))))
+    (bind-keys
+     global-keymap
+     "W-`"           term
+     "W-$"           term))
+
   (bind-keys
    global-keymap
-   "W-`"
-   (lambda ()
-     (catch 'term
-       (mapc
-        (lambda (w)
-          (and (not (window-get w 'sticky))
-               (let ((cls (get-x-text-property w 'WM_CLASS)))
-                 (and cls (string-match "xterm|u?rxvt|Term" (aref cls 0))))
-               (throw 'term (display-window w))))
-        (window-order current-workspace t nil))
-       (system (concat mn-term-command " &"))))
-
-   "W-q"           (lambda()(mn-jump-or-exec "^Emacs$"  mn-emacs-command))
-   "XF86HomePage"  (lambda()(mn-jump-or-exec "- Opera$" "opera"))
+   "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   mn-emacs-command))
+   "W-;"           (lambda()(mn-jump-or-exec "^Emacs"   mn-emacs-command))
+   "XF86HomePage"  (lambda()(mn-jump-or-exec "Opera$"   "opera"))
    "XF86Search"    (lambda()(system "opera http://google.com/ &"))
    "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
+   "W-,"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
    "W-e"           (lambda()(mn-jump-or-exec "^IRC"      mn-irssi-command))
+   "W-."           (lambda()(mn-jump-or-exec "^IRC"      mn-irssi-command))
+   "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
    "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
    "W-s"           (lambda()(mn-jump-or-exec "Geeqie$"  "geeqie"))
+   "W-o"           (lambda()(mn-jump-or-exec "Geeqie$"  "geeqie"))
 
    "XF86Mail"
    (lambda ()
@@ -289,10 +308,14 @@
 
   (bind-keys global-keymap
              "W-z"            (mn-mpd-lambda "prev")
+             "W-'"            (mn-mpd-lambda "prev")
              "W-x"            (mn-mpd-lambda "play")
-             "W-c"            (mn-mpd-lambda "pause")
+             "W-x"            (mn-mpd-lambda "play")
+             "W-c"            (mn-mpd-lambda "toggle")
+             "W-j"            (mn-mpd-lambda "toggle")
              "XF86AudioPlay"  (mn-mpd-lambda "toggle")
-             "W-v"            (mn-mpd-lambda "next")))
+             "W-v"            (mn-mpd-lambda "next")
+             "W-k"            (mn-mpd-lambda "next")))
 
 ;;}}}
 ;;{{{ Matcher
