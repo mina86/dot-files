@@ -24,6 +24,7 @@
 	ch     = diff --cached
 	pick   = cherry-pick
 	rb     = rebase
+	rbi    = rebase -i
 	cont   = rebase --continue
 	ct     = rebase --continue
 	s      = status -uno
@@ -34,6 +35,10 @@
 	lg     = log
 	lp     = log -p
 	k      = !gitk
+	edit   = "!f() { GIT_EDITOR=\"sed -i 1s/pick/edit/\" git rebase -i \"$1\"~; }; f"
+	ed     = edit
+	fix    = "!f() { git commit -m\"fixup! $(git log -1 --pretty=%s $1)\"; }; f"
+	fixed  = rebase -i --autosquash
 [user]
 	name = Michal Nazarewicz
 	email = mina86@mina86.com
