@@ -150,7 +150,8 @@ esac
 while read FILE DEST; do
 	if match "$@"; then
 		case "$DEST" in '~'*)   DEST=$HOME${DEST#'~'}; esac
-		case "$DEST" in */.|*/) DEST=$DEST$FILE;       esac
+		case "$DEST" in */@)    DEST=${DEST%@}${FILE##*/}; esac
+		case "$DEST" in */.|*/) DEST=$DEST$FILE; esac
 		if ! [ -d "${DEST%/*}" ]; then
 			echo "Skipping $FILE"
 		else
@@ -177,4 +178,5 @@ xinitrc            ~/.
 zshrc              ~/.
 bin/term           ~/
 bin/s              ~/
+userjs/follow.js   ~/.opera/scripts/@
 EOF
