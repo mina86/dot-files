@@ -1,0 +1,3 @@
+[submodule "userjs"]
+	path = userjs
+	url = git://github.com/mina86/userjs
