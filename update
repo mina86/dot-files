@@ -147,7 +147,7 @@ esac
 ##
 ## Do the job
 ##
-while read FILE DEST; do
+handle() {
 	if match "$@"; then
 		case "$DEST" in '~'*)   DEST=$HOME${DEST#'~'}; esac
 		case "$DEST" in */@)    DEST=${DEST%@}${FILE##*/}; esac
@@ -161,6 +161,22 @@ while read FILE DEST; do
 			esac
 		fi
 	fi
+}
+
+while read FILE DEST; do
+	case $FILE in
+	*'*'*)
+		for FILE in $FILE; do
+			if [ -f "$FILE" ]; then
+				_DEST=$DEST
+				handle "$@"
+				DEST=$_DEST
+			fi
+		done
+		;;
+	*)
+		handle "$@"
+	esac
 done 3<&1 <<EOF
 Xresources         ~/.
 bash_profile       ~/.
@@ -178,5 +194,8 @@ xinitrc            ~/.
 zshrc              ~/.
 bin/term           ~/
 bin/s              ~/
-userjs/follow.js   ~/.opera/scripts/@
+userjs/*.js        ~/.opera/
+opera/keyboard.ini ~/.opera/keyboard/@
+opera/menu.ini     ~/.opera/menu/@
+opera/toolbar.ini  ~/.opera/toolbar/@
 EOF
