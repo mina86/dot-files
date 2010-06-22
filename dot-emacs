@@ -773,10 +773,11 @@ With a prefix arg sets global dictionary."
 (set-key-lambda [(f7)]         (mn-spell))
 (set-key-lambda [(control f7)] (mn-spell nil (point)))
 (global-set-key [(meta f7)]    'mn-spell-switch-dictionary)
-(set-key-lambda [(shift f7)]
-  (call-interactively
-   (if (and (boundp 'flyspell-mode) flyspell-mode)
-       'flyspell-correct-word-before-point 'ispell-word)))
+(global-set-key [(shift f7)]   'ispell-word)
+;; (set-key-lambda [(shift f7)]
+;;   (call-interactively
+;;    (if (and (boundp 'flyspell-mode) flyspell-mode)
+;;        'flyspell-correct-word-before-point 'ispell-word)))
 
 ;;}}}
 ;;{{{     F8 - Keyboard macros
