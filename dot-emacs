@@ -1222,7 +1222,7 @@ non-nill or `compile' otherwise."
 largest which are multiplications of WIDTH and are lower or equal 120.
 WIDTH must be a literal number because this macro evaluates the list
 during expansion."
-  (interactive "NTab-width: ")
+  (interactive "nTab-width: ")
   (let* ((w (or tab stop-list))
          (n (- 120 (% 120 w)))
          l)
@@ -1230,8 +1230,8 @@ during expansion."
                     n (- n w))
               0))
     (setq tab-width tab tab-stop-list l)
-    (when (boundp 'c-basic-offset)
-      (setq c-basic-offset tab))))
+    (when (boundp 'c-basic-offset) (setq c-basic-offset tab))
+    (when prefix-arg (setq indent-tabs-mode t))))
 
 (setq indent-tabs-mode t)         ;indent using tabs
 (set-tab 4)                       ;tab width and stop list
