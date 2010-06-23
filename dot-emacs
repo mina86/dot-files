@@ -1535,6 +1535,7 @@ Works with: arglist-cont, arglist-cont-nonempty."
 
     (add-hook 'c-mode-hook (lambda ()
                              (when (and buffer-file-name
+                                        (eq major-mode 'c-mode)
                                         (string-match "linux" buffer-file-name))
                                (c-set-style "mina86-linux"))))))
 
