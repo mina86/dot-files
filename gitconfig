@@ -39,6 +39,8 @@
 	ed     = edit
 	fix    = "!f() { git commit -m\"fixup! $(git log -1 --pretty=%s $1)\"; }; f"
 	fixed  = rebase -i --autosquash
+	tpush  = !tsocks git push
+	patch  = "!f() { file=\"$1\"; shift; patch -p1 <$file \"$@\"; }; f"
 [user]
 	name = Michal Nazarewicz
 	email = mina86@mina86.com
