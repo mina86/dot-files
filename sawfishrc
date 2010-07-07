@@ -306,16 +306,16 @@
 (defmacro mn-mpd-lambda (command)
   (list 'lambda () (list 'system (concat "mpc " command " >/dev/null"))))
 
-  (bind-keys global-keymap
-             "W-z"            (mn-mpd-lambda "prev")
-             "W-'"            (mn-mpd-lambda "prev")
-             "W-x"            (mn-mpd-lambda "play")
-             "W-x"            (mn-mpd-lambda "play")
-             "W-c"            (mn-mpd-lambda "toggle")
-             "W-j"            (mn-mpd-lambda "toggle")
-             "XF86AudioPlay"  (mn-mpd-lambda "toggle")
-             "W-v"            (mn-mpd-lambda "next")
-             "W-k"            (mn-mpd-lambda "next")))
+(bind-keys global-keymap
+           "W-z"            (mn-mpd-lambda "prev")
+           "W-'"            (mn-mpd-lambda "prev")
+           "W-x"            (mn-mpd-lambda "play")
+           "W-x"            (mn-mpd-lambda "play")
+           "W-c"            (mn-mpd-lambda "toggle")
+           "W-j"            (mn-mpd-lambda "toggle")
+           "XF86AudioPlay"  (mn-mpd-lambda "toggle")
+           "W-v"            (mn-mpd-lambda "next")
+           "W-k"            (mn-mpd-lambda "next"))
 
 ;;}}}
 ;;{{{ Matcher
