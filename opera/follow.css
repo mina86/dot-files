@@ -1,0 +1,37 @@
+.follow-link-hide, .follow-link-hint, .follow-link-match, .follow-link-prompt {
+	letter-spacing: 0.1em;
+	display: inline;
+	background-color: #B9FF00;
+	border: 1px solid #4A6600;
+	color: black;
+	font-size: 10px;
+	font-weight: bold;
+	line-height: 1em;
+	margin: 0px;
+	width: auto;
+	padding: 1px;
+	position: absolute;
+	z-index: 1000;
+	text-decoration: none;
+}
+.follow-link-prompt {
+	background-color: #FFB900;
+	border-color: #664A00;
+	position: fixed;
+	left: 0;
+	bottom: 0
+}
+.follow-link-match {
+	background-color: #00B9FF;
+	border-color: #004A66;
+	content: "\00A0"
+}
+.follow-link-hide {
+	display: none
+}
+.follow-link-retmode .follow-link-prompt {
+	background-color: #f00
+}
+.follow-link-retmode .follow-link-hint {
+	background-color: #FF0
+}

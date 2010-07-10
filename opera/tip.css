@@ -1,0 +1,28 @@
+#tool-tip-text, #tool-tip-text tr, #tool-tip-text td, #tool-tip-text th {
+	margin: 0;
+	padding: 0;
+	border: 0 none #000;
+	color: #000;
+	font-weight: normal;
+	border-collapse: collapse;
+	text-decoration: none;
+	background-color: #F90;
+}
+#tool-tip-text {
+	display: none;
+	border: 1px solid #664A00;
+	width: auto;
+	z-index: 1000;
+	position: fixed;
+	left: 0;
+	bottom: 0;
+}
+#tool-tip-text td {
+	padding: 1px;
+	font-size: 10px;
+}
+#tool-tip-text th {
+	padding: 1px;
+	font-size: 8px;
+	background-color: #9F0;
+}

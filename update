@@ -195,6 +195,7 @@ zshrc              ~/.
 bin/term           ~/
 bin/s              ~/
 userjs/*.js        ~/.opera/
+opera/*.css        ~/.opera/usercss/@
 opera/keyboard.ini ~/.opera/keyboard/@
 opera/menu.ini     ~/.opera/menu/@
 opera/toolbar.ini  ~/.opera/toolbar/@
