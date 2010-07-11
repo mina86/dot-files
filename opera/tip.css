@@ -1,28 +1,44 @@
-#tool-tip-text, #tool-tip-text tr, #tool-tip-text td, #tool-tip-text th {
-	margin: 0;
-	padding: 0;
-	border: 0 none #000;
-	color: #000;
-	font-weight: normal;
-	border-collapse: collapse;
-	text-decoration: none;
-	background-color: #F90;
+table#tool-tip-text, table#tool-tip-text thead, table#tool-tip-text tbody, table#tool-tip-text tr, table#tool-tip-text tr td, table#tool-tip-text tr th {
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 none #000 !important;
+	color: #000 !important;
+	font-weight: normal !important;
+	line-height: 1em !important;
+	border-collapse: collapse !important;
+	text-decoration: none !important;
+	background-color: #F90 !important;
+	width: auto !important;
+	vertical-align: top !important;
+	text-align: left;
 }
-#tool-tip-text {
+table#tool-tip-text {
 	display: none;
-	border: 1px solid #664A00;
-	width: auto;
-	z-index: 1000;
-	position: fixed;
-	left: 0;
-	bottom: 0;
+	border: 1px solid #664A00 !important;
+	z-index: 1000 !important;
+	position: fixed !important;
+	left: 0 !important;
+	bottom: 0 !important;
 }
-#tool-tip-text td {
-	padding: 1px;
-	font-size: 10px;
+table#tool-tip-text tr td {
+	padding: 1px !important;
+	font-size: 12px !important;
 }
-#tool-tip-text th {
-	padding: 1px;
-	font-size: 8px;
-	background-color: #9F0;
+table#tool-tip-text tr th {
+	padding: 1px !important;
+	font-size: 10px !important;
+	background-color: #9F0 !important;
+}
+
+table#tool-tip-text thead tr th {
+	background-color: #FF0 !important;
+}
+table#tool-tip-text tfoot tr td {
+	background-color: #999 !important;
+}
+table#tool-tip-text tfoot tr td.tool-tip-secure {
+	background-color: #9F9 !important;
+}
+table#tool-tip-text tfoot tr td em {
+	font-weight: bold !important;
 }
