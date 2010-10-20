@@ -53,12 +53,12 @@ use `use-region-p'."
                 (if (file-exists-p (concat gnus-home-directory "/.gnus"))
                     "/.gnus" "/.gnus.el"))
         load-path (cons (concat gnus-home-directory "/gnus/lisp") load-path)
-        message-directory (concat gnus-home-directory "/Mail"))
-  (eval-after-load "info"
-    (if (load "gnus-load")
-        (setq Info-default-directory-list
-              (cons (concat gnus-home-directory "/gnus/texi")
-                    Info-default-directory-list)))))
+        message-directory (concat gnus-home-directory "/Mail")))
+  ;; (eval-after-load "info"
+  ;;   (if (load "gnus-load")
+  ;;       (setq Info-default-directory-list
+  ;;             (cons (concat gnus-home-directory "/gnus/texi")
+  ;;             Info-default-directory-list)))))
 
 ;; Make sure user-emacs-directory is defined
 (if (string-equal user-emacs-directory "")
