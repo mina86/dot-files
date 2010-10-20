@@ -91,17 +91,9 @@ l () {
 }
 
 # Other
-if which emacsclient >/dev/null 2>&1; then
-	e () {
-		if emacsclient -n "$@" 2>/dev/null; then
-			: ok
-		elif [ -n "$DISPLAY" ]; then
-			emacsclient -a '' -c -n "$@"
-		else
-			emacsclient -a '' "$@"
-		fi
-	}
-fi
+e () {
+	. ~/bin/e "$@"
+}
 alias rmd=rmdir
 which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
 if which git >/dev/null 2>&1; then
