@@ -460,7 +460,6 @@ the point."
 ;;}}}
 ;;{{{   Tab - indent or complete
 
-
 (setq hippie-expand-try-functions-list
       '(
 ;        try-expand-all-abbrevs
@@ -499,15 +498,34 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
          (funcall indent-or-complete-complete-function nil))
         ((indent-for-tab-command))))
 
-;(global-set-key "\t"    'indent-or-complete)
-;(global-set-key [(tab)] 'indent-or-complete)
-(global-set-key "\M-/" indent-or-complete-complete-function)
-(add-hook 'find-file-hooks (function (lambda ()
-  (unless (eq major-mode 'org-mode)
-    (local-set-key [(tab)] 'indent-or-complete)))))
-(save-current-buffer
-  (set-buffer "*scratch*")
-  (local-set-key [(tab)] 'indent-or-complete))
+(if (load "auto-complete-config")
+    (progn
+      (add-to-list 'ac-dictionary-directories "~/.emacs.d/elisp/ac-dict")
+      (ac-config-default)
+
+      (setq ac-auto-start 3
+            ac-delay 0.1
+            ac-auto-show-menu 2
+            ac-ignore-case nil
+            ac-use-comphist t
+            indent-or-complete-complete-function 'auto-complete)
+
+      (define-key ac-completing-map "\M-o" 'ac-previous)
+      (define-key ac-completing-map "\M-p" 'ac-previous)
+      (define-key ac-completing-map "\M-n" 'ac-next)
+
+      (global-set-key "\M-/" indent-or-complete-complete-function))
+
+  (global-set-key "\t"    'indent-or-complete)
+  (global-set-key [(tab)] 'indent-or-complete)
+
+  (add-hook 'find-file-hooks
+            (function (lambda ()
+                        (unless (eq major-mode 'org-mode)
+                          (local-set-key [(tab)] 'indent-or-complete)))))
+  (save-current-buffer
+    (set-buffer "*scratch*")
+    (local-set-key [(tab)] 'indent-or-complete)))
 
 ;;}}}
 ;;{{{   Centering
