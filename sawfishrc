@@ -187,7 +187,7 @@
     (concat "term -N MPD -mesg -g " w "x1 -e mpd-show"))
   (defvar mn-irssi-command
     (concat "term -N IRC -mesg -g " w "x10 -e "
-            (if (eq mn-machine 'pikus) "ssh -D 12312 live" "irssi"))))
+            (if (eq mn-machine 'pikus) "ssh live" "irssi"))))
 
 
 ;; Jump to term or exec
