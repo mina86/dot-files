@@ -14,10 +14,12 @@
 	prompt = yellow bold
 	help = cyan
 [alias]
+	a      = am -3
 	br     = branch
 	ci     = commit
 	amend  = commit --amend
 	fixup  = commit --amend -C HEAD
+	wip    = commit -m wip
 	co     = checkout
 	df     = diff
 	cached = diff --cached
@@ -29,6 +31,7 @@
 	ct     = rebase --continue
 	s      = status -uno
 	st     = status -uno
+	mt     = mergetool
 	sw     = show
 	wc     = whatchanged
 	l      = log
