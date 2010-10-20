@@ -168,6 +168,9 @@ while read FILE DEST; do
 	*'*'*)
 		for FILE in $FILE; do
 			if [ -f "$FILE" ]; then
+				case $FILE in *~)
+					continue
+				esac
 				_DEST=$DEST
 				handle "$@"
 				DEST=$_DEST
