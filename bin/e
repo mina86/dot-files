@@ -1,0 +1,19 @@
+#!/bin/sh
+
+if which emacsclient >/dev/null 2>&1; then
+	e () {
+		if emacsclient -n "$@" 2>/dev/null; then
+			: ok
+		elif [ -n "$DISPLAY" ]; then
+			emacsclient -a '' -c -n "$@"
+		else
+			emacsclient -a '' "$@"
+		fi
+	}
+else
+	e () {
+		emacs "$@"
+	}
+fi
+
+e "$@"

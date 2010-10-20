@@ -192,8 +192,7 @@ shellrc            ~/.
 statuses           ~/.irssi/
 xinitrc            ~/.
 zshrc              ~/.
-bin/term           ~/
-bin/s              ~/
+bin/*              ~/
 userjs/*.js        ~/.opera/
 opera/*.css        ~/.opera/usercss/@
 opera/keyboard.ini ~/.opera/keyboard/@
