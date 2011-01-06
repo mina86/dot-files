@@ -24,9 +24,9 @@
       (mapc (lambda (spec)
               (when (string-looking-at (car spec) sn)
                 (throw 'return (cdr spec))))
-            '(("erwin"     . erwin)
-              ("tuptus"    . tuptus)
-              ("pikus"     . pikus))))))
+            '(("erwin"       . erwin)
+              ("tuptus"      . tuptus)
+              ("mnazarewicz" . pikus))))))
 
 (defun case-equal (value #!rest list)
   (while (and list (caar list) (not (member value (caar list))))
@@ -171,12 +171,13 @@
 
 (defvar mn-term-command
   (case-equal (screen-size)
-    '(("1680x1050" "1920x1080" "1600x1200") "term -N Term -g 80x35" )
-    '(("3200x1200")                         "term -N Term -g 80x109")
-    '(("1024x768" "1024x600")               "term -N Term -g 80x25" )
-    '(("1200x1600" "2400x1600")             "term -N Term -g 80x149")
-    '(("3600x1080")                         "term -N Term -g 80x94" )
-    '(()                                    "term -N Term -g 80x25" )))
+    '(("1680x1050" "1920x1080" "1600x1200") "~/bin/term -N Term -g 80x35" )
+    '(("3200x1200")                         "~/bin/term -N Term -g 80x109")
+    '(("1024x768" "1024x600")               "~/bin/term -N Term -g 80x25" )
+    '(("1200x1600" "2400x1600")             "~/bin/term -N Term -g 80x149")
+    '(("1200x1920" "2400x1920")             "~/bin/term -N Term -g 80x182")
+    '(("3600x1080")                         "~/bin/term -N Term -g 80x94" )
+    '(()                                    "~/bin/term -N Term -g 80x25" )))
 (defvar mn-emacs-command
   "if ! emacsclient -c -n; then emacs --daemon; emacsclient -c -n; fi")
 (let ((w (case-equal (screen-size)
@@ -184,10 +185,9 @@
                      '(("2400x1600")  "92")
                      '(()             "80"))))
   (defvar mn-mpdshow-command
-    (concat "term -N MPD -mesg -g " w "x1 -e mpd-show"))
+    (concat "~/bin/term -N MPD -mesg -g " w "x1 -e mpd-show"))
   (defvar mn-irssi-command
-    (concat "term -N IRC -mesg -g " w "x10 -e "
-            (if (eq mn-machine 'pikus) "ssh live" "irssi"))))
+    (concat "~/bin/term -N IRC -mesg -g " w "x10 -e irssi")))
 
 
 ;; Jump to term or exec
@@ -257,6 +257,7 @@
    "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
    "W-s"           (lambda()(mn-jump-or-exec "Geeqie$"  "geeqie"))
    "W-o"           (lambda()(mn-jump-or-exec "Geeqie$"  "geeqie"))
+   "W-l"           (lambda()(system "xscreensaver-command -lock"))
 
    "XF86Mail"
    (lambda ()
@@ -291,8 +292,8 @@
                            (system (concat cmd " &")))))
                   `(((erwin pikus)       "Opera"    . "opera")
                     (()                  "Emacs"    . ,mn-emacs-command)
-                    ((erwin)             "IRC"      . ,mn-irssi-command)
-                    ((erwin pikus)       "mpdshow"  . ,mn-mpdshow-command)
+                    ((erwin pikus)       "IRC"      . ,mn-irssi-command)
+                    ((erwin)             "mpdshow"  . ,mn-mpdshow-command)
                     (()                  "gkrellm"  . "gkrellm")))
             (set-screen-viewport 0 0)))
 
@@ -370,6 +371,7 @@
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 . 100))
        (".*x1600"   (position  648 . 110))
+       ("2400x1920" (position  566 . 100))
        ("3600x1080" (position 2900 . 110)))
 
       (((WM_CLASS . "/IRC$"))
@@ -379,6 +381,7 @@
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 .  10))
        (".*x1600"   (position  648 .  10))
+       ("2400x1920" (position  566 .   0))
        ("3600x1080" (position 2900 .  10))
        (""          (sticky . #t) (sticky-viewport . #t)))
 
@@ -388,6 +391,7 @@
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 .   0))
        (".*x1600"   (position  648 .   0))
+       ("2400x1920" (position  566 .   0))
        ("3600x1080" (position 2900 .   0))
        (""          (focus-when-mapped . #f) (focus-mode . click)
                     (sticky-and-skip . #t)))
@@ -401,7 +405,8 @@
        ("1600x1200" (location  600  500   1000  700  1))
        ("1200x1600" (location    0    0   1200 1600  2))
        ("2400x1600" (location 1200    0   1200 1600  1))
-       ("3600x1080" (location    0    0   1920 1080  1) (maximize . both)))
+       ("3600x1080" (location    0    0   1920 1080  1) (maximize . both))
+       ("2400x1920" (location 1046    0   1354 1920  1) (maximize . vertical)))
 
        ;; Emacs
       (((WM_CLASS . "^Emacs"))
@@ -411,6 +416,7 @@
        ("1024x768"  (location    0    0     80   76  1) (maximize . vertical))
        ("1600x1200" (location    0    0     80  120  1) (maximize . vertical))
        ("3200x1200" (location   72    0    170  118  1) (maximize . vertical))
+       ("2400x1920" (location   72    0     80  192  1) (maximize . vertical))
        ("3600x1080" (location 1920    0    160  105  1) (maximize . vertical))
        (".*x1600"   (location    0    0     80  160  1) (maximize . vertical)))
 
@@ -428,7 +434,7 @@
                     (focus-when-mapped . #f) (never-focus . #t)
                     (sticky-and-skip . #t)))
 
-       ;; Geeqie
+      ;; Geeqie
       (((WM_ICON_NAME . "Geeqie$"))
        (""          (viewport 3 . 1))
        ("1200x1600" (viewport 4 . 1)))))))
