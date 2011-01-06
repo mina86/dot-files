@@ -297,7 +297,8 @@ three times - beginning of buffer; four times - back to where it was."
 ;; My end
 (defun my-end () "Go to end of line or buffer" (interactive)
   (seq-times-do nil (setq my-home-end--point (point))
-    (if folding-mode (folding-end-of-line) (end-of-line))
+    (if (and (boundp 'folding-mode) folding-mode)
+        (folding-end-of-line) (end-of-line))
     (forward-paragraph)
     (goto-char (point-max))
     (goto-char my-home-end--point)))
@@ -313,11 +314,11 @@ three times - beginning of buffer; four times - back to where it was."
   ;; Makes paging functions work the way god intended
   ;; http://www.docs.uu.se/~mic/emacs.html
   ;; pager.el was modified by me
-  (require 'pager)
-  (setq pager-goto-edge t)
+  (when (load "pager" t)
+    (setq pager-goto-edge t)
 
-  (substitute-key-definition 'scroll-down 'pager-page-up   (current-global-map))
-  (substitute-key-definition 'scroll-up   'pager-page-down (current-global-map)))
+    (substitute-key-definition 'scroll-down 'pager-page-up   (current-global-map))
+    (substitute-key-definition 'scroll-up   'pager-page-down (current-global-map))))
 
 ;;}}}
 ;;{{{   Save with no blanks
@@ -498,7 +499,7 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
          (funcall indent-or-complete-complete-function nil))
         ((indent-for-tab-command))))
 
-(if (load "auto-complete-config")
+(if (load "auto-complete-config" t)
     (progn
       (add-to-list 'ac-dictionary-directories "~/.emacs.d/elisp/ac-dict")
       (ac-config-default)
@@ -1918,7 +1919,7 @@ argument ommited returns that number."
 ;;}}}
 ;;{{{   Folding
 
-(when (load "folding")
+(when (load "folding" t)
   (defconst folding-default-keys-function
     '(folding-bind-backward-compatible-keys))
 
