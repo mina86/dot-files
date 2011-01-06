@@ -194,6 +194,7 @@ sawfishrc          ~/.
 shellrc            ~/.
 statuses           ~/.irssi/
 xinitrc            ~/.
+xprofile           ~/.
 zshrc              ~/.
 bin/*              ~/
 userjs/*.js        ~/.opera/
