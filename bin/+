@@ -1,0 +1,24 @@
+#!/bin/sh
+
+dir=$PWD
+while [ x"$dir" != x/ ]; do
+	if [ -e "$dir/.git" ]; then
+		git add "$@"
+		exit $?
+	fi
+
+	if [ -e "$dir/$P4CONFIG" ]; then
+		p add "$@"
+	fi
+
+	case "$dir" in *.git)
+		if [ -e "$dir/config" ]; then
+			git add "$@"
+			exit $?
+		fi
+	esac
+
+	dir=${dir%/*}
+done
+
+echo Not a git repository nor perforce client.

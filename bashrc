@@ -155,8 +155,7 @@ if which git >/dev/null 2>&1; then
 		PS1=${__PS1//'{{GIT}}'/"$ps1 "}
 	}
 
-	unalias g
-	function g () {
+	g () {
 		local cmds='rebase|commit|branch|checkout|cherry-pick'
 		cmds=$cmds"|''"$(git config --get-regexp 'alias\..*' | \
 			awk -F '[. ]' 'END { print cmds }
