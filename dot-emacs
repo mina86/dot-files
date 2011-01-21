@@ -72,6 +72,9 @@ use `use-region-p'."
 ;; Use  aspell
 (setq-default ispell-program-name "aspell")
 
+;; Local
+(load (concat user-emacs-directory "local.el") t)
+
 ;;}}}
 ;;{{{ Auto-byte-compile
 
