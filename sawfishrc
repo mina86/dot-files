@@ -363,7 +363,7 @@
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 . 100))
        (".*x1600"   (position  648 . 110))
-       ("2400x1920" (position  566 . 100))
+       ("2400x1920" (position  494 . 100))
        ("3600x1080" (position 2900 . 110)))
 
       (((WM_CLASS . "/IRC$"))
@@ -373,7 +373,7 @@
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 .  10))
        (".*x1600"   (position  648 .  10))
-       ("2400x1920" (position  566 .   0))
+       ("2400x1920" (position  494 .   0))
        ("3600x1080" (position 2900 .  10))
        (""          (sticky . #t) (sticky-viewport . #t)))
 
@@ -383,7 +383,7 @@
        ("1600x1200" (position  492 .   0))
        ("3200x1200" (position 1120 .   0))
        (".*x1600"   (position  648 .   0))
-       ("2400x1920" (position  566 .   0))
+       ("2400x1920" (position  494 .   0))
        ("3600x1080" (position 2900 .   0))
        (""          (focus-when-mapped . #f) (focus-mode . click)
                     (sticky-and-skip . #t)))
@@ -398,7 +398,7 @@
        ("1200x1600" (location    0    0   1200 1600  2))
        ("2400x1600" (location 1200    0   1200 1600  1))
        ("3600x1080" (location    0    0   1920 1080  1) (maximize . both))
-       ("2400x1920" (location 1046    0   1354 1920  1) (maximize . vertical)))
+       ("2400x1920" (location  974    0   1426 1920  1)))
 
        ;; Emacs
       (((WM_CLASS . "^Emacs"))
@@ -408,7 +408,7 @@
        ("1024x768"  (location    0    0     80   76  1) (maximize . vertical))
        ("1600x1200" (location    0    0     80  120  1) (maximize . vertical))
        ("3200x1200" (location   72    0    170  118  1) (maximize . vertical))
-       ("2400x1920" (location   72    0     80  192  1) (maximize . vertical))
+       ("2400x1920" (location    0    0     80  192  1) (maximize . vertical))
        ("3600x1080" (location 1920    0    160  105  1) (maximize . vertical))
        (".*x1600"   (location    0    0     80  160  1) (maximize . vertical)))
 
