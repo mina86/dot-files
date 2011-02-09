@@ -1,0 +1,14 @@
+#!/bin/sh
+
+have() {
+	have=`which "$1" 2>/dev/null` && test -n "$have"
+}
+
+if [ 0 -eq $(id -u) ]; then
+	aptitude "$@"
+elif have sudo || have s; then
+	"$have" aptitude "$@"
+else
+	echo 'a requires s or sudo' >&2
+	exit 1
+fi
