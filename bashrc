@@ -162,12 +162,12 @@ if which git >/dev/null 2>&1; then
 			awk -F '[. ]' 'END { print cmds }
 				$3 ~ /'"$cmds"'/ { cmds = cmds "|" $2 }')
 
-		eval "function g() {
+		eval "g() {
 			case \"\$1\" in $cmds)
 				unset __GIT_PROMPT_PWD __GIT_PROMPT_GITDIR
 			esac
 			case \"\$1\" in ?*)
-				git \"\$@\"
+				~/bin/g \"\$@\"
 			esac
 		}; g \"\$@\""
 
