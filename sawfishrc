@@ -199,13 +199,7 @@
            (if w (display-window w) (system (concat command " &")))))))
 
   ;; Menus
-  (setq apps-menu
-        '(("_irssi"     (mn-jump-or-exec "^IRC"     mn-irssi-command))
-          ("_Emacs"     (mn-jump-or-exec "^Emacs"   mn-emacs-command))
-          ("The _GIMP"  (mn-jump-or-exec "^GIMP$"   "gimp"))
-          ("Gee_qie"    (mn-jump-or-exec "Geeqie$"  "geeqie"))
-          ("_Opera"     (mn-jump-or-exec "- Opera$" "opera")))
-        root-menu
+  (setq root-menu
         (nconc
          '(("_Customize" customize)
            ("Re_start"   restart)
@@ -223,8 +217,6 @@
    root-window-keymap
    "Button1-Click2" (lambda () (system (concat mn-term-command " &")))
    "Button2-Click"  (lambda () (popup-menu window-menu))
-   "Button3-Click"  popup-apps-menu
-   "W-Space"        popup-apps-menu
    "W-Button3-Click"popup-root-menu)
 
   (let ((term
