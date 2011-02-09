@@ -1,5 +1,15 @@
 #!/bin/sh
 
+preopen=
+case "$1" in --preopen-cmd=*)
+	preopen="${1#*=}"
+	shift
+esac
+
+if [ -n "$preopen" ]; then
+	$preopen "$@"
+fi
+
 if which emacsclient >/dev/null 2>&1; then
 	e () {
 		if emacsclient -n "$@" 2>/dev/null; then
