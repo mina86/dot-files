@@ -195,9 +195,10 @@ if [ "$_hostname" != Xdedal ]; then
 	shopt -qs failglob extquote gnu_errfmt
 fi
 
+# /tmp is in RAM, don't save history between reboots
+export HISTFILE="/tmp/.$(id -un)-history"
 HISTCONTROL="ignorespace:erasedups"
 HISTIGNORE="ls:su:cd:bc:wp rm:mp3 mv:cd -"
-
 
 bind "C-p":history-search-backward
 bind "C-n":history-search-forward
