@@ -76,6 +76,14 @@ use `use-region-p'."
 (load (concat user-emacs-directory "local.el") t)
 
 ;;}}}
+;;{{{ Utilities
+
+(defmacro setq-if-bound (name value)
+  `(when (boundp (quote ,name))
+     (setq ,name ,value)
+     t))
+
+;;}}}
 ;;{{{ Auto-byte-compile
 
 (require 'bytecomp)
@@ -311,17 +319,16 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   Pager/Scrolling
 
-(if (boundp 'scroll-error-top-bottom)
-    (setq scroll-error-top-bottom t)
-
-  ;; Makes paging functions work the way god intended
-  ;; http://www.docs.uu.se/~mic/emacs.html
-  ;; pager.el was modified by me
-  (when (load "pager" t)
-    (setq pager-goto-edge t)
-
-    (substitute-key-definition 'scroll-down 'pager-page-up   (current-global-map))
-    (substitute-key-definition 'scroll-up   'pager-page-down (current-global-map))))
+;; Makes paging functions work the way god intended
+;; http://www.docs.uu.se/~mic/emacs.html
+;; pager.el was modified by me
+(when (and (setq-if-bound scroll-error-top-bottom t)
+           (load "pager" t))
+  (setq pager-goto-edge t)
+  (substitute-key-definition 'scroll-down 'pager-page-up
+                             (current-global-map))
+  (substitute-key-definition 'scroll-up   'pager-page-down
+                             (current-global-map)))
 
 ;;}}}
 ;;{{{   Save with no blanks
@@ -999,9 +1006,8 @@ non-nill or `compile' otherwise."
 ;; Let customize keep config there
 (setq custom-file (concat user-emacs-directory "custom"))
 (if (file-exists-p custom-file) (load-file custom-file))
-(if (boundp 'auto-byte-compile-files-list)
-    (setq auto-byte-compile-files-list
-          (cons custom-file auto-byte-compile-files-list)))
+(setq-if-bound auto-byte-compile-files-list
+               (cons custom-file auto-byte-compile-files-list))
 
 ;; Other
 (setq query-replace-highlight t)  ;highlight during query
@@ -1260,10 +1266,8 @@ non-nill or `compile' otherwise."
 ;(setq ange-ftp-ftp-program-name "pftp") ;passive FTP
 (blink-cursor-mode nil)           ;do not blink cursor
 ;(setq mouse-autoselect-window nil)  ;focus follows mouse
-(when (boundp 'compilation-auto-jump-to-first-error)
-  (setq compilation-auto-jump-to-first-error t))
-(when (boundp 'line-move-visual)
-  (setq line-move-visual nil))  ;move by logical lines not screen lines
+(setq-if-bound compilation-auto-jump-to-first-error t)
+(setq-if-bound line-move-visual nil) ;move by logical lines not screen lines
 
 ;; Saving etc
 (when (fboundp recentf-mode)
@@ -1290,7 +1294,8 @@ during expansion."
                     n (- n w))
               0))
     (setq tab-width tab tab-stop-list l)
-    (when (boundp 'c-basic-offset) (setq c-basic-offset tab))
+    (setq-if-bound c-basic-offset tab)
+    (setq-if-bound perl-indent-level tab)
     (when prefix-arg (setq indent-tabs-mode t))))
 
 (setq indent-tabs-mode t)         ;indent using tabs
@@ -1864,7 +1869,7 @@ argument ommited returns that number."
 (add-hook 'text-mode-hook (function (lambda ()
     (auto-fill-mode t)
     (set-tab 8)
-    (if (boundp 'word-wrap) (setq word-wrap t)))))
+    (setq-if-bound word-wrap t))))
 
 
 ;; Assembler mode
