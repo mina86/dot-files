@@ -42,14 +42,18 @@ dumb)                   # EMACS' eshell  (no colors)
 	;;
 *)                      # FIXME: I need to check if term sup. colors
 	if [ x"$TERM" != xeterm ]; then
+		__sp=
 		PS1+='\[\e[0;37;44m\]['
-		PS1+='\[\e[1;3$(($UID?2:1));44m\]\u'
-		PS1+='\[\e[1;37;44m\]'
-		if [ -z "$SSH_CLIENT$SSH_CONNECTION" ]
-#		then PS1+='\[\e[1;36;44m\]\h '
-		then PS1+=' '
-		else PS1+='@\[\e[1;33;44m\]\h '
+		if [ $UID -eq 0 ]; then
+			PS1+='\[\e[1;31;44m\]\u\[\e[1;37;44m\]'
+			__sp=' '
 		fi
+		if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then
+			PS1+='@\[\e[1;33;44m\]\h '
+		else
+			PS1+=$__sp
+		fi
+		unset __sp
 	fi
 	PS1+='{{GIT}}'
 	PS1+='\[\e[1;32;44m\]'
