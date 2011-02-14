@@ -1299,7 +1299,7 @@ during expansion."
     (when prefix-arg (setq indent-tabs-mode t))))
 
 (setq indent-tabs-mode t)         ;indent using tabs
-(set-tab 4)                       ;tab width and stop list
+(set-tab 8)                       ;tab width and stop list
 ;; One could add this to check if tab-width and c-basic-offset correspond
 ;(if (not (= 0 (% c-basic-offset tab-width)))
 ;    (warn "`tab-width' does not divide `c-basic-offset'"))
@@ -1369,8 +1369,8 @@ See `sort-regexp-fields'."
   (progn
     (c-add-style
      "mina86"
-     '((c-basic-offset . 4)             ; 4-char wide indention...
-       (tab-width . 4)                  ; ...which equals single tab...
+     '((c-basic-offset . 8)             ; 8-char wide indention...
+       (tab-width . 8)                  ; ...which equals single tab...
        (indent-tabs-mode . t)           ; ...so use tabs
        (c-comment-only-line-offset . 0)  ; XXX no idea what it does
        (c-label-minimum-indentation . 1) ; no min. indention for labels
@@ -1534,13 +1534,6 @@ See `sort-regexp-fields'."
           c-semi&comma-inside-parenlist))
         )))
 
-    ; For Linux use 8-char tabs
-    (c-add-style
-     "mina86-linux"
-     '("mina86"
-       (c-basic-offset . 8)
-       (tab-width . 8)))
-
 
     (defun mn-c-semi&comma-no-newlines-if-open-brace ()
       "Prevents newline after semicolon if there is an open brace
@@ -1596,13 +1589,8 @@ Works with: arglist-cont, arglist-cont-nonempty."
                     (set (make-local-variable 'compile-command)
                          (concat "make -k "
                                  (substring
-                                  fn 0 (string-match "\\.[^\\.]*$" fn 1))))))))
+                                  fn 0 (string-match "\\.[^\\.]*$" fn 1))))))))))
 
-    (add-hook 'c-mode-hook (lambda ()
-                             (when (and buffer-file-name
-                                        (eq major-mode 'c-mode)
-                                        (string-match "linux" buffer-file-name))
-                               (c-set-style "mina86-linux"))))))
 
 ;;}}}
 ;;{{{   HTML/XML & comapny Mode
