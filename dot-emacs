@@ -84,7 +84,7 @@ use `use-region-p'."
   (let ((ghd (or (and (boundp 'gnus-home-directory) gnus-home-directory)
                  (expand-file-name "~/.gnus"))))
     (cond
-     ((string-match "\\.elc$" (or user-init-file "/home/mina86/.emacs.d/init.el"))
+     ((string-match "\\.elc$" (or user-init-file (expand-file-name "~/.emacs.d/init.el")))
       (list (substring user-init-file 0 -4)
             (substring user-init-file 0 -1)
             (concat ghd "/.gnus")
