@@ -41,7 +41,6 @@
 	edit   = "!f() { GIT_EDITOR=\"sed -i 1s/pick/edit/\" git rebase -i \"$1\"~; }; f"
 	ed     = edit
 	fix    = "!f() { git commit -m\"fixup! $(git log -1 --pretty=%s $1)\"; }; f"
-	fixed  = rebase -i --autosquash
 	tpush  = !tsocks git push
 	patch  = "!f() { file=\"$1\"; shift; patch -p1 <$file \"$@\"; }; f"
 [user]
@@ -54,6 +53,8 @@
 	pager = less -FRSX
 [push]
 	default = current
+[rebase]
+	autosquash = yes
 
 [url "github:mina86/"]
 	pushInsteadOf = git://github.com/mina86/
