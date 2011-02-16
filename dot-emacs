@@ -1298,19 +1298,19 @@ non-nill or `compile' otherwise."
 (defun set-tab (tab &optional stop-list)
   "Sets `tab-stop-list' to a list of all positive from smallest to
 largest which are multiplications of WIDTH and are lower or equal 120.
-WIDTH must be a literal number because this macro evaluates the list
-during expansion."
+
+If called interactively user will be prompted for desired width.  With
+prefix argument, `indent-tabs-mode' will also be set to t.
+
+This function also tries to set indent-level for current buffer's
+major mode.  This is not very inteligent nor has complete list of
+rules so it is likely not to work."
   (interactive "nTab-width: ")
-  (let* ((w (or tab stop-list))
-         (n (- 120 (% 120 w)))
-         l)
-    (while (> (setq l (cons n l)
-                    n (- n w))
-              0))
-    (setq tab-width tab tab-stop-list l)
-    (setq-if-bound c-basic-offset tab)
-    (setq-if-bound perl-indent-level tab)
-    (when prefix-arg (setq indent-tabs-mode t))))
+  (setq tab-width tab
+        tab-stop-list (or stop-list (number-sequence tab 120 tab)))
+  (setq-if-bound c-basic-offset tab)
+  (setq-if-bound perl-indent-level tab)
+  (when prefix-arg (setq indent-tabs-mode t)))
 
 (setq indent-tabs-mode t)         ;indent using tabs
 (set-tab 8)                       ;tab width and stop list
