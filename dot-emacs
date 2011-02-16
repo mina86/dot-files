@@ -370,44 +370,58 @@ three times - beginning of buffer; four times - back to where it was."
 ;(global-set-key "\C-xg"         'goto-line)             ; C-x g  goto line
 ;Since 22.1 M-g M-g and M-g g are goto line
 
-(defun mn-window-skip (window)
-  (let ((n (buffer-name (window-buffer window))))
-    (and n
-         (string-match
-          (concat "^" (regexp-opt '("*Compile-Log*" "*Backtrace*" "*compilation*") t) "$")
-          n))))
+(defvar mn-window-skip-modes '(compilation-mode)
+  "List of major modes that `mn-window-skipp' should treat as
+uninteresting.")
 
-(defun mn-next-window (window &optional all-frames)
-  (let (w)
-    (while
-        (and
-         (mn-window-skip (setq w (next-window w nil all-frames)))
-         (not (eq window w))))
-    w))
+(defvar mn-window-skip-names '("*Compile-Log*" "*Backtrace*" "*compilation*")
+  "List of buffer names `mn-window-skipp' should treat as
+uninteresting.  This comes as an addition to
+`mn-window-skip-regexp'.")
 
-(defun mn-previous-window (window &optional all-frames)
-  (let (w)
-    (while
-        (and
-         (mn-window-skip (setq w (previous-window w nil all-frames)))
-         (not (eq window w))))
-    w))
+(defvar mn-window-skip-regexp nil
+  "A regexp List of major modes `mn-window-skipp' should treat as
+uninteresting.  This comes as an addition to
+`mn-window-skip-names'.")
+
+(defun mn-window-skipp (window)
+  (catch 'done
+    ; catch is ugly, I know, but it saves on some indention
+    (let ((b (window-buffer window)) n)
+      (unless b
+        (throw 'done nil))
+      (when (memq (with-current-buffer b major-mode) mn-window-skip-modes)
+        (throw 'done t))
+      (unless (or mn-window-skip-names mn-window-skip-regexp)
+        (throw 'done nil))
+      (unless (setq n (buffer-name b))
+        (throw 'done nil))
+      (when (member n mn-window-skip-names)
+        (throw 'done t))
+      (when (and mn-window-skip-regexp (string-match mn-window-skip-regexp n))
+        (throw 'done t))
+      nil)))
 
 (defun mn-other-window (count &optional all-frames)
   (interactive "p")
-  (let ((w (selected-window)))
-    (while (> count 0)
-      (setq w (mn-next-window w all-frames))
-      (setq count (1- count)))
-    (while (< count 0)
-      (setq w (mn-previous-window w all-frames))
-      (setq count (1+ count)))
-    (select-window w)))
+  (let ((func (cond ((> count 0) 'next-window)
+                    ((< count 0) 'previous-window))))
+    (when func
+      (catch 'loop
+        (let* ((wnd (selected-window))
+               (w   wnd))
+          (dotimes (i (abs count))
+            (while (mn-window-skipp (setq w (funcall func w nil all-frames)))
+              (when (eq wnd w)
+                (throw 'loop w)))
+            (setq wnd w))
+        (select-window wnd))))))
 
 (global-set-key "\C-xo"         'mn-other-window)       ; C-x o  next win
 (global-set-key "\C-xO"         'other-window)
 (global-set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
 (global-set-key "\C-xP"         "\C-u-1\C-xO")
+
 ; don't ask which buffer to kill
 ; kill-this-buffer caused problems
 (set-key-lambda "\C-xk"
