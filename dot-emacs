@@ -2011,7 +2011,7 @@ argument ommited returns that number."
 ;;}}}
 ;;{{{   Notes in *scratch*
 
-;; Notes in *scratch*  v. 0.2
+;; Notes in *scratch*  v. 0.3
 ;; Copyright (c) 2006 by Michal Nazarewicz (mina86@mina86.com)
 ;; Released under GNU GPL
 
@@ -2020,8 +2020,7 @@ argument ommited returns that number."
 (defconst scratch-file-autosave (concat scratch-file ".autosave")
   "File where to autosave content of *scratch* buffer.")
 
-(save-excursion
-  (set-buffer (get-buffer-create "*scratch*"))
+(with-current-buffer (get-buffer-create "*scratch*")
   (if (file-readable-p scratch-file)
       (if (and (file-readable-p scratch-file-autosave)
                (file-newer-than-file-p scratch-file-autosave scratch-file))
@@ -2047,8 +2046,7 @@ argument ommited returns that number."
          t)))
 
 (defun kill-emacs-scratch-save ()
-  (save-excursion
-    (set-buffer (get-buffer-create "*scratch*"))
+  (with-current-buffer (get-buffer-create "*scratch*")
     (write-region nil nil scratch-file)
     (unless (string-equal scratch-file buffer-auto-save-file-name)
       (delete-auto-save-file-if-necessary t))))
