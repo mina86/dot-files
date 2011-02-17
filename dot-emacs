@@ -1,6 +1,6 @@
 ;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
 ;; .emacs  -- Emacs configuration file
-;; Copyright 2004-2010 by Michal Nazarewicz (mina86@mina86.com)
+;; Copyright 2004-2011 by Michal Nazarewicz (mina86@mina86.com)
 ;;
 ;;{{{ Compatibility with old Emacses
 
@@ -46,23 +46,19 @@ use `use-region-p'."
 ;;{{{ System dependend data and directories
 
 ;; Gnus
-(when (eval-when-compile (string-match "^erwin" system-name))
-  (setq gnus-home-directory (expand-file-name "~/.gnus")
-        gnus-init-file
-        (concat gnus-home-directory
-                (if (file-exists-p (concat gnus-home-directory "/.gnus"))
-                    "/.gnus" "/.gnus.el"))
-        load-path (cons (concat gnus-home-directory "/gnus/lisp") load-path)
-        message-directory (concat gnus-home-directory "/Mail")))
-  ;; (eval-after-load "info"
-  ;;   (if (load "gnus-load")
-  ;;       (setq Info-default-directory-list
-  ;;             (cons (concat gnus-home-directory "/gnus/texi")
-  ;;             Info-default-directory-list)))))
+(let ((gnus-dir (expand-file-name "~/.gnus")))
+  (when (eval-when-compile (file-directory-p (expand-file-name "~/.gnus")))
+    (setq gnus-home-directory gnus-dir
+          gnus-init-file
+          (concat gnus-dir
+                  (if (file-exists-p (concat gnus-dir "/.gnus"))
+                      "/.gnus" "/.gnus.el"))
+          load-path (cons (concat gnus-home-directory "/gnus/lisp") load-path)
+          message-directory (concat gnus-home-directory "/Mail"))))
 
 ;; Make sure user-emacs-directory is defined
 (if (string-equal user-emacs-directory "")
-    (setq user-emacs-directory (expand-file-name "~/.emacs.d/")))
+    (setq user-emacs-directory (expand-file-name "~/.emacs.d")))
 
 ;; Add  ~/.emacs.d/elisp  to load path
 (if (eval-when-compile
@@ -276,15 +272,6 @@ command from COMMANDS."
 ; so it's a perfect candidate for previous line!
 (global-set-key "\C-o" 'previous-line)
 
-; Now, I've also got an ergonomic keyboard wich Back/Forward buttons
-; under my thumbs -- they seem perfect for horizontal movemetn.
-(global-set-key [(XF86Back)]    'backward-char)
-(global-set-key [(XF86Forward)] 'forward-char)
-; Also adding control bindings so I don't have to release it when
-; using C-o and C-n
-(global-set-key [(control XF86Back)]    'backward-char)
-(global-set-key [(control XF86Forward)] 'forward-char)
-
 ;;}}}
 ;;{{{   Home/End
 
@@ -303,7 +290,6 @@ three times - beginning of buffer; four times - back to where it was."
 
 (substitute-key-definition 'move-beginning-of-line 'my-home
                            (current-global-map))
-
 
 ;; My end
 (defun my-end () "Go to end of line or buffer" (interactive)
@@ -417,7 +403,7 @@ uninteresting.  This comes as an addition to
             (setq wnd w))
         (select-window wnd))))))
 
-(global-set-key "\C-xo"         'mn-other-window)       ; C-x o  next win
+(substitute-key-definition 'other-window 'mn-other-window (current-global-map))
 (global-set-key "\C-xO"         'other-window)
 (global-set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
 (global-set-key "\C-xP"         "\C-u-1\C-xO")
@@ -430,13 +416,10 @@ uninteresting.  This comes as an addition to
     (if (and ws (window-minibuffer-p (car ws)))
         (abort-recursive-edit)
       (kill-buffer buffer))))
+
 (global-set-key "\C-cr"         'revert-buffer)         ; Reload buffer
 (set-key-lambda "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
 (global-set-key [(control ";")] 'comment-dwim)          ; C-; comments
-
-;(require 'imenu)
-;(global-set-key [(shift mouse-3)] 'imenu)
-;(setq imenu-sort-function 'imenu--sort-by-name)
 
 
 ;; Jump
@@ -783,23 +766,21 @@ in the current paragraph into a single long line."
 ;;}}}
 ;;{{{     F5 - Gnus
 
-;; http://www.emacswiki.org/cgi-bin/wiki/SwitchToGnus
-
-(defun switch-to-gnus-or-get-new-news ()
-  "If already in Gnus group retrive new news otherwise, if Gnus is
+(eval-after-load "gnus"
+  (progn
+    ;; http://www.emacswiki.org/cgi-bin/wiki/SwitchToGnus
+    (defun switch-to-gnus-or-get-new-news ()
+      "If already in Gnus group retrive new news otherwise, if Gnus is
 running, switch to Gnus group buffer, otherwise start Gnus."
-  (interactive)
-  (cond
-   ((eq major-mode 'gnus-group-mode)
-    (and (fboundp 'gnus-group-get-new-news) (gnus-group-get-new-news)))
-   ((and (boundp 'gnus-group-buffer) (fboundp 'gnus-alive-p) (gnus-alive-p))
-    (switch-to-buffer (with-no-warnings gnus-group-buffer)))
-   ((gnus))))
+      (interactive)
+      (cond
+       ((eq major-mode 'gnus-group-mode)
+        (and (fboundp 'gnus-group-get-new-news) (gnus-group-get-new-news)))
+       ((and (boundp 'gnus-group-buffer) (fboundp 'gnus-alive-p) (gnus-alive-p))
+        (switch-to-buffer (with-no-warnings gnus-group-buffer)))
+       ((gnus))))
 
-(global-set-key [(f5)]      'switch-to-gnus-or-get-new-news)
-;(set-key-lambda [(control f5)] (let ((b (current-buffer)))
-;                                 (switch-to-buffer (other-buffer))
-;                                 (bury-buffer b)))
+    (global-set-key [(f5)]      'switch-to-gnus-or-get-new-news)))
 
 ;;}}}
 ;;{{{     F7 - spell checking
@@ -859,13 +840,6 @@ With a prefix arg sets global dictionary."
 ;;   (call-interactively
 ;;    (if (and (boundp 'flyspell-mode) flyspell-mode)
 ;;        'flyspell-correct-word-before-point 'ispell-word)))
-
-;;}}}
-;;{{{     F8 - Keyboard macros
-
-; since 22.1 this is on by defaault
-(global-set-key [(f3)] 'kmacro-start-macro-or-insert-counter)
-(global-set-key [(f4)] 'kmacro-end-or-call-macro)
 
 ;;}}}
 ;;{{{     F9 - Compilation
@@ -1379,7 +1353,7 @@ See `sort-regexp-fields'."
 
 ;;{{{   CC Mode
 
-(eval-after-load "compile"
+(eval-after-load "cc-mode"
   (progn
     (c-add-style
      "mina86"
@@ -1596,15 +1570,16 @@ Works with: arglist-cont, arglist-cont-nonempty."
     (setq c-default-style '((awk-mode . "awk")
                             (other    . "mina86")))
 
-    (add-hook 'c-common-mode-hook
-              (lambda ()
-                (when buffer-file-name
-                  (let ((fn (file-name-nondirectory buffer-file-name)))
-                    (set (make-local-variable 'compile-command)
-                         (concat "make -k "
-                                 (substring
-                                  fn 0 (string-match "\\.[^\\.]*$" fn 1))))))))))
-
+    (eval-after-load "compile"
+      (add-hook
+       'c-common-mode-hook
+       (lambda ()
+         (when buffer-file-name
+           (let ((fn (file-name-nondirectory buffer-file-name)))
+             (set (make-local-variable 'compile-command)
+                  (concat "make -k "
+                          (substring
+                           fn 0 (string-match "\\.[^\\.]*$" fn 1)))))))))))
 
 ;;}}}
 ;;{{{   HTML/XML & comapny Mode
