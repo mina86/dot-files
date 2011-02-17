@@ -794,7 +794,7 @@ running, switch to Gnus group buffer, otherwise start Gnus."
   "List of dictionaries to cycle through with `mn-spell-switch-dictionary'.")
 
 (eval-after-load "ispell"
-  (ispell-change-dictionary "polish" t))
+  (ispell-change-dictionary "british" t))
 
 (defun mn-spell (&optional lang start end)
   "If LANG is not-nil sets ispell dictionary to lang, then checks
