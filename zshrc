@@ -41,14 +41,13 @@ unsetopt autopushd cdablevars chasedots chaselinks pushdignoredups \
 bindkey -e
 
 
+# Not interactive?
+[ X"${-#*i}" != X"$-" ] || return
+
 # Include ~/.shellrc
 if [ -r ~/.shellrc ]; then
 	. ~/.shellrc
 fi
-
-
-# Not interactive?
-[ X"${-#*i}" != X"$-" ] || return
 
 
 ##

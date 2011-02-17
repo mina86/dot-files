@@ -3,13 +3,13 @@
 ## Copyright 2004-2010 by Michal Nazarewicz (mina86@mina86.com)
 ##
 
+# Not interactive?
+[ X"${-#*i}" != X"$-" ] || return
+
 # Include ~/.shellrc
 if [ -r ~/.shellrc ]; then
 	. ~/.shellrc
 fi
-
-# Not interactive?
-[ X"${-#*i}" != X"$-" ] || return
 
 
 ##
