@@ -156,10 +156,10 @@ export MINA86RC=done
 
 # PATH
 if ! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1; then
+	test -d ~/code/tinyapps && PATH="$HOME/code/tinyapps:$PATH"
+	test -d ~/bin && PATH="$HOME/bin:$PATH"
 	uname_m=`uname -m`
-	test -d ~/bin/$uname_m && PATH="$PATH:$HOME/bin/$uname_m"
-	test -d ~/bin && PATH="$PATH:$HOME/bin"
-	test -d ~/code/tinyapps && PATH="$PATH:$HOME/code/tinyapps"
+	test -d ~/bin/$uname_m && PATH="$HOME/bin/$uname_m:$PATH"
 	unset uname_m
 fi
 
