@@ -1,5 +1,14 @@
 #!/bin/sh
 
+if [ $# -eq 0 ]; then
+	if [ -n "$DISPLAY" ]; then
+		emacsclient -a '' -c -n
+	else
+		emacsclient -a ''
+	fi
+	exit $?
+fi
+
 preopen=
 case "$1" in --preopen-cmd=*)
 	preopen="${1#*=}"
@@ -10,20 +19,10 @@ if [ -n "$preopen" ]; then
 	$preopen "$@"
 fi
 
-if which emacsclient >/dev/null 2>&1; then
-	e () {
-		if emacsclient -n "$@" 2>/dev/null; then
-			: ok
-		elif [ -n "$DISPLAY" ]; then
-			emacsclient -a '' -c -n "$@"
-		else
-			emacsclient -a '' "$@"
-		fi
-	}
+if emacsclient -n "$@" 2>/dev/null; then
+	: ok
+elif [ -n "$DISPLAY" ]; then
+	emacsclient -a '' -n "$@"
 else
-	e () {
-		emacs "$@"
-	}
+	emacsclient -a '' "$@"
 fi
-
-e "$@"

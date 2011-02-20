@@ -91,9 +91,6 @@ l () {
 }
 
 # Other
-e () {
-	. ~/bin/e "$@"
-}
 alias rmd=rmdir
 which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
 
