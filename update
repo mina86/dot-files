@@ -197,6 +197,7 @@ xinitrc            ~/.
 zshrc              ~/.
 bin/*              ~/
 userjs/*.js        ~/.opera/
+userjs/*.css       ~/.opera/usercss/@
 opera/*.css        ~/.opera/usercss/@
 opera/keyboard.ini ~/.opera/keyboard/@
 opera/menu.ini     ~/.opera/menu/@
