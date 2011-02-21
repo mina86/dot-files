@@ -2051,8 +2051,6 @@ argument ommited returns that number."
 (unless (and (fboundp 'daemonp) (daemonp))
   (server-start))
 
-(random t)
-
 ;;}}}
 
 ;; Clear messages
