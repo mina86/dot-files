@@ -1893,9 +1893,8 @@ argument ommited returns that number."
 
 ;; Sawfish mode
 (autoload 'sawfish-mode "sawfish" "Mode for editing Sawfish config files")
-(add-to-list 'auto-mode-alist '(".*sawfishrc\\'" . sawfish-mode))
-(add-to-list 'auto-mode-alist '(".*\\.jl\\'" . sawfish-mode))
-
+(add-to-list 'auto-mode-alist '("sawfish/?rc\\'" . sawfish-mode))
+(add-to-list 'auto-mode-alist '("\\.jl\\'" . sawfish-mode))
 
 ;; Bison mode
 (autoload 'bison-mode "bison-mode.el")
