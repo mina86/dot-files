@@ -60,7 +60,7 @@
 	pushInsteadOf = git://github.com/mina86/
 
 [format]
-	thread = deep
+	thread = shallow
 
 [sendemail]
 	from = Michal Nazarewicz <mina86@mina86.com>
