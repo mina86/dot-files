@@ -4,6 +4,14 @@ have() {
 	have=`which "$1" 2>/dev/null` && test -n "$have"
 }
 
+# If "$1" is not one of the known commands, assume install
+case "$1" in
+install|remove|purge|hold|unhold|markauto|unmarkauto|forbid-version|update|safe-upgrade|full-upgrade|forget-new|search|show|clean|autoclean|changelog|download|reinstall|why|why-not)
+	;;
+	*)
+		set -- install "$@"
+esac
+
 if [ 0 -eq $(id -u) ]; then
 	aptitude "$@"
 elif have sudo || have s; then
