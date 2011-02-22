@@ -1,0 +1,5 @@
+set mark-symlinked-directories on
+
+$if Bash
+    Space: magic-space
+$endif
