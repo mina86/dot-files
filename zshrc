@@ -58,7 +58,6 @@ typeset -ga precmd_functions
 typeset -ga chpwd_functions
 
 
-
 ##
 ## Prompt
 ##
@@ -209,7 +208,6 @@ case $TERM in xterm*|rxvt*)
 esac
 
 
-
 ##
 ## Variables
 ##
@@ -219,8 +217,7 @@ READNULLCMD="$PAGER"
 SAVEHIST=1000
 HISTSIZE=1000
 TMPPREFIX="$TMP/zsh"
-HISTFILE="$HOME/.zhistory"
-
+HISTFILE="/tmp/.$(id -un)-zhistory"
 
 
 ##
