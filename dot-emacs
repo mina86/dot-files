@@ -79,6 +79,20 @@ use `use-region-p'."
      (setq ,name ,value)
      t))
 
+(defmacro set-key-lambda (key &rest body)
+  (declare (indent 1))
+  `(global-set-key ,key (function (lambda () (interactive) ,@body))))
+
+(defmacro add-lambda-hook (hook &rest body)
+  (declare (indent 1))
+  (if (and (listp hook) (eq (car hook) 'quote) (listp (cadr hook)))
+      (let ((func (make-symbol "func")))
+        `(let
+          ((,func (lambda () ,@body)))
+          . ,(mapcar (lambda (h) `(add-hook (quote ,h) ,func))
+                     (cadr hook))))
+    `(add-hook ,hook (function (lambda () ,@body)))))
+
 ;;}}}
 ;;{{{ Auto-byte-compile
 
@@ -204,10 +218,6 @@ match will equal nil."
 
 ;;}}}
 ;;{{{ Bindings
-
-(defmacro set-key-lambda (key &rest body)
-  (declare (indent 1))
-  `(global-set-key ,key (function (lambda () (interactive) ,@body))))
 
 ;;{{{   Sequence commands
 
@@ -1578,15 +1588,13 @@ Works with: arglist-cont, arglist-cont-nonempty."
                             (other    . "mina86")))
 
     (eval-after-load "compile"
-      (add-hook
-       'c-common-mode-hook
-       (lambda ()
-         (when buffer-file-name
-           (let ((fn (file-name-nondirectory buffer-file-name)))
-             (set (make-local-variable 'compile-command)
-                  (concat "make -k "
-                          (substring
-                           fn 0 (string-match "\\.[^\\.]*$" fn 1)))))))))))
+      (add-lambda-hook 'c-common-mode-hook
+        (when buffer-file-name
+          (let ((fn (file-name-nondirectory buffer-file-name)))
+            (set (make-local-variable 'compile-command)
+                 (concat "make -k "
+                         (substring
+                          fn 0 (string-match "\\.[^\\.]*$" fn 1))))))))))
 
 ;;}}}
 ;;{{{   HTML/XML & comapny Mode
@@ -1724,15 +1732,15 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
 
 (eval-when-compile (require 'sgml-mode))
 (eval-after-load "sgml-mode"
-  (add-hook 'sgml-mode-hook
-            (lambda () (mn-xml-configure-bindings sgml-mode-map))))
+  (add-lambda-hook 'sgml-mode-hook
+    (mn-xml-configure-bindings sgml-mode-map)))
 
 (when (fboundp 'nxml-mode)
   (eval-when-compile (require 'nxml-mode))
   (add-to-list 'auto-mode-alist '("\\.\\(?:x\\|ht\\)ml\\'" . nxml-mode))
   (eval-after-load "nxml-mode"
-    (add-hook 'nxml-mode-hook
-              (lambda () (mn-xml-configure-bindings nxml-mode-map)))))
+    (add-lambda-hook 'nxml-mode-hook
+      (mn-xml-configure-bindings nxml-mode-map))))
 
 
 
@@ -1795,10 +1803,8 @@ prefixed with \\b."
    (t (self-insert-command 1))))
 
 (eval-when-compile (require 'tex-mode))
-(add-hook 'tex-mode-hook
-          (function (lambda () (define-key tex-mode-map " " 'tex-space))))
-(add-hook 'latex-mode-hook
-          (function (lambda () (define-key tex-mode-map " " 'tex-space))))
+(add-lambda-hook '(tex-mode-hook latex-mode-hook)
+  (define-key tex-mode-map " " 'tex-space))
 
 
 ;; Insert '\ ' instead of ' ' in nroff when needed
@@ -1816,8 +1822,8 @@ prefixed with \\b."
 
 (eval-when-compile (require 'nroff-mode))
 
-(add-hook 'nroff-mode-hook
-          (function (lambda () (define-key nroff-mode-map " " 'nroff-space))))
+(add-lambda-hook 'nroff-mode-hook
+  (define-key nroff-mode-map " " 'nroff-space))
 
 ;;}}}
 ;;{{{   Generate serialVersionUID in Java
@@ -1834,8 +1840,8 @@ argument ommited returns that number."
             (random 65536) (random 65536)
             (random 65536) (random 65536))))
 
-(add-hook 'java-mode-hook (lambda ()
-  (add-hook 'write-contents-functions (lambda ()
+(add-lambda-hook 'java-mode-hook
+  (add-lambda-hook 'write-contents-functions
     (save-excursion
       (save-restriction
         (widen)
@@ -1844,22 +1850,22 @@ argument ommited returns that number."
                                   nil t)
           (replace-match
            (concat "serialVersionUID = " (mn-serialVersionUID) ";")
-           nil t))))))))
+           nil t))))))
 
 ;;}}}
 ;;{{{   Misc
 
 ;; Text mode
-(add-hook 'text-mode-hook (function (lambda ()
-    (auto-fill-mode t)
-    (set-tab 8)
-    (setq-if-bound word-wrap t))))
+(add-lambda-hook 'text-mode-hook
+  (auto-fill-mode t)
+  (set-tab 8)
+  (setq-if-bound word-wrap t))
 
 
 ;; Assembler mode
-(add-hook 'asm-mode-hook (function (lambda ()
-    (set-tab 8 16)
-    (setq comment-column 40))))
+(add-lambda-hook 'asm-mode-hook
+  (set-tab 8 16)
+  (setq comment-column 40))
 
 
 ;; Org mode
@@ -1879,16 +1885,14 @@ argument ommited returns that number."
 ;; Shell mode
 ;; This prevents shell commands from being echoed
 (eval-when-compile (require 'shell))
-(add-hook 'comint-mode-hook (function (lambda ()
-  (setq comint-process-echoes t))))
+(add-lambda-hook 'comint-mode-hook
+  (setq comint-process-echoes t))
 
 
 ;; Lisp/Scheme mode
 ;; No tabs! and if opening file with tabs, assume 8-char wide
-(let ((func (function (lambda () (setq indent-tabs-mode nil) (set-tab 8)))))
-  (add-hook 'emacs-lisp-mode-hook func)
-  (add-hook 'lisp-mode-hook       func)
-  (add-hook 'scheme-mode-hook     func))
+(add-lambda-hook '(emacs-lisp-mode-hook lisp-mode-hook scheme-mode-hook)
+  (setq indent-tabs-mode nil) (set-tab 8))
 
 
 ;; Sawfish mode
@@ -1911,7 +1915,7 @@ argument ommited returns that number."
 ;; LSL mode
 (autoload 'lsl-mode "lsl-mode" "Load LSL mode." t)
 (add-to-list 'auto-mode-alist '("\\.lsl$" . lsl-mode))
-(add-hook 'lsl-mode-hook (function (lambda nil (setq indent-tabs-mode nil))))
+(add-lambda-hook 'lsl-mode-hook (setq indent-tabs-mode nil))
 
 
 ;; Haskell mode
