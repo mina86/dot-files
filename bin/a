@@ -1,21 +1,26 @@
 #!/bin/sh
 
+# If "$1" is not one of the known commands, assume install
+case "$1" in
+install|remove|purge|hold|unhold|markauto|unmarkauto|forbid-version|update|upgrade|safe-upgrade|full-upgrade|forget-new|search|show|clean|autoclean|changelog|download|reinstall|why|why-not)
+	;;
+	?*)
+		set -- install "$@"
+esac
+
 have() {
 	have=`which "$1" 2>/dev/null` && test -n "$have"
 }
 
-# If "$1" is not one of the known commands, assume install
-case "$1" in
-install|remove|purge|hold|unhold|markauto|unmarkauto|forbid-version|update|safe-upgrade|full-upgrade|forget-new|search|show|clean|autoclean|changelog|download|reinstall|why|why-not)
-	;;
-	*)
-		set -- install "$@"
-esac
-
 if [ 0 -eq $(id -u) ]; then
-	aptitude "$@"
+	if have aptitude || have apt-get; then
+		"$have" "$@"
+	fi
+	if [ $# -eq 1 ] && [ x"$1" = xupdate ] && have apt-file; then
+		apt-file update
+	fi
 elif have sudo || have s; then
-	"$have" aptitude "$@"
+	exec "$have" "$0" "$@"
 else
 	echo 'a requires s or sudo' >&2
 	exit 1
