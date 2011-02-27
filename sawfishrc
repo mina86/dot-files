@@ -39,12 +39,13 @@
   (concat (number->string (screen-width)) "x" (number->string (screen-height))))
 
 ;;}}}
-;;{{{ Misc small
+;;{{{ Misc
 
-;; Show errors on screen
+;; Show errors on screen and standard-error
 (require 'sawfish.wm.ext.error-handler)
-(setq error-destination 'screen)
+(setq error-destination 'both)
 
+(write standard-error "Sawfish starting...\n")
 
 ;; Hyper (win key) as prefix
 (custom-set-typed-variable

@@ -44,6 +44,8 @@ has() {
 	run xscreensaver -no-splash
 ) >/dev/null 2>&1 </dev/null &
 
+exec 2>>/tmp/sawfish-log
+
 if has gpg-agent; then
 	exec gpg-agent --daemon sawfish
 else
