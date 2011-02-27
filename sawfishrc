@@ -100,7 +100,7 @@
 ;;}}}
 ;;{{{ Transparency
 
-(defvar default-window-alpha (cons 0.9 0.7))
+(define default-window-alpha (cons 0.9 0.7))
 
 (defconst window-alpha-max   #xffffffff)
 (defconst window-alpha-min   #x1fffffff)
@@ -120,7 +120,7 @@
 
 ;; Return's window's alpha property or `default-window-alpha'
 (defun window-alpha-property (w)
-          (or (window-get w 'alpha) default-window-alpha))
+  (or (window-get w 'alpha) default-window-alpha))
 
 ;; Sets window opacity.
 ;; If alpha is nil uses `window-alpha-property'.
@@ -135,6 +135,15 @@
 
 (add-hook 'focus-in-hook  (lambda (w fmode) (set-window-alpha w nil nil)))
 (add-hook 'focus-out-hook (lambda (w fmode) (set-window-alpha w nil t  )))
+
+; If there are windows present when sawfish starts handle them properly,
+; that's what after-add-window-hook is for, but after sawfish is
+; started there is no longer need to keep this hook, so
+; after-initialisation-hook removes the other hook.
+(let ((f (lambda (w) (set-window-alpha w nil (not (eq (input-focus) w))))))
+  (add-hook 'after-add-window-hook f)
+  (add-hook 'after-initialization-hook
+            (lambda () (remove-hook 'after-add-window-hook f))))
 
 ;;}}}
 ;;{{{ Applications & menus
