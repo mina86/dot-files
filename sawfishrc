@@ -18,25 +18,44 @@
 
 ;;{{{ What machine are we running
 
-(defvar mn-machine
-  (catch 'return
-    (let ((sn (system-name)))
-      (mapc (lambda (spec)
-              (when (string-looking-at (car spec) sn)
-                (throw 'return (cdr spec))))
-            '(("erwin"       . erwin)
-              ("tuptus"      . tuptus)
-              ("mnazarewicz" . pikus))))))
-
-(defun case-equal (value #!rest list)
-  (while (and list (caar list) (not (member value (caar list))))
-    (setq list (cdr list)))
-  (and list (cadar list)))
-
-
 (defun screen-size ()
   "Screen resolution formatted as WIDTHxHEIGHT."
   (concat (number->string (screen-width)) "x" (number->string (screen-height))))
+
+;;}}}
+;;{{{ Helper
+
+(require 'sawfish.wm.util.window-order)
+
+(define (mn-exec-unless regexp command #!optional current-vp)
+  "Searches for window which WM_CLASS (formatted as %s/%s) matches
+REGEXP.  If found returns this window otherwise runs COMMAND (in
+background) and return nil.
+
+COMMAND is executed using `start-process' function.  If COMMAND is
+a list, its head is program to execute and tail is list of arguments.
+Otherwise, function assumes COMMAND is a string and runs it using
+\"/bin/sh -c\".
+
+If current-vp is not-nil, will look only through windows in current
+viewport.
+
+Windows are matched in most recently focused first order."
+  (catch 'done
+    (mapc
+     (lambda (w)
+       (let ((cls (get-x-text-property w 'WM_CLASS)))
+         (and cls
+              (string-match regexp
+                            (format nil "%s/%s"
+                                    (and (> (length cls) 1) (aref cls 1))
+                                    (aref cls 0)))
+              (throw 'done w))))
+     (window-order current-workspace t (not current-vp)))
+    (if (listp command)
+        (apply start-process (cons () command))
+      (start-process () "/bin/sh" "-c" command))
+    ()))
 
 ;;}}}
 ;;{{{ Misc
@@ -146,122 +165,65 @@
             (lambda () (remove-hook 'after-add-window-hook f))))
 
 ;;}}}
-;;{{{ Applications & menus
+;;{{{ Applications, menus & bindings
 
 (require 'menus)
 (require 'customize)
 
-(defvar mn-term-command
-  (case-equal (screen-size)
-    '(("1680x1050" "1920x1080" "1600x1200") "~/bin/term -N Term -g 80x35" )
-    '(("3200x1200")                         "~/bin/term -N Term -g 80x109")
-    '(("1024x768" "1024x600")               "~/bin/term -N Term -g 80x25" )
-    '(("1200x1600" "2400x1600")             "~/bin/term -N Term -g 80x149")
-    '(("1200x1920" "2400x1920")             "~/bin/term -N Term -g 80x182")
-    '(("3600x1080")                         "~/bin/term -N Term -g 80x94" )
-    '(()                                    "~/bin/term -N Term -g 80x25" )))
-(defvar mn-emacs-command
-  "if ! emacsclient -c -n; then emacs --daemon; emacsclient -c -n; fi")
-(let ((w (case-equal (screen-size)
-                     '(("3600x1080") "117")
-                     '(("2400x1600")  "92")
-                     '(()             "80"))))
-  (defvar mn-mpdshow-command
-    (concat "~/bin/term -N MPD -mesg -g " w "x1 -e mpd-show"))
-  (defvar mn-irssi-command
-    (concat "~/bin/term -N IRC -mesg -g " w "x10 -e irssi")))
+(define mn-term-command    (list "term" "-N" "Term"))
+(define mn-mpdshow-command (list "term" "-N" "MPD" "-mesg" "-g" "80x1" "-e" "mpd-show"))
+(define mn-irssi-command   (list "term" "-N" "IRC" "-mesg" "-g" "80x10" "-e" "irssi"))
 
+;; Menus
+(define (exit-sawfish command)
+  (start-process () "/bin/sh" "-c" (concat "sleep 2; exec " command))
+  (quit))
+(setq root-menu
+      (nconc
+       '(("_Customize"   customize)
+         ("_Restart"     restart)
+         ()
+         ("Quit"         quit)
+         ("Reboot"       (exit-sawfish "/sbin/reboot")))
+       (and (file-exists-p "/usr/local/sbin/reboot-w")
+            '(("Windows" (exit-sawfish "/usr/local/sbin/reboot-w"))))
+       '(("Power Off"    (exit-sawfish "/sbin/halt")))))
 
-;; Jump to term or exec
-(require 'sawfish.wm.util.window-order)
-(let (;; Inspired by jump-or-exec written by Damien Elmes <resolve@repose.cx>
-      (mn-jump-or-exec
-       (lambda (regexp command)
-         (let ((w (get-window-by-name-re regexp)))
-           (if w (display-window w) (system (concat command " &")))))))
+;; Bindings
+(bind-keys root-window-keymap
+           "Button1-Click2"  (lambda () (apply start-process () mn-term-command))
+           "W-Button3-Click" popup-root-menu)
 
-  ;; Menus
-  (setq root-menu
-        (nconc
-         '(("_Customize" customize)
-           ("Re_start"   restart)
-           ()
-           ("_Quit"      quit)
-           ("_Reboot"    (progn (system "( sleep 2; /sbin/reboot )") (quit))))
-         (and (file-exists-p "/usr/local/sbin/reboot-w")
-              '(("Reboot _Windows"
-                 (progn (system "( sleep 2; /usr/local/sbin/reboot-w )") (quit)))))
-         '(("Power _Off" (progn (system "( sleep 2; /sbin/halt   )") (quit))))))
+(bind-keys window-keymap
+           "W-Space"         (lambda () (popup-window-menu (input-focus))))
 
-
-  ;; Application and menu bindings
-  (bind-keys
-   root-window-keymap
-   "Button1-Click2" (lambda () (system (concat mn-term-command " &")))
-   "Button2-Click"  (lambda () (popup-menu window-menu))
-   "W-Button3-Click"popup-root-menu)
-
-  (let ((term
-         (lambda ()
-           (catch 'term
-             (mapc
-              (lambda (w)
-                (and (not (window-get w 'sticky))
-                     (let ((cls (get-x-text-property w 'WM_CLASS)))
-                       (and cls (string-match "xterm|u?rxvt|Term" (aref cls 0))))
-                     (throw 'term (display-window w))))
-              (window-order current-workspace t nil))
-             (system (concat mn-term-command " &"))))))
-    (bind-keys
-     global-keymap
-     "W-`"           term
-     "W-$"           term))
-
-  (bind-keys
-   global-keymap
-   "W-q"           (lambda()(mn-jump-or-exec "^Emacs"   mn-emacs-command))
-   "W-;"           (lambda()(mn-jump-or-exec "^Emacs"   mn-emacs-command))
-   "XF86HomePage"  (lambda()(mn-jump-or-exec "Opera$"   "opera"))
-   "XF86Search"    (lambda()(system "opera http://google.com/ &"))
-   "W-w"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
-   "W-,"           (lambda()(mn-jump-or-exec "Opera$"   "opera"))
-   "W-e"           (lambda()(mn-jump-or-exec "^IRC"      mn-irssi-command))
-   "W-."           (lambda()(mn-jump-or-exec "^IRC"      mn-irssi-command))
-   "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
-   "W-a"           (lambda()(mn-jump-or-exec "^GIMP$"   "gimp"))
-   "W-s"           (lambda()(mn-jump-or-exec "Geeqie$"  "geeqie"))
-   "W-o"           (lambda()(mn-jump-or-exec "Geeqie$"  "geeqie"))
-   "W-l"           (lambda()(system "xscreensaver-command -lock"))
-
-   "XF86Mail"
-   (lambda ()
-     (mn-jump-or-exec "^Emacs" mn-emacs-command)
-     (system "emacsclient -ne '(if (fboundp '\\''switch-to-gnus-or-get-new-news) (switch-to-gnus-or-get-new-news))'"))
-   "XF86Calculator"
-   (lambda ()
-     (mn-jump-or-exec "^Emacs"   mn-emacs-command)
-     (system "emacsclient -a '' -ne '(calc)'"))
-
-  (bind-keys
-   window-keymap
-   "W-Space"        (lambda () (popup-window-menu (input-focus)))))
+(mapc
+ (lambda (spec)
+   (bind-keys
+    global-keymap
+    (concat "W-" (car spec))
+    (lambda ()
+      (display-window (apply mn-exec-unless (cdr spec))))))
+ `((?$  "/Term$"         ,mn-term-command t)
+   (?\; "^Emacs/emacs$"  ("e"))
+   (?,  "^Opera/opera$"  ("opera"))
+   (?.  "/IRC$"          ,mn-irssi-command)
+   (?a  "GIMP"           ("gimp")
+   (?o  "Geeqie"         ("geeqie")))))
 
 ;; Run some applications
 (add-hook 'after-initialization-hook
           (lambda ()
-            (mapc (lambda (spec)
-                    (let ((cnd  (car  spec))
-                          (name (cadr spec))
-                          (cmd  (cddr spec)))
-                      (and cmd
-                           (or (not cnd) (member mn-machine cnd))
-                           (not (and name (get-window-by-name-re name)))
-                           (system (concat cmd " &")))))
-                  `(((erwin pikus)       "Opera"    . "opera")
-                    (()                  "Emacs"    . ,mn-emacs-command)
-                    ((erwin pikus)       "IRC"      . ,mn-irssi-command)
-                    ((erwin)             "mpdshow"  . ,mn-mpdshow-command)
-                    (()                  "gkrellm"  . "gkrellm")))
+            (let ((sn (system-name)))
+              (mapc
+               (lambda (spec)
+                 (when (string-looking-at (car spec) sn)
+                   (apply mn-exec-unless (cdr spec))))
+               `(("erwin|pikus"       "^Opera/opera$"      ("opera"))
+                 (""                  "^Emacs/emacs$"      ("e"))
+                 ("erwin|pikus"       "/IRC$"              ,mn-irssi-command)
+                 ("erwin"             "/MPD$"              ,mn-mpdshow-command)
+                 (""                  "^Gkrellm/gkrellm$"  ("gkrellm")))))
             (set-screen-viewport 0 0)))
 
 ;; Some commands
