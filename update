@@ -10,10 +10,10 @@ usage () {
 	cat <<EOF
 usage: $0 [ <options> ] [ <files> ]
 <options>:
-  -f  updat files in current directory from configuration files
-  -t  updat configuration files from files in current directory
-  -b  make backup (default)        -B  do not make backups
-  -i  interactive (default)        -I  not interactive
+  -f  update files in current directory from configuration files
+  -t  update configuration files from files in current directory
+  -B  do not make backups
+  -y  assume "y" to all questions
 EOF
 	exit 1
 }
@@ -23,21 +23,19 @@ EOF
 ## Parse arguments
 ##
 DIRECTION=
-INTERACTIVE=yes
-BACKUP=yes
+INTERACTIVE=true
+BACKUP=true
 
 while [ x"${1#-}" != x"$1" ]; do
 	ARG=${1#?}
 	shift
 	while [ -n "$ARG" ]; do
 		case "$ARG" in
-		f*) DIRECTION=from ;;
-		t*) DIRECTION=to   ;;
-		b*) BACKUP=yes     ;;
-		B*) BACKUP=        ;;
-		i*) INTERACTIVE=yes;;
-		I*) INTERACTIVE=   ;;
-		?*) usage          ;;
+		f*) DIRECTION=from   ;;
+		t*) DIRECTION=to     ;;
+		B*) BACKUP=false     ;;
+		y*) INTERACTIVE=false;;
+		?*) usage            ;;
 		esac
 		ARG=${ARG#?}
 	done
@@ -55,14 +53,14 @@ to)   echo 'Updating configuration files from files in current directory' ;;
 *)    usage
 esac
 
-case "$INTERACTIVE" in '')
+if $INTERACTIVE; then
 	printf 'Do you want to continue? [y/N] '
 	if ! read answer; then
 		exit 0
 	elif [ X"${answer#[yY]}" = X"${answer}" ]; then
 		exit 0
 	fi
-esac
+fi
 
 
 ##
@@ -87,7 +85,7 @@ fi
 ##
 ## Interactive asking
 ##
-if [ -n "$INTERACTIVE" ]; then
+if $INTERACTIVE; then
 	difference () {
 		case "$1" in [dD])
 			set -- r "$3" "$2"
@@ -122,8 +120,7 @@ fi
 ##
 ## Backup & copy
 ##
-case "$BACKUP" in
-yes)
+if $BACKUP; then
 	cp_backup () {
 		if ! [ -e "$2" ]; then
 			cp -v -- "$1" "$2"
@@ -133,7 +130,7 @@ yes)
 		fi
 	}
 	;;
-*)
+else
 	cp_backup () {
 		if ! [ -e "$2" ]; then
 			cp -v -- "$1" "$2"
@@ -141,7 +138,7 @@ yes)
 			cp -v -- "$1" "$2"
 		fi
 	}
-esac
+fi
 
 
 ##
