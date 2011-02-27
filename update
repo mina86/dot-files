@@ -192,7 +192,8 @@ inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
 profile            ~/.
 risc-mode.el       ~/.emacs.d/elisp/
-sawfishrc          ~/.
+sawfishrc          ~/.sawfish/rc
+sawfish-lisp/*.jl  ~/.sawfish/lisp/@
 shellrc            ~/.
 statuses           ~/.irssi/
 xinitrc            ~/.
