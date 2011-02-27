@@ -94,13 +94,6 @@ Windows are matched in most recently focused first order."
            "W-Button3-Move"
            (lambda () (resize-window-interactively(input-focus))))
 
-
-;; No decoration
-(add-hook 'before-add-window-hook
-          (lambda (w)
-            (unless (window-transient-p w)
-              (set-window-type w 'unframed))))
-
 ;; Viewports
 (set-number-of-viewports 10 1)
 
