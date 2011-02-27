@@ -81,48 +81,20 @@
             (unless (window-transient-p w)
               (set-window-type w 'unframed))))
 
-;;}}}
-;;{{{ Viewports
-
+;; Viewports
 (set-number-of-viewports 10 1)
-(set-screen-viewport 0 0)
 
-(bind-keys global-keymap
-           "W-F1"           (lambda () (set-screen-viewport 0 0))
-           "W-F2"           (lambda () (set-screen-viewport 1 0))
-           "W-F3"           (lambda () (set-screen-viewport 2 0))
-           "W-F4"           (lambda () (set-screen-viewport 3 0))
-           "W-F5"           (lambda () (set-screen-viewport 4 0))
-           "W-F6"           (lambda () (set-screen-viewport 5 0))
-           "W-F7"           (lambda () (set-screen-viewport 6 0))
-           "W-F8"           (lambda () (set-screen-viewport 7 0))
-           "W-F9"           (lambda () (set-screen-viewport 8 0))
-           "W-F10"          (lambda () (set-screen-viewport 9 0)))
-
-(defmacro set-current-window-viewport-x-0 (x)
-  (list 'lambda nil (list 'set-window-viewport (list 'input-focus) x '0)))
-
-(bind-keys window-keymap
-           "W-1"            (set-current-window-viewport-x-0 0)
-           "W-&"            (set-current-window-viewport-x-0 0)
-           "W-2"            (set-current-window-viewport-x-0 1)
-           "W-["            (set-current-window-viewport-x-0 1)
-           "W-3"            (set-current-window-viewport-x-0 2)
-           "W-{"            (set-current-window-viewport-x-0 2)
-           "W-4"            (set-current-window-viewport-x-0 3)
-           "W-}"            (set-current-window-viewport-x-0 3)
-           "W-5"            (set-current-window-viewport-x-0 4)
-           "W-("            (set-current-window-viewport-x-0 4)
-           "W-6"            (set-current-window-viewport-x-0 5)
-           "W-="            (set-current-window-viewport-x-0 5)
-           "W-7"            (set-current-window-viewport-x-0 6)
-           "W-*"            (set-current-window-viewport-x-0 6)
-           "W-8"            (set-current-window-viewport-x-0 7)
-           "W-)"            (set-current-window-viewport-x-0 7)
-           "W-9"            (set-current-window-viewport-x-0 8)
-           "W-+"            (set-current-window-viewport-x-0 8)
-           "W-0"            (set-current-window-viewport-x-0 9)
-           "W-]"            (set-current-window-viewport-x-0 9))
+; W-F<num> switches to viewport <num>-1
+; W-<num> moves current window to viewport <num>-1
+; expect <num> on dvorak are not numbers.
+(do ((i 0 (1+ i)) (keys "&[{}(=*)+]"))
+    ((= i (length keys)))
+  (bind-keys global-keymap
+             (concat "W-F" (number->string (1+ i)))
+             (lambda () (set-screen-viewport i 0)))
+  (bind-keys window-keymap
+             (concat "W-" (elt keys i))
+             (lambda () (set-window-viewport (input-focus) i 0))))
 
 ;;}}}
 ;;{{{ Transparency
