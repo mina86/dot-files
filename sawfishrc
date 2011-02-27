@@ -57,9 +57,6 @@
       focus-click-through    t
       raise-windows-on-focus t
       raise-window-timeout   200)
-(bind-keys window-keymap
-           "W-Button2-Click"(lambda () (raise-lower-window   (input-focus))))
-
 
 ;; Moving and resizing
 (require 'sawfish.wm.commands.move-resize)
@@ -71,8 +68,12 @@
       move-snap-mode         'magnetism)
 
 (bind-keys window-keymap
-           "W-Button1-Move" (lambda()(move-window-interactively  (input-focus)))
-           "W-Button3-Move" (lambda()(resize-window-interactively(input-focus))))
+           "W-Button2-Click"
+           (lambda () (raise-lower-window-and-transients (input-focus)))
+           "W-Button1-Move"
+           (lambda () (move-window-interactively  (input-focus)))
+           "W-Button3-Move"
+           (lambda () (resize-window-interactively(input-focus))))
 
 
 ;; No decoration
