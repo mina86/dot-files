@@ -242,13 +242,6 @@
      (mn-jump-or-exec "^Emacs"   mn-emacs-command)
      (system "emacsclient -a '' -ne '(calc)'"))
 
-   "XF86AudioMute"
-   (lambda () (system "/usr/bin/amixer set Master\\ Front toggle"))
-   "XF86AudioLowerVolume"
-   (lambda () (system "/usr/bin/amixer set Master\\ Front 5%-"))
-   "XF86AudioRaiseVolume"
-   (lambda () (system "/usr/bin/amixer set Master\\ Front 5%+")))
-
   (bind-keys
    window-keymap
    "W-Space"        (lambda () (popup-window-menu (input-focus)))))
@@ -271,26 +264,22 @@
                     (()                  "gkrellm"  . "gkrellm")))
             (set-screen-viewport 0 0)))
 
-;;}}}
-;;{{{ Music Player Daemon
+;; Some commands
+(mapc
+ (lambda (spec)
+   (bind-keys global-keymap
+              (car spec)
+              (lambda () (apply start-process (cons () (cdr spec))))))
+ '(("W-l"                  "xscreensaver-command" "-lock")
 
-(when (= mn-machine 'tuptus)
-  (unless (getenv "MPD_HOST")
-    (setenv "MPD_HOST" "erwin")))
+   ("XF86AudioMute"        "/usr/bin/amixer" "set" "Master Front" "toggle")
+   ("XF86AudioLowerVolume" "/usr/bin/amixer" "set" "Master Front" "5%-")
+   ("XF86AudioRaiseVolume" "/usr/bin/amixer" "set" "Master Front" "5%+")
 
-(defmacro mn-mpd-lambda (command)
-  (list 'lambda () (list 'system (concat "mpc " command " >/dev/null"))))
-
-(bind-keys global-keymap
-           "W-z"            (mn-mpd-lambda "prev")
-           "W-'"            (mn-mpd-lambda "prev")
-           "W-x"            (mn-mpd-lambda "play")
-           "W-x"            (mn-mpd-lambda "play")
-           "W-c"            (mn-mpd-lambda "toggle")
-           "W-j"            (mn-mpd-lambda "toggle")
-           "XF86AudioPlay"  (mn-mpd-lambda "toggle")
-           "W-v"            (mn-mpd-lambda "next")
-           "W-k"            (mn-mpd-lambda "next"))
+   ("W-'"                  "mpc" "prev")
+   ("W-j"                  "mpc" "toggle")
+   ("XF86AudioPlay"        "mpc" "toggle")
+   ("W-k"                  "mpc" "next")))
 
 ;;}}}
 ;;{{{ Matcher
