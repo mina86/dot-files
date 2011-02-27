@@ -47,10 +47,9 @@
 
 (write standard-error "Sawfish starting...\n")
 
-;; Hyper (win key) as prefix
+;; Win key as prefix
 (custom-set-typed-variable
- (quote wm-modifier-value) (quote (hyper)) (quote modifier-list))
-
+ (quote wm-modifier-value) (quote (super)) (quote modifier-list))
 
 ;; Focus and Auto Raise
 (require 'auto-raise)
