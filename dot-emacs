@@ -214,7 +214,7 @@ match will equal nil."
 
 
 (add-hook 'kill-buffer-hook 'auto-byte-compile-buffer)
-(add-hook 'kill-emacs-hook (function (lambda () (auto-byte-compile-file t))))
+(add-lambda-hook 'kill-emacs-hook (auto-byte-compile-file t))
 
 ;;}}}
 ;;{{{ Bindings
@@ -444,8 +444,7 @@ uninteresting.  This comes as an addition to
 
 ;; Make l behave as it should in help-mode
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
-(add-hook 'help-mode-hook
-          (function (lambda () (define-key help-mode-map "l" 'help-go-back))))
+(add-lambda-hook 'help-mode-hook (define-key help-mode-map "l" 'help-go-back))
 
 ;;}}}
 ;;{{{   Killing, yanking, X selection, etc
@@ -590,10 +589,9 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
   (global-set-key "\t"    'indent-or-complete)
   (global-set-key [(tab)] 'indent-or-complete)
 
-  (add-hook 'find-file-hooks
-            (function (lambda ()
-                        (unless (eq major-mode 'org-mode)
-                          (local-set-key [(tab)] 'indent-or-complete)))))
+  (add-lambda-hook 'find-file-hooks
+    (unless (eq major-mode 'org-mode)
+      (local-set-key [(tab)] 'indent-or-complete)))
   (save-current-buffer
     (set-buffer "*scratch*")
     (local-set-key [(tab)] 'indent-or-complete)))
@@ -929,14 +927,14 @@ non-nill or `compile' otherwise."
 ;;}}}
 ;;{{{   ISearch mode
 
-(add-hook 'isearch-mode-hook (lambda ()
+(add-lambda-hook 'isearch-mode-hook
  (define-key isearch-mode-map "\C-h"      'isearch-mode-help)
  (define-key isearch-mode-map "\C-t"      'isearch-toggle-regexp)
  (define-key isearch-mode-map "\C-c"      'isearch-toggle-case-fold)
  (define-key isearch-mode-map "\C-j"      'isearch-edit-string)
 ; (define-key isearch-mode-map "\C-h"      'isearch-del-char)
  (define-key isearch-mode-map [backspace] 'isearch-del-char)
-))
+)
 
 ;;}}}
 ;;{{{   Copy/Kill
@@ -1180,14 +1178,14 @@ non-nill or `compile' otherwise."
 
 ;; Show blanks and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
-(add-hook 'font-lock-mode-hook (function (lambda ()
+(add-lambda-hook 'font-lock-mode-hook
   (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
     (font-lock-add-keywords nil
      '(("\t+" 0 'my-tab-face t)
        ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
        ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
        ("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
-       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))))
+       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))
 
 ;;}}}
 ;;{{{ Misc small config
