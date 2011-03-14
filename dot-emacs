@@ -1196,17 +1196,16 @@ non-nill or `compile' otherwise."
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
 (if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
-(let ((fringe
-       (if (eval-when-compile (string-match "^erwin" system-name)) 7 4)))
-  (setq default-frame-alist `((width . 80)
-                              (right-fringe . ,fringe)
-                              (left-fringe  . ,fringe)
-                              (menu-bar-lines . 0)
-                              (tool-bar-lines . 0)
-                              (vertical-scroll-bars)
-                              (foreground-color . "gray")
-                              (background-color . "black")
-                              (background-mode . dark))))
+(setq default-frame-alist '((width . 80)
+                            (right-fringe . 4)
+                            (left-fringe  . 4)
+                            (menu-bar-lines . 0)
+                            (tool-bar-lines . 0)
+                            (vertical-scroll-bars)
+                            (foreground-color . "gray")
+                            (background-color . "black")
+                            (background-mode . dark)
+                            (wait-for-wm . nil)))
 
 ;; Modeline
 (setq line-number-mode t          ;show line number in modeline
