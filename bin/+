@@ -3,18 +3,16 @@
 dir=$PWD
 while [ x"$dir" != x/ ]; do
 	if [ -e "$dir/.git" ]; then
-		git add "$@"
-		exit $?
+		exec git add "$@"
 	fi
 
-	if [ -e "$dir/$P4CONFIG" ]; then
-		p add "$@"
+	if [ -e "$dir/${P4CONFIG:-.p4config}" ]; then
+		exec p add "$@"
 	fi
 
 	case "$dir" in *.git)
 		if [ -e "$dir/config" ]; then
-			git add "$@"
-			exit $?
+			exec git add "$@"
 		fi
 	esac
 
