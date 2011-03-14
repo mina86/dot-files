@@ -1740,9 +1740,6 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
     (add-lambda-hook 'nxml-mode-hook
       (mn-xml-configure-bindings nxml-mode-map))))
 
-
-
-
 (defun replace-string-pairs (list)
   (let* ((mark  (use-region-p))
          (start (if mark (region-beginning) (point)))
@@ -2026,15 +2023,6 @@ argument ommited returns that number."
 
 (add-hook 'kill-buffer-query-functions 'kill-scratch-buffer)
 (add-hook 'kill-emacs-hook 'kill-emacs-scratch-save)
-
-;;}}}
-;;{{{   MLDonkey
-
-; Slackware - the best operating system
-; MLDonkey - the best way to download Slackware DVD's
-; Emacs - the only editor that supports MLDonkey
-; Need more proof Emacs is the best? ;)
-(autoload 'mldonkey "mldonkey" "MLDonkey control interface" t)
 
 ;;}}}
 
