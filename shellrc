@@ -93,6 +93,7 @@ l () {
 # Other
 alias rmd=rmdir
 which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
+alias make='nice make'
 
 
 # Perl stuff
@@ -218,5 +219,10 @@ case "$_hostname" in (Xerwin|Xtuptus)
 	flags init
 esac
 
+if which ccache 2>/dev/null && which distcc 2>/dev/null; then
+	export CCACHE_PREFIX="distcc"
+	export CCACHE_COMPRESS=1
+	export CCACHE_LOGFILE=/tmp/ccache.log
+fi
 
 unset _hostname
