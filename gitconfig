@@ -21,9 +21,9 @@
 	fixup  = commit --amend -C HEAD
 	wip    = commit -m wip
 	co     = checkout
-	df     = diff
-	cached = diff --cached
-	ch     = diff --cached
+	df     = diff -p --stat
+	cached = diff -p --stat --cached
+	ch     = diff -p --stat --cached
 	pick   = cherry-pick
 	rb     = rebase
 	rbi    = rebase -i
