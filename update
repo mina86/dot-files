@@ -129,7 +129,6 @@ if $BACKUP; then
 			cp -v -- "$1" "$2"
 		fi
 	}
-	;;
 else
 	cp_backup () {
 		if ! [ -e "$2" ]; then
