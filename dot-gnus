@@ -107,28 +107,32 @@
 (setq
  nnmail-treat-duplicates 'delete
  nnmail-cache-accepted-message-ids t
+ nnmail-message-id-cache-length 8096
 
  nnmail-split-methods 'nnmail-split-fancy
  nnmail-split-fancy
- (let ((addr-hdr "to\\|from\\|b?cc"))
-   `(| (: nnmail-split-fancy-with-parent)
-       ("Content-Type"
-        ,(eval-when-compile
-           (concat "charset="
-                   (regexp-opt '("big5" "iso-2022-jp" "ISO-2022-KR" "euc-kr"
-                                 "gb2312" "ks_c_5601-1987" "windows-1251"
-                                 "koi8-r")
-                               t)))
-        junk)
-       (: spam-split)
-       ("X-Mailing-List"
-        "linux-\\([-a-z0-9-]*?\\)\\(?:-request\\)?@vger.kernel.org"
-        "list.linux.\\1")
-       ("X-Gnus-Mail-Source" "mion\\.elka\\.pw\\.edu\\.pl"    "mail.mion")
-       (,addr-hdr "rxvt-unicode@lists\\.schmorp\\.de"         "list.urxvt")
-       (,addr-hdr "k02_a\\(?:-request\\)?@staszic\\.waw\\.pl" "list.k02_a")
-       (,addr-hdr "mn86@\\(?:g?o2\\|tlen\\).pl"               "mail.mn86")
-       "mail.misc")))
+ `(| (: nnmail-split-fancy-with-parent)
+     ("Content-Type"
+      ,(eval-when-compile
+         (concat "charset="
+                 (regexp-opt '("big5" "iso-2022-jp" "ISO-2022-KR" "euc-kr"
+                               "gb2312" "ks_c_5601-1987" "windows-1251"
+                               "koi8-r")
+                             t)))
+      junk)
+     (: spam-split)
+     (&
+      ("X-Mailing-List"
+       "linux-\\([-a-z0-9-]*?\\)\\(?:-request\\)?@vger\\.kernel\\.org"
+       "list.linux.\\1")
+      ("List-ID"
+       "linux-mm\\.kvack\\.org"
+       "list.linux.mm")
+      ("X-Gnus-Mail-Source" "mion\\.elka\\.pw\\.edu\\.pl"    "mail.mion")
+      (any "rxvt-unicode@lists\\.schmorp\\.de"         "list.urxvt")
+      (any "k02_a\\(?:-request\\)?@staszic\\.waw\\.pl" "list.k02_a"))
+     (any "mn86@\\(?:g?o2\\|tlen\\).pl"               "mail.mn86")
+     "mail.misc"))
 
 ;;}}}
 ;;{{{ Group parameters, Posting styles & Sending
