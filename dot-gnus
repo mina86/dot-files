@@ -155,10 +155,9 @@
     (if dict (set (make-local-variable 'ispell-local-dictionary) dict))))
 
 (add-hook 'gnus-message-setup-hook 'gnus-setup-dictionary)
-(add-hook 'message-mode-hook (function (lambda () (flyspell-mode 1))))
+(add-lambda-hook 'message-mode-hook (flyspell-mode 1))
 (if (boundp 'word-wrap)
-    (add-hook 'gnus-article-mode-hook (function (lambda ()
-                                                  (setq word-wrap t)))))
+    (add-lambda-hook 'gnus-article-mode-hook (setq word-wrap t)))
 
 ;;}}}
 ;;{{{ Signatures
@@ -245,7 +244,7 @@ called with prefix argument will prompt for any file."
 
 (setq sig-dir   (concat gnus-home-directory "/signatures")
       sig-files (sig-files-search))
-(define-key message-mode-map "\C-cs" 'sig)
+(set-key message-mode-map "\C-cs" sig)
 
 ;;}}}
 
@@ -423,30 +422,20 @@ the value of From header."
 ;;}}}
 ;;{{{ Bindings
 
-(add-hook
- 'gnus-group-mode-hook
- (function
-  (lambda ()
-    (define-key gnus-group-mode-map "\C-cf" 'gnus-topic-select-group))))
+(add-lambda-hook 'gnus-group-mode-hook
+  (set-key gnus-group-mode-map "\C-cf" 'gnus-topic-select-group))
 
-(add-hook
- 'gnus-summary-mode-hook
- (function
-  (lambda ()
-    (define-key gnus-summary-mode-map "s" 'gnus-summary-mark-as-spam)
-    (define-key gnus-summary-mode-map "\C-cf"
-      (function
-       (lambda () (interactive)
-         (or (gnus-summary-show-thread) (gnus-summary-hide-thread)))))
-    (define-key gnus-summary-mode-map "\C-c\C-f"
-      'gnus-summary-show-all-headers)
-    (define-key gnus-summary-mode-map "c"
-      (function
-       (lambda () (interactive) (gnus-summary-catchup-and-exit nil t))))
-    (define-key gnus-summary-mode-map "N"
-      (function
-       (lambda () (interactive)
-         (gnus-summary-catchup nil t) (gnus-summary-next-group t)))))))
+(add-lambda-hook 'gnus-summary-mode-hook
+  (set-key gnus-summary-mode-map "s"
+    gnus-summary-mark-as-spam)
+  (set-key gnus-summary-mode-map "\C-cf"
+    (or (gnus-summary-show-thread) (gnus-summary-hide-thread)))
+  (set-key gnus-summary-mode-map "\C-c\C-f"
+    gnus-summary-show-all-headers)
+  (set-key gnus-summary-mode-map "c"
+    (gnus-summary-catchup-and-exit nil t))
+  (set-key gnus-summary-mode-map "N"
+    (gnus-summary-catchup nil t) (gnus-summary-next-group t)))
 
 ;;}}}
 ;;{{{ Misc
@@ -496,10 +485,9 @@ the value of From header."
       mm-verify-option 'known
       mm-decrypt-option 'known)
 
-(add-hook 'gnus-message-setup-hook
-          (function (lambda ()
-                      (if (string-match ":\\(mail\\|list\\)\\."
-                                        gnus-newsgroup-name)
-                          (mml-secure-message-sign-pgpmime)))))
+(add-lambda-hook 'gnus-message-setup-hook
+  (if (string-match ":\\(mail\\|list\\)\\."
+                    gnus-newsgroup-name)
+      (mml-secure-message-sign-pgpmime)))
 
 ;;}}}

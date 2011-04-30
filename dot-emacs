@@ -79,9 +79,34 @@ use `use-region-p'."
      (setq ,name ,value)
      t))
 
-(defmacro set-key-lambda (key &rest body)
-  (declare (indent 1))
-  `(global-set-key ,key (function (lambda () (interactive) ,@body))))
+(defun -mn-current-local-map ()
+  (let ((map (current-local-map)))
+    (unless map
+      (use-local-map (setq map (make-sparse-keymap))))
+    map))
+
+(defmacro set-key (key &rest body)
+  (let ((keymap '(current-global-map)))
+    (cond
+     ((eq :local key)
+      (setq keymap '(-mn-current-local-map)
+            key    (car body)
+            body   (cdr body)))
+     ((symbolp key)
+      (setq keymap key
+            key    (car body)
+            body   (cdr body))))
+
+    (list 'define-key keymap key
+          (if (and (null (cdr body)) (not (listp (car body))))
+              `(quote ,(car body))
+            (let (args (int (list 'interactive)))
+              (when (eq :args (car body))
+                (setq body (cdr body))
+                (setq args (car body)
+                      int  (list 'interactive (cadr body))
+                      body (cddr body)))
+              `(function (lambda ,args ,int ,@body)))))))
 
 (defmacro add-lambda-hook (hook &rest body)
   (declare (indent 1))
@@ -280,7 +305,7 @@ command from COMMANDS."
 ; I had some problems moving in the text.  However I've noticed that
 ; I never use C-o and o is placed simetrically to n on Dvorak layout
 ; so it's a perfect candidate for previous line!
-(global-set-key "\C-o" 'previous-line)
+(set-key "\C-o" previous-line)
 
 ;;}}}
 ;;{{{   Home/End
@@ -344,27 +369,23 @@ three times - beginning of buffer; four times - back to where it was."
   (save-buffer))
 
 (substitute-key-definition 'save-buffer 'save-no-blanks (current-global-map))
-;(global-set-key "\C-x\C-s"      'save-no-blanks)
+;(set-key "\C-x\C-s"      save-no-blanks)
 
 ;;}}}
 ;;{{{   Misc
 
-(global-set-key "\C-x\C-C"
-                (lambda (arg) (interactive "P")
-                  (when (yes-or-no-p "Do you really want to quit? ")
-                    (save-buffers-kill-emacs arg)))) ; Never kill by mistake
-(global-set-key "\C-z"          'undo) ; I like undo better; never used C-z
+(set-key "\C-x\C-C" :args (arg) "P"
+         (when (yes-or-no-p "Do you really want to quit? ")
+           (save-buffers-kill-emacs arg))) ; Never kill by mistake
+(set-key "\C-z"          undo) ; I like undo better; never used C-z
 
 
-(global-set-key "\C-h"          'delete-backward-char)
-(global-set-key [(backspace)]   'delete-backward-char)
-(global-set-key [(delete)]      'delete-char)
-(global-set-key [(control backspace)] 'backward-kill-word)
-(global-set-key [(control delete)] 'kill-word)
+(set-key "\C-h"          delete-backward-char)
+(set-key [(backspace)]   delete-backward-char)
+(set-key [(delete)]      delete-char)
+(set-key [(control backspace)] backward-kill-word)
+(set-key [(control delete)] kill-word)
 
-
-;(global-set-key "\C-xg"         'goto-line)             ; C-x g  goto line
-;Since 22.1 M-g M-g and M-g g are goto line
 
 (defvar mn-window-skip-modes '(compilation-mode)
   "List of major modes that `mn-window-skipp' should treat as
@@ -414,22 +435,22 @@ uninteresting.  This comes as an addition to
         (select-window wnd))))))
 
 (substitute-key-definition 'other-window 'mn-other-window (current-global-map))
-(global-set-key "\C-xO"         'other-window)
-(global-set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
-(global-set-key "\C-xP"         "\C-u-1\C-xO")
+(set-key "\C-xO"         other-window)
+(set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
+(set-key "\C-xP"         "\C-u-1\C-xO")
 
 ; don't ask which buffer to kill
 ; kill-this-buffer caused problems
-(set-key-lambda "\C-xk"
+(set-key "\C-xk"
   (let* ((buffer (current-buffer))
          (ws (get-buffer-window-list buffer t)))
     (if (and ws (window-minibuffer-p (car ws)))
         (abort-recursive-edit)
       (kill-buffer buffer))))
 
-(global-set-key "\C-cr"         'revert-buffer)         ; Reload buffer
-(set-key-lambda "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
-(global-set-key [(control ";")] 'comment-dwim)          ; C-; comments
+(set-key "\C-cr"         revert-buffer)         ; Reload buffer
+(set-key "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
+(set-key [(control ";")] comment-dwim)          ; C-; comments
 
 
 ;; Jump
@@ -437,14 +458,14 @@ uninteresting.  This comes as an addition to
 (defun my-jump () "Jump to the thing at point." (interactive)
   (let ((thing (ffap-guesser))) (if thing (ffap thing)) t))
 
-(global-set-key [(control return)] 'my-jump)
-(global-set-key [(control shift mouse-1)] 'ffap-at-mouse)
-(global-set-key "\C-x\C-f"      'ffap)
+(set-key [(control return)] my-jump)
+(set-key [(control shift mouse-1)] ffap-at-mouse)
+(set-key "\C-x\C-f"      ffap)
 
 
 ;; Make l behave as it should in help-mode
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
-(add-lambda-hook 'help-mode-hook (define-key help-mode-map "l" 'help-go-back))
+(add-lambda-hook 'help-mode-hook (set-key help-mode-map "l" help-go-back))
 
 ;;}}}
 ;;{{{   Killing, yanking, X selection, etc
@@ -484,11 +505,11 @@ uninteresting.  This comes as an addition to
       (setq this-command 'yank)
       text)))
 
-(global-set-key "\C-xc"        'x-set-clipboard-content-from-selection)
-(global-set-key "\C-xw"        'x-set-clipboard-content-from-selection)
-(global-set-key "\C-xy"        'x-yank-clipboard)
+(set-key "\C-xc"        x-set-clipboard-content-from-selection)
+(set-key "\C-xw"        x-set-clipboard-content-from-selection)
+(set-key "\C-xy"        x-yank-clipboard)
 
-(set-key-lambda [(shift insert)]
+(set-key [(shift insert)]
   (let ((mouse-yank-at-point nil))
     (mouse-yank-primary nil)))
 
@@ -506,10 +527,9 @@ uninteresting.  This comes as an addition to
               (equal ?) (char-syntax (char-before))))
          (backward-list 1) t)))
 
-(global-set-key [(control ?%)] 'match-paren)
-;; (global-set-key "%" (function (lambda (arg) (interactive "p")
-;;                                 (or (match-paren)
-;;                                     (self-insert-command (or arg 1))))))
+(set-key [(control ?%)] match-paren)
+;; (set-key "%" :args (arg) "p"
+;;              (or (match-paren) (self-insert-command (or arg 1))))
 
 ;;}}}
 ;;{{{   Just one space
@@ -580,21 +600,21 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
             ac-use-comphist t
             indent-or-complete-complete-function 'auto-complete)
 
-      (define-key ac-completing-map "\M-o" 'ac-previous)
-      (define-key ac-completing-map "\M-p" 'ac-previous)
-      (define-key ac-completing-map "\M-n" 'ac-next)
+      (set-key ac-completing-map "\M-o" ac-previous)
+      (set-key ac-completing-map "\M-p" ac-previous)
+      (set-key ac-completing-map "\M-n" ac-next)
 
-      (global-set-key "\M-/" indent-or-complete-complete-function))
+      (set-key "\M-/" indent-or-complete-complete-function))
 
-  (global-set-key "\t"    'indent-or-complete)
-  (global-set-key [(tab)] 'indent-or-complete)
+  (set-key "\t"    indent-or-complete)
+  (set-key [(tab)] indent-or-complete)
 
   (add-lambda-hook 'find-file-hooks
     (unless (eq major-mode 'org-mode)
-      (local-set-key [(tab)] 'indent-or-complete)))
+      (set-key :local [(tab)] indent-or-complete)))
   (save-current-buffer
     (set-buffer "*scratch*")
-    (local-set-key [(tab)] 'indent-or-complete)))
+    (set-key :local [(tab)] indent-or-complete)))
 
 ;;}}}
 ;;{{{   Centering
@@ -618,7 +638,7 @@ window function skips to another step."
          (recenter -1)
          (set-window-start (selected-window) centerer--window-start)))))
 
-(global-set-key "\C-l"     'centerer)
+(set-key "\C-l"     centerer)
 
 ;;}}}
 ;;{{{   Filling
@@ -644,7 +664,7 @@ IF `use-region-p' then it calls `fill-region', otherwise --
                  (seq-times-nth () () left full right center))
     (fill-paragraph-or-region (seq-times-nth () () left full right center))))
 
-(global-set-key "\M-q"          'my-fill)
+(set-key "\M-q"          my-fill)
 
 ;; Alt+Q - Unfill
 (defun th-unfill-paragraph-or-region ()
@@ -657,100 +677,100 @@ in the current paragraph into a single long line."
       (fill-paragraph nil)))
   (setq deactivate-mark nil))
 
-(global-set-key "\M-Q"          'th-unfill-paragraph-or-region)
+(set-key "\M-Q"          th-unfill-paragraph-or-region)
 
 ;;}}}
 ;;{{{   Fkeys
 
 ;;{{{     Key sequences
 
-(global-set-key "\eOP"       [(f1)])
-(global-set-key "\e[[A"      [(f1)])
-(global-set-key "\eOQ"       [(f2)])
-(global-set-key "\e[[B"      [(f2)])
-(global-set-key "\eOR"       [(f3)])
-(global-set-key "\e[[C"      [(f3)])
-(global-set-key "\eOS"       [(f4)])
-(global-set-key "\e[[D"      [(f4)])
-(global-set-key "\e[15~"     [(f5)])
-(global-set-key "\e[[E"      [(f5)])
-(global-set-key "\e[17~"     [(f6)])
-(global-set-key "\e[18~"     [(f7)])
-(global-set-key "\e[19~"     [(f8)])
-(global-set-key "\e[20~"     [(f9)])
-(global-set-key "\e[21~"     [(f10)])
-(global-set-key "\e[23~"     [(f11)])
-(global-set-key "\e[24~"     [(f12)])
-(global-set-key "\eO5P"      [(control f1)])
-(global-set-key "\eO5Q"      [(control f2)])
-(global-set-key "\eO5R"      [(control f3)])
-(global-set-key "\eO5S"      [(control f4)])
-(global-set-key "\e[15;5~"   [(control f5)])
-(global-set-key "\e[17;5~"   [(control f6)])
-(global-set-key "\e[18;5~"   [(control f7)])
-(global-set-key "\e[19;5~"   [(control f8)])
-(global-set-key "\e[20;5~"   [(control f9)])
-(global-set-key "\e[21;5~"   [(control f10)])
-(global-set-key "\e[23;5~"   [(control f11)])
-(global-set-key "\e[24;5~"   [(control f12)])
-(global-set-key "\eO6P"      [(control shift f1)])
-(global-set-key "\eO6Q"      [(control shift f2)])
-(global-set-key "\eO6R"      [(control shift f3)])
-(global-set-key "\eO6S"      [(control shift f4)])
-(global-set-key "\e[15;6~"   [(control shift f5)])
-(global-set-key "\e[17;6~"   [(control shift f6)])
-(global-set-key "\e[18;6~"   [(control shift f7)])
-(global-set-key "\e[19;6~"   [(control shift f8)])
-(global-set-key "\e[20;6~"   [(control shift f9)])
-(global-set-key "\e[21;6~"   [(control shift f10)])
-(global-set-key "\e[23;6~"   [(control shift f11)])
-(global-set-key "\e[24;6~"   [(control shift f12)])
-(global-set-key "\eO3P"      [(meta f1)])
-(global-set-key "\eO3Q"      [(meta f2)])
-(global-set-key "\eO3R"      [(meta f3)])
-(global-set-key "\eO3S"      [(meta f4)])
-(global-set-key "\e[15;3~"   [(meta f5)])
-(global-set-key "\e[17;3~"   [(meta f6)])
-(global-set-key "\e[18;3~"   [(meta f7)])
-(global-set-key "\e[19;3~"   [(meta f8)])
-(global-set-key "\e[20;3~"   [(meta f9)])
-(global-set-key "\e[21;3~"   [(meta f10)])
-(global-set-key "\e[23;3~"   [(meta f11)])
-(global-set-key "\e[24;3~"   [(meta f12)])
-(global-set-key "\eO4P"      [(meta shift f1)])
-(global-set-key "\eO4Q"      [(meta shift f2)])
-(global-set-key "\eO4R"      [(meta shift f3)])
-(global-set-key "\eO4S"      [(meta shift f4)])
-(global-set-key "\e[15;4~"   [(meta shift f5)])
-(global-set-key "\e[17;4~"   [(meta shift f6)])
-(global-set-key "\e[18;4~"   [(meta shift f7)])
-(global-set-key "\e[19;4~"   [(meta shift f8)])
-(global-set-key "\e[20;4~"   [(meta shift f9)])
-(global-set-key "\e[21;4~"   [(meta shift f10)])
-(global-set-key "\e[23;4~"   [(meta shift f11)])
-(global-set-key "\e[24;4~"   [(meta shift f12)])
-(global-set-key "\eO2P"      [(shift f1)])
-(global-set-key "\e[23~"     [(shift f1)])
-(global-set-key "\eO2Q"      [(shift f2)])
-(global-set-key "\e[24~"     [(shift f2)])
-(global-set-key "\eO2R"      [(shift f3)])
-(global-set-key "\e[25~"     [(shift f3)])
-(global-set-key "\eO2S"      [(shift f4)])
-(global-set-key "\e[26~"     [(shift f4)])
-(global-set-key "\e[15;2~"   [(shift f5)])
-(global-set-key "\e[28~"     [(shift f5)])
-(global-set-key "\e[17;2~"   [(shift f6)])
-(global-set-key "\e[29~"     [(shift f6)])
-(global-set-key "\e[18;2~"   [(shift f7)])
-(global-set-key "\e[31~"     [(shift f7)])
-(global-set-key "\e[19;2~"   [(shift f8)])
-(global-set-key "\e[32~"     [(shift f8)])
-(global-set-key "\e[20;2~"   [(shift f9)])
-(global-set-key "\e[33~"     [(shift f9)])
-(global-set-key "\e[21;2~"   [(shift f10)])
-(global-set-key "\e[34~"     [(shift f10)])
-(global-set-key "\e[23;2~"   [(shift f11)])
-(global-set-key "\e[24;2~"   [(shift f12)])
+(set-key "\eOP"       [(f1)])
+(set-key "\e[[A"      [(f1)])
+(set-key "\eOQ"       [(f2)])
+(set-key "\e[[B"      [(f2)])
+(set-key "\eOR"       [(f3)])
+(set-key "\e[[C"      [(f3)])
+(set-key "\eOS"       [(f4)])
+(set-key "\e[[D"      [(f4)])
+(set-key "\e[15~"     [(f5)])
+(set-key "\e[[E"      [(f5)])
+(set-key "\e[17~"     [(f6)])
+(set-key "\e[18~"     [(f7)])
+(set-key "\e[19~"     [(f8)])
+(set-key "\e[20~"     [(f9)])
+(set-key "\e[21~"     [(f10)])
+(set-key "\e[23~"     [(f11)])
+(set-key "\e[24~"     [(f12)])
+(set-key "\eO5P"      [(control f1)])
+(set-key "\eO5Q"      [(control f2)])
+(set-key "\eO5R"      [(control f3)])
+(set-key "\eO5S"      [(control f4)])
+(set-key "\e[15;5~"   [(control f5)])
+(set-key "\e[17;5~"   [(control f6)])
+(set-key "\e[18;5~"   [(control f7)])
+(set-key "\e[19;5~"   [(control f8)])
+(set-key "\e[20;5~"   [(control f9)])
+(set-key "\e[21;5~"   [(control f10)])
+(set-key "\e[23;5~"   [(control f11)])
+(set-key "\e[24;5~"   [(control f12)])
+(set-key "\eO6P"      [(control shift f1)])
+(set-key "\eO6Q"      [(control shift f2)])
+(set-key "\eO6R"      [(control shift f3)])
+(set-key "\eO6S"      [(control shift f4)])
+(set-key "\e[15;6~"   [(control shift f5)])
+(set-key "\e[17;6~"   [(control shift f6)])
+(set-key "\e[18;6~"   [(control shift f7)])
+(set-key "\e[19;6~"   [(control shift f8)])
+(set-key "\e[20;6~"   [(control shift f9)])
+(set-key "\e[21;6~"   [(control shift f10)])
+(set-key "\e[23;6~"   [(control shift f11)])
+(set-key "\e[24;6~"   [(control shift f12)])
+(set-key "\eO3P"      [(meta f1)])
+(set-key "\eO3Q"      [(meta f2)])
+(set-key "\eO3R"      [(meta f3)])
+(set-key "\eO3S"      [(meta f4)])
+(set-key "\e[15;3~"   [(meta f5)])
+(set-key "\e[17;3~"   [(meta f6)])
+(set-key "\e[18;3~"   [(meta f7)])
+(set-key "\e[19;3~"   [(meta f8)])
+(set-key "\e[20;3~"   [(meta f9)])
+(set-key "\e[21;3~"   [(meta f10)])
+(set-key "\e[23;3~"   [(meta f11)])
+(set-key "\e[24;3~"   [(meta f12)])
+(set-key "\eO4P"      [(meta shift f1)])
+(set-key "\eO4Q"      [(meta shift f2)])
+(set-key "\eO4R"      [(meta shift f3)])
+(set-key "\eO4S"      [(meta shift f4)])
+(set-key "\e[15;4~"   [(meta shift f5)])
+(set-key "\e[17;4~"   [(meta shift f6)])
+(set-key "\e[18;4~"   [(meta shift f7)])
+(set-key "\e[19;4~"   [(meta shift f8)])
+(set-key "\e[20;4~"   [(meta shift f9)])
+(set-key "\e[21;4~"   [(meta shift f10)])
+(set-key "\e[23;4~"   [(meta shift f11)])
+(set-key "\e[24;4~"   [(meta shift f12)])
+(set-key "\eO2P"      [(shift f1)])
+(set-key "\e[23~"     [(shift f1)])
+(set-key "\eO2Q"      [(shift f2)])
+(set-key "\e[24~"     [(shift f2)])
+(set-key "\eO2R"      [(shift f3)])
+(set-key "\e[25~"     [(shift f3)])
+(set-key "\eO2S"      [(shift f4)])
+(set-key "\e[26~"     [(shift f4)])
+(set-key "\e[15;2~"   [(shift f5)])
+(set-key "\e[28~"     [(shift f5)])
+(set-key "\e[17;2~"   [(shift f6)])
+(set-key "\e[29~"     [(shift f6)])
+(set-key "\e[18;2~"   [(shift f7)])
+(set-key "\e[31~"     [(shift f7)])
+(set-key "\e[19;2~"   [(shift f8)])
+(set-key "\e[32~"     [(shift f8)])
+(set-key "\e[20;2~"   [(shift f9)])
+(set-key "\e[33~"     [(shift f9)])
+(set-key "\e[21;2~"   [(shift f10)])
+(set-key "\e[34~"     [(shift f10)])
+(set-key "\e[23;2~"   [(shift f11)])
+(set-key "\e[24;2~"   [(shift f12)])
 
 ;;}}}
 ;;{{{     F1 - Help
@@ -767,43 +787,33 @@ in the current paragraph into a single long line."
             (describe-function fn)
           (man (current-word)))))))
 
-(global-set-key [(f1)]      'my-help)
+(set-key [(f1)]      my-help)
 
 ;;}}}
 ;;{{{     F2 - find configuration files
 
-(defmacro mn-kbd-find-file (file)
-  `(function (lambda () (interactive) (find-file ,file))))
-
-(global-set-key [(f2)]         (mn-kbd-find-file
-                                (if (string-match "\\.elc$" user-init-file)
-                                    (if (file-exists-p
-                                         (substring user-init-file 0 -1))
-                                        (substring user-init-file 0 -1)
-                                        (substring user-init-file 0 -4))
-                                  user-init-file)))
-(global-set-key [(control f2)] (mn-kbd-find-file "~/.gnus/.gnus.el"))
-(global-set-key [(meta f2)]    (mn-kbd-find-file custom-file))
-;(global-set-key [(shift f2)]   (mn-kbd-find-file "~/.bashrc"))
+(set-key [(f2)]         (find-file
+                         (if (string-match "\\.elc$" user-init-file)
+                             (if (file-exists-p
+                                  (substring user-init-file 0 -1))
+                                 (substring user-init-file 0 -1)
+                               (substring user-init-file 0 -4))
+                           user-init-file)))
+(set-key [(control f2)] (find-file "~/.gnus/.gnus.el"))
+(set-key [(meta f2)]    (find-file custom-file))
+;(set-key [(shift f2)]   (find-file "~/.bashrc"))
 
 ;;}}}
 ;;{{{     F5 - Gnus
 
-(eval-after-load "gnus"
-  (progn
-    ;; http://www.emacswiki.org/cgi-bin/wiki/SwitchToGnus
-    (defun switch-to-gnus-or-get-new-news ()
-      "If already in Gnus group retrive new news otherwise, if Gnus is
-running, switch to Gnus group buffer, otherwise start Gnus."
-      (interactive)
-      (cond
-       ((eq major-mode 'gnus-group-mode)
-        (and (fboundp 'gnus-group-get-new-news) (gnus-group-get-new-news)))
-       ((and (boundp 'gnus-group-buffer) (fboundp 'gnus-alive-p) (gnus-alive-p))
-        (switch-to-buffer (with-no-warnings gnus-group-buffer)))
-       ((gnus))))
-
-    (global-set-key [(f5)]      'switch-to-gnus-or-get-new-news)))
+;; http://www.emacswiki.org/cgi-bin/wiki/SwitchToGnus
+(set-key [(f5)]
+  (cond
+   ((eq major-mode 'gnus-group-mode)
+    (and (fboundp 'gnus-group-get-new-news) (gnus-group-get-new-news)))
+   ((and (boundp 'gnus-group-buffer) (fboundp 'gnus-alive-p) (gnus-alive-p))
+    (switch-to-buffer (with-no-warnings gnus-group-buffer)))
+   ((gnus))))
 
 ;;}}}
 ;;{{{     F7 - spell checking
@@ -855,10 +865,10 @@ With a prefix arg sets global dictionary."
    arg))
 
 
-(set-key-lambda [(f7)]         (mn-spell))
-(set-key-lambda [(control f7)] (mn-spell nil (point)))
-(global-set-key [(meta f7)]    'mn-spell-switch-dictionary)
-(global-set-key [(shift f7)]   'ispell-word)
+(set-key [(f7)]         (mn-spell))
+(set-key [(control f7)] (mn-spell nil (point)))
+(set-key [(meta f7)]    mn-spell-switch-dictionary)
+(set-key [(shift f7)]   ispell-word)
 
 (define-globalized-minor-mode global-flyspell-mode flyspell-mode
   (lambda ()
@@ -918,12 +928,10 @@ non-nill or `compile' otherwise."
     (if recompile (recompile) (call-interactively 'compile))))
 
 
-(global-set-key [(f9)]      'mn-compile)               ; F9    compile
-(global-set-key [(control f9)]                         ; C-F9  recompile
-                (function (lambda (a) (interactive "P") (mn-compile a t))))
-(global-set-key [(meta f9)]                            ; M-F9  force alt comp.
-                (function (lambda (a) (interactive "P") (mn-compile (not a) t t))))
-(global-set-key [(shift f9)] 'next-error)
+(set-key [(f9)]         mn-compile)
+(set-key [(control f9)] :args (a) "P" (mn-compile a t))
+(set-key [(meta f9)]    :args (a) "P" (mn-compile (not a) t t))
+(set-key [(shift f9)]   next-error)
 
 (setq compilation-scroll-output 'first-error  ; scroll until first error
       compilation-window-height 12)           ; keep it readable
@@ -933,14 +941,14 @@ non-nill or `compile' otherwise."
 ;;}}}
 ;;{{{   ISearch mode
 
-(add-lambda-hook 'isearch-mode-hook
- (define-key isearch-mode-map "\C-h"      'isearch-mode-help)
- (define-key isearch-mode-map "\C-t"      'isearch-toggle-regexp)
- (define-key isearch-mode-map "\C-c"      'isearch-toggle-case-fold)
- (define-key isearch-mode-map "\C-j"      'isearch-edit-string)
-; (define-key isearch-mode-map "\C-h"      'isearch-del-char)
- (define-key isearch-mode-map [backspace] 'isearch-del-char)
-)
+(add-hook 'isearch-mode-hook (lambda ()
+ (set-key isearch-mode-map [(f1)]      isearch-mode-help)
+ (set-key isearch-mode-map "\C-t"      isearch-toggle-regexp)
+ (set-key isearch-mode-map "\C-c"      isearch-toggle-case-fold)
+ (set-key isearch-mode-map "\C-j"      isearch-edit-string)
+ (set-key isearch-mode-map "\C-h"      isearch-del-char)
+ (set-key isearch-mode-map [backspace] isearch-del-char)
+))
 
 ;;}}}
 ;;{{{   Copy/Kill
@@ -969,15 +977,15 @@ non-nill or `compile' otherwise."
         (end (progn (forward-paragraph arg) (point))))
     (copy-region-as-kill beg end)))
 
-(global-set-key "\C-cw"         'copy-word)
-(global-set-key "\C-cl"         'copy-line)
-(global-set-key "\C-cp"         'copy-paragraph)
+(set-key "\C-cw"         copy-word)
+(set-key "\C-cl"         copy-line)
+(set-key "\C-cp"         copy-paragraph)
 
 
 ;; Make C-w, M-w work on word if no selection
-(set-key-lambda "\C-w" (call-interactively
-                        (if (use-region-p) 'kill-region 'kill-word)))
-(set-key-lambda "\M-w"
+(set-key "\C-w" (call-interactively
+                 (if (use-region-p) 'kill-region 'kill-word)))
+(set-key "\M-w"
   (if (use-region-p)
       (call-interactively 'kill-ring-save)
     (kill-ring-save (point) (progn (forward-word 1) (point)))
@@ -1006,9 +1014,9 @@ non-nill or `compile' otherwise."
   (setq prefix-arg t)
   (call-interactively 'copy-or-append-to-register))
 
-(global-set-key [(control shift w)] 'copy-or-append-to-register)
-(global-set-key [(meta    shift w)] 'kill-or-append-to-register)
-(global-set-key [(control shift y)] 'insert-register)
+(set-key [(control shift w)] copy-or-append-to-register)
+(set-key [(meta    shift w)] kill-or-append-to-register)
+(set-key [(control shift y)] insert-register)
 
 ;;}}}
 
@@ -1184,14 +1192,14 @@ non-nill or `compile' otherwise."
 
 ;; Show blanks and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
-(add-lambda-hook 'font-lock-mode-hook
+(add-hook 'font-lock-mode-hook (function (lambda ()
   (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
     (font-lock-add-keywords nil
      '(("\t+" 0 'my-tab-face t)
        ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
        ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
        ("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
-       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))
+       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))))
 
 ;;}}}
 ;;{{{ Misc small config
@@ -1261,8 +1269,8 @@ non-nill or `compile' otherwise."
 ;; Other
 (icomplete-mode 1)                ;nicer completion in minibuffer
 (setq icomplete-prospects-height 2) ; don't spam my minibuffer
-(define-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
-  (lambda () (interactive) (delete-minibuffer-contents)))
+(set-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
+  (delete-minibuffer-contents))
 (setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
 (setq frame-title-format "Emacs") ;frame title format
 (setq history-delete-duplicates t)
@@ -1804,7 +1812,7 @@ prefixed with \\b."
 
 (eval-when-compile (require 'tex-mode))
 (add-lambda-hook '(tex-mode-hook latex-mode-hook)
-  (define-key tex-mode-map " " 'tex-space))
+  (set-key tex-mode-map " " tex-space))
 
 
 ;; Insert '\ ' instead of ' ' in nroff when needed
@@ -1823,7 +1831,7 @@ prefixed with \\b."
 (eval-when-compile (require 'nroff-mode))
 
 (add-lambda-hook 'nroff-mode-hook
-  (define-key nroff-mode-map " " 'nroff-space))
+  (set-key nroff-mode-map " " nroff-space))
 
 ;;}}}
 ;;{{{   Generate serialVersionUID in Java
@@ -1946,13 +1954,13 @@ argument ommited returns that number."
   (defconst folding-default-keys-function
     '(folding-bind-backward-compatible-keys))
 
-  (define-key folding-mode-map "\C-cf"         'folding-toggle-show-hide)
-  (define-key folding-mode-map [(control ?c) (return)] 'folding-shift-in)
-  (define-key folding-mode-map [(control ?c) (delete)] 'folding-shift-out)
-  (define-key folding-mode-map [(control ?c) (backspace)] 'folding-shift-out)
-  (define-key folding-mode-map "\C-c\C-f"      'folding-open-buffer)
-  (define-key folding-mode-map "\C-cF"         'folding-whole-buffer)
-  (define-key folding-mode-map "\C-e"          'my-end)
+  (set-key folding-mode-map "\C-cf"                    folding-toggle-show-hide)
+  (set-key folding-mode-map [(control ?c) (return)]    folding-shift-in)
+  (set-key folding-mode-map [(control ?c) (delete)]    folding-shift-out)
+  (set-key folding-mode-map [(control ?c) (backspace)] folding-shift-out)
+  (set-key folding-mode-map "\C-c\C-f"                 folding-open-buffer)
+  (set-key folding-mode-map "\C-cF"                    folding-whole-buffer)
+  (set-key folding-mode-map "\C-e"                     my-end)
 
   (folding-add-to-marks-list 'php-mode        "// {{{" "// }}}" nil t)
   (folding-add-to-marks-list 'sawfish-mode    ";;{{{" ";;}}}" nil t)
