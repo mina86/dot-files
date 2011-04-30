@@ -67,3 +67,5 @@
 	; format-patch takes care of threading
 	thread = no
 	confirm = always
+[gui]
+	spellingdictionary = en_GB
