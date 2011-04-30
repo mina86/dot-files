@@ -31,5 +31,5 @@ done
 
 # Start emacs if not running
 if ! [ -e /tmp/emacs$UID/server ]; then
-    emacs --daemon
+    xrun emacs --daemon
 fi
