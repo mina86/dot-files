@@ -1279,6 +1279,7 @@ non-nill or `compile' otherwise."
       inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
                                   ; many files               (EMACS 21.4+)
 (setq sentence-end-double-space 1 ;sentance end with double space
+      sentance-end-base "[.?!…][]\"'”)}]*" ; "…" also ends sentence
       require-final-newline t)    ;always end file with NL
 (setq truncate-lines nil)         ;wrap lines
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
