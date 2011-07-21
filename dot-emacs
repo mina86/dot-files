@@ -859,10 +859,16 @@ With a prefix arg sets global dictionary."
 (set-key-lambda [(control f7)] (mn-spell nil (point)))
 (global-set-key [(meta f7)]    'mn-spell-switch-dictionary)
 (global-set-key [(shift f7)]   'ispell-word)
-;; (set-key-lambda [(shift f7)]
-;;   (call-interactively
-;;    (if (and (boundp 'flyspell-mode) flyspell-mode)
-;;        'flyspell-correct-word-before-point 'ispell-word)))
+
+(define-globalized-minor-mode global-flyspell-mode flyspell-mode
+  (lambda ()
+    (if (memq major-mode
+              '(c-mode c++-mode php-mode python-mode perl-mode
+                emacs-lisp-mode lisp-mode scheme-mode))
+        (flyspell-prog-mode)
+      (flyspell-mode t))))
+
+(global-flyspell-mode 1)
 
 ;;}}}
 ;;{{{     F9 - Compilation
