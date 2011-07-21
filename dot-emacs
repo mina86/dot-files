@@ -2030,6 +2030,16 @@ argument ommited returns that number."
 (add-hook 'kill-emacs-hook 'kill-emacs-scratch-save)
 
 ;;}}}
+;;{{{   Fill Column Indicator
+
+(when (load "fill-column-indicator")
+  (define-globalized-minor-mode global-fci-mode fci-mode
+    (lambda ()
+      (fci-mode t)))
+
+  (global-fci-mode 1))
+
+;;}}}
 
 ;; Start server
 (unless (and (fboundp 'daemonp) (daemonp))
