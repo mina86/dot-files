@@ -388,20 +388,20 @@ three times - beginning of buffer; four times - back to where it was."
 
 
 (defvar mn-window-skip-modes '(compilation-mode)
-  "List of major modes that `mn-window-skipp' should treat as
+  "List of major modes that `mn-window-skip-p' should treat as
 uninteresting.")
 
 (defvar mn-window-skip-names '("*Compile-Log*" "*Backtrace*" "*compilation*")
-  "List of buffer names `mn-window-skipp' should treat as
+  "List of buffer names `mn-window-skip-p' should treat as
 uninteresting.  This comes as an addition to
 `mn-window-skip-regexp'.")
 
 (defvar mn-window-skip-regexp nil
-  "A regexp List of major modes `mn-window-skipp' should treat as
+  "A regexp List of major modes `mn-window-skip-p' should treat as
 uninteresting.  This comes as an addition to
 `mn-window-skip-names'.")
 
-(defun mn-window-skipp (window)
+(defun mn-window-skip-p (window)
   (catch 'done
     ; catch is ugly, I know, but it saves on some indention
     (let ((b (window-buffer window)) n)
@@ -428,7 +428,7 @@ uninteresting.  This comes as an addition to
         (let* ((wnd (selected-window))
                (w   wnd))
           (dotimes (i (abs count))
-            (while (mn-window-skipp (setq w (funcall func w nil all-frames)))
+            (while (mn-window-skip-p (setq w (funcall func w nil all-frames)))
               (when (eq wnd w)
                 (throw 'loop w)))
             (setq wnd w))
