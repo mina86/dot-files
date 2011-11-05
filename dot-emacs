@@ -664,19 +664,6 @@ IF `use-region-p' then it calls `fill-region', otherwise --
 
 (set-key "\M-q"          my-fill)
 
-;; Alt+Q - Unfill
-(defun th-unfill-paragraph-or-region ()
-  "Do the opposite of `fill-paragraph-or-region'; stuff all lines
-in the current paragraph into a single long line."
-  (interactive)
-  (let ((fill-column most-positive-fixnum))
-    (if (use-region-p)
-        (fill-region (region-beginning) (region-end) nil)
-      (fill-paragraph nil)))
-  (setq deactivate-mark nil))
-
-(set-key "\M-Q"          th-unfill-paragraph-or-region)
-
 ;;}}}
 ;;{{{   Fkeys
 
