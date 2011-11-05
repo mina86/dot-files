@@ -539,10 +539,7 @@ uninteresting.  This comes as an addition to
 When called second time deletes all spaces, tabs and new lines after
 the point."
   (interactive)
-  (if (equal last-command this-command)
-      (delete-region (point)
-                     (save-excursion (skip-chars-forward " \t\n") (point)))
-    (just-one-space)))
+  (just-one-space (if (equal last-command this-command) -1 1)))
 
 (substitute-key-definition 'just-one-space 'mn-just-one-space
                            (current-global-map))
