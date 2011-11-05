@@ -2026,11 +2026,9 @@ argument ommited returns that number."
 ;;}}}
 ;;{{{   Fill Column Indicator
 
-(when (load "fill-column-indicator")
+(when (load "fill-column-indicator" t)
   (define-globalized-minor-mode global-fci-mode fci-mode
-    (lambda ()
-      (fci-mode t)))
-
+    (lambda () (fci-mode t)))
   (global-fci-mode 1))
 
 ;;}}}
