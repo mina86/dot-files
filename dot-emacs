@@ -604,7 +604,8 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
       (set-key ac-completing-map "\M-p" ac-previous)
       (set-key ac-completing-map "\M-n" ac-next)
 
-      (set-key "\M-/" indent-or-complete-complete-function))
+      (define-key (current-global-map) "\M-/"
+        indent-or-complete-complete-function))
 
   (set-key "\t"    indent-or-complete)
   (set-key [(tab)] indent-or-complete)
