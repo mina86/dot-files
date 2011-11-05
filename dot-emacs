@@ -1,4 +1,4 @@
-;;                           -*- mode: emacs-lisp; indent-tabs-mode: nil -*-
+;;                                -*- mode: emacs-lisp; lexical-binding: t -*-
 ;; .emacs  -- Emacs configuration file
 ;; Copyright 2004-2011 by Michal Nazarewicz (mina86@mina86.com)
 ;;
@@ -427,7 +427,7 @@ uninteresting.  This comes as an addition to
       (catch 'loop
         (let* ((wnd (selected-window))
                (w   wnd))
-          (dotimes (i (abs count))
+          (dotimes (_ (abs count))
             (while (mn-window-skip-p (setq w (funcall func w nil all-frames)))
               (when (eq wnd w)
                 (throw 'loop w)))
@@ -465,6 +465,7 @@ uninteresting.  This comes as an addition to
 
 ;; Make l behave as it should in help-mode
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
+(defvar help-mode-map)  ; silence compiler warning
 (add-lambda-hook 'help-mode-hook (set-key help-mode-map "l" help-go-back))
 
 ;;}}}
@@ -855,6 +856,7 @@ With a prefix arg sets global dictionary."
 (set-key [(meta f7)]    mn-spell-switch-dictionary)
 (set-key [(shift f7)]   ispell-word)
 
+
 (define-globalized-minor-mode global-flyspell-mode flyspell-mode
   (lambda ()
     (if (memq major-mode
@@ -948,7 +950,7 @@ non-nill or `compile' otherwise."
         (end (progn (forward-word arg) (point))))
     (copy-region-as-kill beg end)))
 
-(defun copy-line (&optional arg)
+(defun copy-line (&optional _)
   "Save current line into Kill-Ring without mark the line "
   (interactive "P")
   (let ((beg (line-beginning-position))
@@ -1723,6 +1725,8 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
         next-error-function 'nxml-next-error))
 
 ;; http://github.com/nelhage/elisp/blob/master/dot-emacs
+(declare-function rng-first-error "rng-valid")
+(declare-function rng-next-error "rng-valid")
 (defun nxml-next-error (arg reset)
   (if reset (rng-first-error))
   (rng-next-error arg))
@@ -1864,6 +1868,7 @@ argument ommited returns that number."
 
 ;; Org mode
 (setq org-insert-mode-line-in-empty-file t)
+
 
 ;; PHP mode
 ;; http://sourceforge.net/projects/php-mode
@@ -2042,4 +2047,5 @@ argument ommited returns that number."
 ;; Clear messages
 ;; You may want to comment it out for debuging
 (setq message-log-max nil)        ;disable messages
+
 (kill-buffer "*Messages*")        ;kill buffer with messages
