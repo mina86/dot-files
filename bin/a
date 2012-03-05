@@ -13,7 +13,7 @@ have() {
 }
 
 if [ 0 -eq $(id -u) ]; then
-	if have aptitude || have apt-get; then
+	if have apt-get || have aptitude; then
 		"$have" "$@"
 	fi
 	if [ $# -eq 1 ] && [ x"$1" = xupdate ] && have apt-file; then
