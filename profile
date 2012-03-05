@@ -19,7 +19,7 @@ if [ x"$1" != xnothing ]; then
 fi
 
 # 64/32 bit differences
-export bits=32
+bits=32
 if [ x"`uname -m`" = xx86_64 ]; then
 	bits=64
 fi
