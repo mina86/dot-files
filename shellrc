@@ -191,3 +191,8 @@ if which ccache 2>/dev/null && which distcc 2>/dev/null; then
 fi
 
 unset _hostname
+
+## Some local stuff
+if [ -e ~/.shell_local ]; then
+	. ~/.shell_local
+fi
