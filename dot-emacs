@@ -1931,6 +1931,13 @@ argument ommited returns that number."
 ;;}}}
 ;;{{{ Various features
 
+;;{{{   uniquify
+
+(when (load "uniquify" t)
+  (setq uniquify-buffer-name-style 'reverse
+        uniquify-strip-common-suffix t))
+
+;;}}}
 ;;{{{   HTMLize
 
 ;; http://fly.srk.fer.hr/~hniksic/emacs/htmlize.el
