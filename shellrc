@@ -14,11 +14,8 @@ if [ -z "$HOST" ]; then
 fi
 _hostname=X"$HOST"
 
-
-##
 ## If normal user -> umask 077; if super user -> umask 022
 ## Also, set TMOUT when super user and not running on pikus
-##
 if [ $(id -u) -eq 0 ] && [ "$_hostname" != Xpikus ]; then
 	umask 0022
 	TMOUT=1200
@@ -26,10 +23,7 @@ else
 	umask 0077
 fi
 
-
-##
 ## Some basic variables
-##
 [ -n "$UID" ] || UID="$(id -u)"
 if [ -z "$USER" ]; then
 	if [ -n "$LOGNAME" ]
@@ -40,30 +34,17 @@ fi
 [ -n "$LOGNAME" ] || LOGNAME="$USER"
 [ -n "$HOME" ] || HOME="$(eval echo ~"$USER")"
 
-
-
-##
-## Prompt
-##
-
 # Default prompt (most likely will be overwritten in shell specific rc files)
 if [ X"$UID" = X0 ]; then PS1='# '; else export PS1='$ '; fi
 if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then PS1="[$(hostname)]$PS1"; fi
 export PS1
-
 
 # Add title to terminals
 case "$TERM" in xterm*|rxvt*)
 	printf '\033]2;%s@%s\07' "$USER" "$HOST"
 esac
 
-
-
-##
 ## Aliases & functions
-##
-
-# ls
 unalias ls dir vdir ll l 2>/dev/null
 alias ls='LANG=C ls $LS_OPTIONS'
 alias ll='ls -l'
@@ -95,7 +76,6 @@ alias rmd=rmdir
 which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
 alias make='nice make'
 
-
 # Perl stuff
 unalias pf pd 2>/dev/null
 pf () {
@@ -112,7 +92,6 @@ pd () {
 	esac
 }
 
-
 # tinyapps stuff
 if ! which xrun >/dev/null 2>&1; then
 	xrun () { "$@" & }
@@ -121,19 +100,12 @@ if which cdiff >/dev/null 2>&1; then
 	alias diff=cdiff
 fi
 
-
 # More colors
 if echo foo | grep --color=auto foo >/dev/null 2>/dev/null; then
 	alias grep='grep --color=auto'
 	alias fgrep='grep -F'
 	alias egrep='grep -E'
 fi
-
-
-
-##
-## Variables
-##
 
 # For setting flags
 if [ -e ~/bin/flags-do ]; then
@@ -143,14 +115,12 @@ if [ -e ~/bin/flags-do ]; then
 	}
 fi
 
-
 # No need to set it once again
 if [ -n "$MINA86RC" ]; then
 	unset _hostname
 	return
 fi
 export MINA86RC=done
-
 
 # PATH
 if ! echo "$PATH" | grep -F "$HOME/bin" -F '~/bin' >/dev/null 2>&1; then
@@ -167,17 +137,14 @@ s/^::*//
 s/::*$//')"
 export PATH
 
-
 # Editor
 [ -z "$EDITOR" ] && which nano >/dev/null 2>&1 && export EDITOR=nano VISUAL=nano
-
 
 # less
 if [ -n "$LESS" ] || which less >/dev/null 2>&1; then
 	export PAGER=less LESS=-MS
 	[ -x ~/bin/lesspipe ] && eval $(~/bin/lesspipe --install-lesspipe)
 fi
-
 
 # LaTeX
 TEX=`which platex 2>/dev/null`
@@ -188,7 +155,6 @@ if [ -z "$TEX" ]; then
 else
 	export TEX
 fi
-
 
 # LS options and colors
 if [ -z "$LS_COLORS" ] && ls --color / >/dev/null 2>&1; then
@@ -203,7 +169,6 @@ if [ -z "$LS_COLORS" ] && ls --color / >/dev/null 2>&1; then
 fi
 LS_OPTIONS="-FT0 --color=auto"
 export LS_OPTIONS
-
 
 # Various
 export GZIP="-9n"
