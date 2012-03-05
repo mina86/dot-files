@@ -184,10 +184,12 @@ case "$_hostname" in (Xerwin|Xtuptus)
 	flags init
 esac
 
-if which ccache 2>/dev/null && which distcc 2>/dev/null; then
-	export CCACHE_PREFIX="distcc"
-	export CCACHE_COMPRESS=1
-	export CCACHE_LOGFILE=/tmp/ccache.log
+if which ccache >/dev/null 2>&1; then
+	export CCACHE_COMPRESS=1 CCACHE_LOGFILE=/tmp/ccache.log
+	export CCACHE_SLOPPINESS=file_macro,time_macros CCACHE_TEMPDIR=/tmp
+	if which distcc >/dev/null 2>&1; then
+		export CCACHE_PREFIX=distcc
+	fi
 fi
 
 unset _hostname
