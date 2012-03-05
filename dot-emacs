@@ -2043,6 +2043,23 @@ argument ommited returns that number."
   (global-fci-mode 1))
 
 ;;}}}
+;;{{{   wc
+
+(defun wc (start end)
+  "Prints number of lines, words and characters in region or whole buffer."
+  (interactive
+   (if (use-region-p) (list (point) (mark)) (list (point-min) (point-max))))
+  (message "%d %d %d"
+           (count-lines start end)
+           (save-excursion
+             (let ((e (max start end)) (n 0))
+               (goto-char (min start end))
+               (while (and (forward-word 1) (< (point) e))
+                 (setq n (1+ n)))
+               n))
+             (abs (- start end))))
+
+;;}}}
 
 ;; Start server
 (unless (and (fboundp 'daemonp) (daemonp))
