@@ -355,17 +355,10 @@ three times - beginning of buffer; four times - back to where it was."
 ;;{{{   Save with no blanks
 
 ;; Save with no trailing whitespaces
-;; XXX there is a delete-trailing-whitespace function which might be
-;; added to write-file-hooks.
 (defun save-no-blanks (&optional arg) (interactive "P")
   (unless arg
-    (save-excursion
-      (save-restriction
-        (widen)
-        (goto-char 0) (perform-replace "[ \t]+$" "" nil t nil)
-        (goto-char (point-max))
-        (unless (>= (skip-chars-backward "\n") -2)
-          (delete-region (1+ (point)) (point-max))))))
+    (save-restriction
+      (delete-trailing-whitespace)))
   (save-buffer))
 
 (substitute-key-definition 'save-buffer 'save-no-blanks (current-global-map))
