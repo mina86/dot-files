@@ -1695,7 +1695,7 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
                                   (" -"         2 "&#160;&#8211;")
                                   ("-"          1 "&#160;&#8211;")
                                   ("&#8211;"    7 "&#8212;")
-                                  ("\\\\"       1 "&8209;")))
+                                  ("\\\\"       1 "&#8209;")))
   (mn-magick-self-insert-define mode-map "/"
                                 '(("<"          1
                                    (lambda (n)
