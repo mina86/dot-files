@@ -2013,7 +2013,7 @@ argument ommited returns that number."
   (set (make-local-variable 'revert-buffer-function) 'scratch-revert)
   (fundamental-mode))
 
-(defun scratch-revert (ignore-auto noconfirm)
+(defun scratch-revert (_ignore-auto _noconfirm)
   (when (file-readable-p scratch-file)
     (insert-file-contents scratch-file nil nil nil t)
     (set-buffer-modified-p nil)))
