@@ -1288,20 +1288,26 @@ non-nill or `compile' otherwise."
 ;; Indention
 (defun set-tab (tab &optional stop-list)
   "Sets `tab-stop-list' to a list of all positive from smallest to
-largest which are multiplications of WIDTH and are lower or equal 120.
+largest which are multiplications of TAB and are lower or equal 120.
 
 If called interactively user will be prompted for desired width.  With
 prefix argument, `indent-tabs-mode' will also be set to t.
+
+If TAB is negative, `indent-tabs-mode' will be set to nil and an
+absolute value will be taken.
 
 This function also tries to set indent-level for current buffer's
 major mode.  This is not very inteligent nor has complete list of
 rules so it is likely not to work."
   (interactive "nTab-width: ")
-  (setq tab-width tab
-        tab-stop-list (or stop-list (number-sequence tab 120 tab)))
-  (setq-if-bound c-basic-offset tab)
-  (setq-if-bound perl-indent-level tab)
-  (when prefix-arg (setq indent-tabs-mode t)))
+  (let ((negative (< tab 0)))
+    (setq tab-width (abs tab))
+    (setq tab-stop-list (or stop-list (number-sequence tab 120 tab-width)))
+    (setq-if-bound c-basic-offset tab-width)
+    (setq-if-bound perl-indent-level tab-width)
+    (if negative
+        (setq indent-tabs-mode nil)
+      (when prefix-arg (setq indent-tabs-mode t)))))
 
 (setq indent-tabs-mode t)         ;indent using tabs
 (set-tab 8)                       ;tab width and stop list
