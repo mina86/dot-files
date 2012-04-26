@@ -71,7 +71,7 @@ Windows are matched in most recently focused first order."
  (quote wm-modifier-value) (quote (super)) (quote modifier-list))
 
 ;; Focus and Auto Raise
-(require 'auto-raise)
+(require 'sawfish.wm.ext.auto-raise)
 (setq focus-mode             'enter-only
       focus-click-through    t
       raise-windows-on-focus t
@@ -160,8 +160,8 @@ Windows are matched in most recently focused first order."
 ;;}}}
 ;;{{{ Applications, menus & bindings
 
-(require 'menus)
-(require 'customize)
+(require 'sawfish.wm.menus)
+(require 'sawfish.wm.customize)
 
 (define mn-term-command    (list "term" "-N" "Term"))
 (define mn-mpdshow-command (list "term" "-N" "MPD" "-mesg" "-g" "80x1" "-e" "mpd-show"))
