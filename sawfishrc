@@ -344,7 +344,7 @@ Windows are matched in most recently focused first order."
 
       ;; GIMP
       (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
-       (""          (viewport 2 . 1) (group . Gimp))
+       (""          (viewport 2 . 1) (group . Gimp) (alpha . 1))
        ("1200x1600|1024x600" (viewport 3 . 1)))
 
       (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
@@ -354,7 +354,7 @@ Windows are matched in most recently focused first order."
 
       ;; Geeqie
       (((WM_ICON_NAME . "Geeqie$"))
-       (""          (viewport 3 . 1))
+       (""          (viewport 3 . 1) (alpha . 0.9))
        ("1200x1600" (viewport 4 . 1)))))))
 ;;}}}
 
