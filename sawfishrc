@@ -239,6 +239,12 @@ Windows are matched in most recently focused first order."
 ;;}}}
 ;;{{{ Matcher
 
+(define-frame-type-mapper
+  (lambda (wnd type)
+    (if (window-transient-p wnd)
+        type
+      'unframed)))
+
 (require 'sawfish.wm.ext.match-window)
 
 (define-match-window-setter 'location
