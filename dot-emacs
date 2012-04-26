@@ -1020,6 +1020,21 @@ non-nill or `compile' otherwise."
 (show-paren-mode t)               ;show matching parenthesis.
 (setq blink-matching-paren-distance nil) ;search for open-paren till point-min
 
+;; Highlight groups of three digits
+(when (load "num3")
+  (global-num3-mode t))
+
+;; Show blanks and FIXME
+;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
+(add-hook 'font-lock-mode-hook (function (lambda ()
+  (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
+    (font-lock-add-keywords nil
+     '(("\t+" 0 'my-tab-face t)
+       ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
+       ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
+       ("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
+       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))))
+
 ;;{{{ Set faces
 
 ;; Code based on color-theme but simplified
@@ -1158,7 +1173,10 @@ non-nill or `compile' otherwise."
        (my-fixme-face
         (t :background "red" :foreground "white" :weight bold))
        (my-todo-face
-        (t :foreground "red" :weight bold))))
+        (t :foreground "red" :weight bold))
+
+       (num3-face
+        (t :underline nil :weight normal :background "#000" :foreground "#CFF"))))
   (let ((face (car entry)) (spec (cdr entry)))
     (unless (facep face)
       (make-empty-face face))
@@ -1169,17 +1187,6 @@ non-nill or `compile' otherwise."
       (error (message "Error using spec %S: %S" spec var)))))
 
 ;;}}}
-
-;; Show blanks and FIXME
-;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
-(add-hook 'font-lock-mode-hook (function (lambda ()
-  (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
-    (font-lock-add-keywords nil
-     '(("\t+" 0 'my-tab-face t)
-       ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
-       ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
-       ("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
-       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))))
 
 ;;}}}
 ;;{{{ Misc small config
