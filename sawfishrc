@@ -27,15 +27,21 @@
 
 (require 'sawfish.wm.util.window-order)
 
-(define (mn-exec-unless regexp command #!optional current-vp)
+(define (mn-run command)
+  "Runs command asynchronously with a double fork to separate running
+program from Sawfish process.
+
+COMMAND is a string representing command to run.  It will be executed
+via `system' function with additional ampersand at the end so that the
+double fork followed by the middle process exiting happens."
+  (system (concat command " & disown")))
+
+(define (mn-run-unless regexp command #!optional current-vp)
   "Searches for window which WM_CLASS (formatted as %s/%s) matches
 REGEXP.  If found returns this window otherwise runs COMMAND (in
-background) and return nil.
+background) and returns nil.
 
-COMMAND is executed using `start-process' function.  If COMMAND is
-a list, its head is program to execute and tail is list of arguments.
-Otherwise, function assumes COMMAND is a string and runs it using
-\"/bin/sh -c\".
+COMMAND is executed using `mn-run' function.
 
 If current-vp is not-nil, will look only through windows in current
 viewport.
@@ -52,9 +58,7 @@ Windows are matched in most recently focused first order."
                                     (aref cls 0)))
               (throw 'done w))))
      (window-order current-workspace t (not current-vp)))
-    (if (listp command)
-        (apply start-process (cons () command))
-      (start-process () "/bin/sh" "-c" command))
+    (mn-run command)
     ()))
 
 ;;}}}
@@ -163,32 +167,33 @@ Windows are matched in most recently focused first order."
 (require 'sawfish.wm.menus)
 (require 'sawfish.wm.customize)
 
-(define mn-term-command    (list "term" "-N" "Term"))
-(define mn-mpdshow-command (list "term" "-N" "MPD" "-mesg" "-g" "80x1" "-e" "mpd-show"))
-(define mn-irssi-command   (list "term" "-N" "IRC" "-mesg" "-g" "80x10" "-e" "irssi"))
+(define mn-term-command    "term -N Term")
+(define mn-mpdshow-command "term -N MPD -mesg -g 80x1 -e mpd-show")
+(define mn-irssi-command   "term -N IRC -mesg -g 80x10 -e irssi")
 
 ;; Menus
-(define (exit-sawfish command)
-  (start-process () "/bin/sh" "-c" (concat "sleep 2; exec " command))
+(define (mn-quit command)
+  (mn-run (concat "( sleep 2; exec " command " ) "))
   (quit))
+
 (setq root-menu
       (nconc
-       '(("_Customize"   customize)
-         ("_Restart"     restart)
-         ()
-         ("Quit"         quit)
-         ("Reboot"       (exit-sawfish "/sbin/reboot")))
+       '(("_Customize"    customize)
+         ("_Restart"      ("Yes" restart))
+         ("_Quit"         ("Yes" quit))
+         ("Reboo_t"       ("Yes" (mn-quit "/sbin/reboot"))))
        (and (file-exists-p "/usr/local/sbin/reboot-w")
-            '(("Windows" (exit-sawfish "/usr/local/sbin/reboot-w"))))
-       '(("Power Off"    (exit-sawfish "/sbin/halt")))))
+            '(("_Windows" ("Yes" (mn-quit "/usr/local/sbin/reboot-w")))))
+       '(("_Power Off"    ("Yes" (mn-quit "/sbin/halt"))))))
 
 ;; Bindings
 (bind-keys root-window-keymap
-           "Button1-Click2"  (lambda () (apply start-process () mn-term-command))
-           "W-Button3-Click" popup-root-menu)
+           "Button1-Click2"  (lambda () (mn-run mn-term-command))
+           "Button3-Click"    popup-root-menu)
 
 (bind-keys window-keymap
-           "W-Space"         (lambda () (popup-window-menu (input-focus))))
+           "W-Space"         (lambda () (popup-window-menu (input-focus)))
+           "W-Return"        (lambda () (popup-window-menu (input-focus))))
 
 (mapc
  (lambda (spec)
@@ -196,13 +201,21 @@ Windows are matched in most recently focused first order."
     global-keymap
     (concat "W-" (car spec))
     (lambda ()
-      (display-window (apply mn-exec-unless (cdr spec))))))
+      (if (listp (cdr spec))
+          (display-window (apply mn-run-unless (cdr spec)))
+        (mn-run (cdr spec))))))
+
  `((?$  "/Term$"         ,mn-term-command t)
-   (?\; "^Emacs/emacs$"  ("e"))
-   (?,  "^Opera/opera$"  ("opera"))
+   (?\; "^Emacs/emacs$"  "e")
+   (?,  "^Opera/opera$"  "opera")
    (?.  "/IRC$"          ,mn-irssi-command)
-   (?a  "GIMP"           ("gimp")
-   (?o  "Geeqie"         ("geeqie")))))
+   (?a  "GIMP"           "gimp")
+   (?o  "Geeqie"         "geeqie")
+
+   (?l  .                "xlocker")
+   (?'  .                "mpc prev")
+   (?j  .                "mpc toggle")
+   (?k  .                "mpc next")))
 
 ;; Run some applications
 (add-hook 'after-initialization-hook
@@ -211,30 +224,13 @@ Windows are matched in most recently focused first order."
               (mapc
                (lambda (spec)
                  (when (string-looking-at (car spec) sn)
-                   (apply mn-exec-unless (cdr spec))))
-               `(("erwin|pikus"       "^Opera/opera$"      ("opera"))
-                 (""                  "^Emacs/emacs$"      ("e"))
+                   (apply mn-run-unless (cdr spec))))
+               `(("erwin|pikus"       "^Opera/opera$"      "opera")
+                 (""                  "^Emacs/emacs$"      "e")
                  ("erwin|pikus"       "/IRC$"              ,mn-irssi-command)
                  ("erwin"             "/MPD$"              ,mn-mpdshow-command)
-                 (""                  "^Gkrellm/gkrellm$"  ("gkrellm")))))
+                 (""                  "^Gkrellm/gkrellm$"  "gkrellm"))))
             (set-screen-viewport 0 0)))
-
-;; Some commands
-(mapc
- (lambda (spec)
-   (bind-keys global-keymap
-              (car spec)
-              (lambda () (apply start-process (cons () (cdr spec))))))
- '(("W-l"                  "xscreensaver-command" "-lock")
-
-   ("XF86AudioMute"        "/usr/bin/amixer" "set" "Master Front" "toggle")
-   ("XF86AudioLowerVolume" "/usr/bin/amixer" "set" "Master Front" "5%-")
-   ("XF86AudioRaiseVolume" "/usr/bin/amixer" "set" "Master Front" "5%+")
-
-   ("W-'"                  "mpc" "prev")
-   ("W-j"                  "mpc" "toggle")
-   ("XF86AudioPlay"        "mpc" "toggle")
-   ("W-k"                  "mpc" "next")))
 
 ;;}}}
 ;;{{{ Matcher
