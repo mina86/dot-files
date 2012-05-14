@@ -40,8 +40,6 @@ has() {
 	if [ -f ~/.wallpaper.bmp ]; then
 		run Esetroot -scale ~/.wallpaper.bmp &
 	fi
-
-	run xscreensaver -no-splash
 ) >/dev/null 2>&1 </dev/null &
 
 exec 2>>/tmp/sawfish-log
