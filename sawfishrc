@@ -179,7 +179,7 @@ Windows are matched in most recently focused first order."
 (setq root-menu
       (nconc
        '(("_Customize"    customize)
-         ("_Restart"      ("Yes" restart))
+         ("_Restart"      restart)
          ("_Quit"         ("Yes" quit))
          ("Reboo_t"       ("Yes" (mn-quit "/sbin/reboot"))))
        (and (file-exists-p "/usr/local/sbin/reboot-w")
