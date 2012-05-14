@@ -1668,41 +1668,33 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
 
 (defun mn-xml-configure-bindings (mode-map)
   (mn-magick-self-insert-define mode-map " "
-                                '(("[^<]\\b\\w" 2 "\\&&#160;")
-                                  ("^\\w"       1 "\\&&#160;")
-                                  ("&#160;"     6 " "))
+                                '(("[^<]\\b\\w" 2 "\\& ")
+                                  ("^\\w"       1 "\\& ")
+                                  ("&#160;"     6 " ")
+                                  (" "          1 " "))
                                 (lambda (n)
                                   (mn-linkify-maybe)
                                   (self-insert-command n)))
   (mn-magick-self-insert-define mode-map "<"
-                                '(("<"          1 "&lt;")
-                                  ("&lt;"       4 "&#xab;")))
+                                '(("<"          1 "&lt;")))
   (mn-magick-self-insert-define mode-map ">"
                                 '(("&#160;&#8211;" 13 " -->")
-                                  (">"          1 "&gt;")
-                                  ("&gt;"       4 "&#xbb;")))
+                                  (" –"         2 " -->")
+                                  (">"          1 "&gt;")))
   (mn-magick-self-insert-define mode-map "&"
                                 '(("&"          1 "&amp;")))
   (mn-magick-self-insert-define mode-map "."
-                                '(("\\.\\."     2 "&#8230;")))
+                                '(("\\.\\."     2 "…")))
   (mn-magick-self-insert-define mode-map "\""
                                 '(("\""         1 "&quot;")))
   (mn-magick-self-insert-define mode-map "~"
-                                '(("~"          1 "&#160;")))
-  (mn-magick-self-insert-define mode-map "'"
-                                '(("'"          1 "&#8221;")))
-  (mn-magick-self-insert-define mode-map "`"
-                                '(("`"          1 "&#8220;")))
-  (mn-magick-self-insert-define mode-map ","
-                                '((","          1 "&#8222;")))
-  (mn-magick-self-insert-define mode-map "."
-                                '(("\\.\\."     2 "&#8230;")))
+                                '(("~"          1 " ")))
   (mn-magick-self-insert-define mode-map "-"
                                 '(("[-!]-"      2 nil)
-                                  (" -"         2 "&#160;&#8211;")
-                                  ("-"          1 "&#160;&#8211;")
-                                  ("&#8211;"    7 "&#8212;")
-                                  ("\\\\"       1 "&#8209;")))
+                                  (" -"         2 " –")
+                                  ("-"          1 " –")
+                                  ("–"          1 "—")
+                                  ("&#8211;"    7 "—")))
   (mn-magick-self-insert-define mode-map "/"
                                 '(("<"          1
                                    (lambda (n)
@@ -1710,12 +1702,13 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
                                      (nxml-finish-element)))))
   (mn-magick-self-insert-define mode-map [(backspace)]
                                 '(("&lt;"       4 "<")
-                                  ("&#xab;"     6 "&lt;")
+                                  ("«"          1 "&lt;")
                                   ("&gt;"       4 ">")
-                                  ("&#xbb;"     6 "&gt;")
+                                  ("»"          1 "&gt;")
                                   ("&amp;"      5 "&")
                                   ("&quot;"     6 "\"")
                                   ("&#8230;"    7 "..")
+                                  ("…"          1 "..")
                                   ("&#8220;"    7 "`")
                                   ("&#8221;"    7 "'")
                                   ("&#8222;"    7 ",")
