@@ -204,10 +204,6 @@ export HISTFILE="/tmp/.$(id -un)-history"
 HISTCONTROL="ignorespace:erasedups"
 HISTIGNORE="ls:su:cd:bc:wp rm:mp3 mv:cd -"
 
-bind "C-p":history-search-backward
-bind "C-n":history-search-forward
-
-
 ##
 ## Some local stuff
 ##

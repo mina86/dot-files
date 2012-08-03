@@ -1,4 +1,14 @@
+$include /etc/inputrc
+
+set editing-mode emacs
 set mark-symlinked-directories on
+set expand-tilde on
+set history-preserve-point on
+
+Control-u: universal-argument
+
+"\C-p": history-search-backward
+"\C-n": history-search-forward
 
 $if Bash
     Space: magic-space
