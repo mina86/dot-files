@@ -213,6 +213,8 @@ Windows are matched in most recently focused first order."
    (?o  "Geeqie"         "geeqie")
 
    (?l  .                "xlocker")
+   (?"  .                "mpc seek 0:00:00" ;"; Make system highlighting happy
+     )
    (?'  .                "mpc prev")
    (?j  .                "mpc toggle")
    (?k  .                "mpc next")))
