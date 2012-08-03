@@ -577,30 +577,6 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
     (set-key :local [(tab)] indent-or-complete)))
 
 ;;}}}
-;;{{{   Centering
-
-(defvar centerer--window-start nil)
-
-(defun centerer ()
-  "Repositions current line: once - middle, twice - top, three and
-four times - `reposition-window', five times - bottom, six times -
-where it was at the beginning.
-   If performing some action doesn't really change position of the
-window function skips to another step."
-   (interactive)
-   (let ((i 0) (old (window-start)))
-     (while (and (<= (setq i (1+ i)) 6) (equal (window-start) old))
-       (seq-times-do nil (setq centerer--window-start (window-start))
-         (recenter)
-         (recenter 0)
-         (reposition-window)
-         (reposition-window)
-         (recenter -1)
-         (set-window-start (selected-window) centerer--window-start)))))
-
-(set-key "\C-l"     centerer)
-
-;;}}}
 ;;{{{   Filling
 
 ;; Alt+q - Fill
