@@ -340,15 +340,21 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   Pager/Scrolling
 
+(setq-if-bound scroll-error-top-bottom t)
+(setq-if-bound scroll-preserve-screen-position t)
+
 ;; Makes paging functions work the way god intended
 ;; http://www.docs.uu.se/~mic/emacs.html
 ;; pager.el was modified by me
-(when (and (setq-if-bound scroll-error-top-bottom t)
-           (load "pager" t))
+(when (load "pager" t)
   (setq pager-goto-edge t)
   (substitute-key-definition 'scroll-down 'pager-page-up
                              (current-global-map))
-  (substitute-key-definition 'scroll-up   'pager-page-down
+  (substitute-key-definition 'scroll-down-command 'pager-page-up
+                             (current-global-map))
+  (substitute-key-definition 'scroll-up 'pager-page-down
+                             (current-global-map))
+  (substitute-key-definition 'scroll-up-command 'pager-page-down
                              (current-global-map)))
 
 ;;}}}
