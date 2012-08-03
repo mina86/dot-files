@@ -359,8 +359,9 @@ Windows are matched in most recently focused first order."
 
       ;; Geeqie
       (((WM_ICON_NAME . "Geeqie$"))
-       (""          (viewport 3 . 1) (alpha . 0.9))
+       (""          (viewport 3 . 1) (alpha . 1))
        ("1200x1600" (viewport 4 . 1)))))))
+
 ;;}}}
 
 ; (restart)
