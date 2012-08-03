@@ -473,7 +473,6 @@ uninteresting.  This comes as an addition to
 ;; Regions, selections and marks
 (setq mouse-yank-at-point t       ;mouse yank at point not at cursor   (X-win)
       kill-read-only-ok   t       ;be silent when killing text from RO buffer
-      transient-mark-mode t
       set-mark-command-repeat-pop t)
 (delete-selection-mode 1)         ;deleting region by typing or del (like Win)
 
