@@ -471,38 +471,6 @@ uninteresting.  This comes as an addition to
       set-mark-command-repeat-pop t)
 (delete-selection-mode 1)         ;deleting region by typing or del (like Win)
 
-;; Copy to X-clipboard on C-x c or C-x w
-(defun x-set-clipboard-content-from-selection (begin end)
-  "Sets X clipboard content to selected text."
-  (interactive "r")
-  (let ((x-select-enable-clipboard t)
-        (x-select-enable-primary   nil))
-    (x-select-text (buffer-substring begin end))))
-
-;; Paste from X-clipboard on C-x y
-(defun x-yank-clipboard (&optional arg)
-  "Yanks cntents of X clipboard to current buffer."
-  (interactive "*P")
-  (let ((text (x-get-selection 'CLIPBOARD)))
-    (when text
-      ;; Copied from yank
-      (push-mark (point))
-      (insert-for-yank text)
-      (if (consp arg)
-          ;; This is like exchange-point-and-mark, but doesn't
-          ;; activate the mark.  It is cleaner to avoid activation,
-          ;; even though the command loop would deactivate the mark
-          ;; because we inserted text.
-          (goto-char (prog1 (mark t)
-                       (set-marker (mark-marker) (point) (current-buffer)))))
-      ;; Pretend we are yank.
-      (setq this-command 'yank)
-      text)))
-
-(set-key "\C-xc"        x-set-clipboard-content-from-selection)
-(set-key "\C-xw"        x-set-clipboard-content-from-selection)
-(set-key "\C-xy"        x-yank-clipboard)
-
 (set-key [(shift insert)]
   (let ((mouse-yank-at-point nil))
     (mouse-yank-primary nil)))
