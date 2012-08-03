@@ -34,7 +34,8 @@ program from Sawfish process.
 COMMAND is a string representing command to run.  It will be executed
 via `system' function with additional ampersand at the end so that the
 double fork followed by the middle process exiting happens."
-  (system (concat command " & disown")))
+  (format standard-error ">> %s\n" command)
+  (system (concat command " & disown -a")))
 
 (define (mn-run-unless regexp command #!optional current-vp)
   "Searches for window which WM_CLASS (formatted as %s/%s) matches
