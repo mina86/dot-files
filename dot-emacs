@@ -1825,11 +1825,6 @@ argument ommited returns that number."
 (add-to-list 'auto-mode-alist '("\\.php\\'" . php-mode))
 
 
-;; JavaScript mode
-(unless (fboundp 'js2-mode)
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . c-mode)))
-
-
 ;; Shell mode
 ;; This prevents shell commands from being echoed
 (eval-when-compile (require 'shell))
