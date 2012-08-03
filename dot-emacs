@@ -1988,8 +1988,7 @@ argument ommited returns that number."
 ;;{{{   Fill Column Indicator
 
 (when (load "fill-column-indicator" t)
-  (define-globalized-minor-mode global-fci-mode fci-mode
-    (lambda () (fci-mode t)))
+  (define-globalized-minor-mode global-fci-mode fci-mode turn-on-fci-mode)
   (global-fci-mode 1))
 
 ;;}}}
