@@ -207,7 +207,7 @@ Windows are matched in most recently focused first order."
 
  `((?$  "/Term$"         ,mn-term-command t)
    (?\; "^Emacs/emacs$"  "e")
-   (?,  "^Opera/opera$"  "opera")
+   (?,  "^Opera(Next)?/opera$"  "opera")
    (?.  "/IRC$"          ,mn-irssi-command)
    (?a  "GIMP"           "gimp")
    (?o  "Geeqie"         "geeqie")
