@@ -128,6 +128,12 @@
       ("List-ID"
        "linux-mm\\.kvack\\.org"
        "list.linux.mm")
+      ("Mailing-List"
+       "colorhug-users@googlegroups\\.com"
+       "list.colorhug")
+      ("List-ID"
+       "translators\\.fsfeurope\\.org"
+       "list.translators")
       ("X-Gnus-Mail-Source" "mion\\.elka\\.pw\\.edu\\.pl"    "mail.mion")
       (any "rxvt-unicode@lists\\.schmorp\\.de"         "list.urxvt")
       (any "k02_a\\(?:-request\\)?@staszic\\.waw\\.pl" "list.k02_a"))
@@ -263,9 +269,6 @@ called with prefix argument will prompt for any file."
                        (total-expire .  t)
                        (expire-wait  . 14))
    ("list\\.linux\\."  (expire-wait  .  7))
-
-   ("list\\.dno"       (to-address   . "dno@foch.ircx.net.pl")
-                       (to-list      . "dno@foch.ircx.net.pl"))
 
    ("^nnml:list\\.\\(?:linux\\|git\\)" (dictionary . "british"))
    ("^nnml:"                           (dictionary . "polish" ))
