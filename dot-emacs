@@ -426,13 +426,7 @@ uninteresting.  This comes as an addition to
 (set-key "\C-xP"         "\C-u-1\C-xO")
 
 ; don't ask which buffer to kill
-; kill-this-buffer caused problems
-(set-key "\C-xk"
-  (let* ((buffer (current-buffer))
-         (ws (get-buffer-window-list buffer t)))
-    (if (and ws (window-minibuffer-p (car ws)))
-        (abort-recursive-edit)
-      (kill-buffer buffer))))
+(set-key "\C-xk" kill-this-buffer)
 
 (set-key "\C-cr"         revert-buffer)         ; Reload buffer
 (set-key "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
