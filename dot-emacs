@@ -298,15 +298,6 @@ command from COMMANDS."
   `(eval (nth (seq-times ,name ,(length commands) ,body) ',commands)))
 
 ;;}}}
-;;{{{   Movement
-
-; Recently I started using Programmers' Dvorak keyboard layout and so
-; I had some problems moving in the text.  However I've noticed that
-; I never use C-o and o is placed simetrically to n on Dvorak layout
-; so it's a perfect candidate for previous line!
-(set-key "\C-o" previous-line)
-
-;;}}}
 ;;{{{   Home/End
 
 ;; My home
@@ -375,14 +366,11 @@ three times - beginning of buffer; four times - back to where it was."
 (set-key "\C-x\C-C" :args (arg) "P"
          (when (yes-or-no-p "Do you really want to quit? ")
            (save-buffers-kill-emacs arg))) ; Never kill by mistake
-(set-key "\C-z"          undo) ; I like undo better; never used C-z
 
 
 (set-key "\C-h"          delete-backward-char)
 (set-key [(backspace)]   delete-backward-char)
 (set-key [(delete)]      delete-char)
-(set-key [(control backspace)] backward-kill-word)
-(set-key [(control delete)] kill-word)
 
 
 (defvar mn-window-skip-modes '(compilation-mode)
@@ -610,97 +598,6 @@ IF `use-region-p' then it calls `fill-region', otherwise --
 ;;}}}
 ;;{{{   Fkeys
 
-;;{{{     Key sequences
-
-(set-key "\eOP"       [(f1)])
-(set-key "\e[[A"      [(f1)])
-(set-key "\eOQ"       [(f2)])
-(set-key "\e[[B"      [(f2)])
-(set-key "\eOR"       [(f3)])
-(set-key "\e[[C"      [(f3)])
-(set-key "\eOS"       [(f4)])
-(set-key "\e[[D"      [(f4)])
-(set-key "\e[15~"     [(f5)])
-(set-key "\e[[E"      [(f5)])
-(set-key "\e[17~"     [(f6)])
-(set-key "\e[18~"     [(f7)])
-(set-key "\e[19~"     [(f8)])
-(set-key "\e[20~"     [(f9)])
-(set-key "\e[21~"     [(f10)])
-(set-key "\e[23~"     [(f11)])
-(set-key "\e[24~"     [(f12)])
-(set-key "\eO5P"      [(control f1)])
-(set-key "\eO5Q"      [(control f2)])
-(set-key "\eO5R"      [(control f3)])
-(set-key "\eO5S"      [(control f4)])
-(set-key "\e[15;5~"   [(control f5)])
-(set-key "\e[17;5~"   [(control f6)])
-(set-key "\e[18;5~"   [(control f7)])
-(set-key "\e[19;5~"   [(control f8)])
-(set-key "\e[20;5~"   [(control f9)])
-(set-key "\e[21;5~"   [(control f10)])
-(set-key "\e[23;5~"   [(control f11)])
-(set-key "\e[24;5~"   [(control f12)])
-(set-key "\eO6P"      [(control shift f1)])
-(set-key "\eO6Q"      [(control shift f2)])
-(set-key "\eO6R"      [(control shift f3)])
-(set-key "\eO6S"      [(control shift f4)])
-(set-key "\e[15;6~"   [(control shift f5)])
-(set-key "\e[17;6~"   [(control shift f6)])
-(set-key "\e[18;6~"   [(control shift f7)])
-(set-key "\e[19;6~"   [(control shift f8)])
-(set-key "\e[20;6~"   [(control shift f9)])
-(set-key "\e[21;6~"   [(control shift f10)])
-(set-key "\e[23;6~"   [(control shift f11)])
-(set-key "\e[24;6~"   [(control shift f12)])
-(set-key "\eO3P"      [(meta f1)])
-(set-key "\eO3Q"      [(meta f2)])
-(set-key "\eO3R"      [(meta f3)])
-(set-key "\eO3S"      [(meta f4)])
-(set-key "\e[15;3~"   [(meta f5)])
-(set-key "\e[17;3~"   [(meta f6)])
-(set-key "\e[18;3~"   [(meta f7)])
-(set-key "\e[19;3~"   [(meta f8)])
-(set-key "\e[20;3~"   [(meta f9)])
-(set-key "\e[21;3~"   [(meta f10)])
-(set-key "\e[23;3~"   [(meta f11)])
-(set-key "\e[24;3~"   [(meta f12)])
-(set-key "\eO4P"      [(meta shift f1)])
-(set-key "\eO4Q"      [(meta shift f2)])
-(set-key "\eO4R"      [(meta shift f3)])
-(set-key "\eO4S"      [(meta shift f4)])
-(set-key "\e[15;4~"   [(meta shift f5)])
-(set-key "\e[17;4~"   [(meta shift f6)])
-(set-key "\e[18;4~"   [(meta shift f7)])
-(set-key "\e[19;4~"   [(meta shift f8)])
-(set-key "\e[20;4~"   [(meta shift f9)])
-(set-key "\e[21;4~"   [(meta shift f10)])
-(set-key "\e[23;4~"   [(meta shift f11)])
-(set-key "\e[24;4~"   [(meta shift f12)])
-(set-key "\eO2P"      [(shift f1)])
-(set-key "\e[23~"     [(shift f1)])
-(set-key "\eO2Q"      [(shift f2)])
-(set-key "\e[24~"     [(shift f2)])
-(set-key "\eO2R"      [(shift f3)])
-(set-key "\e[25~"     [(shift f3)])
-(set-key "\eO2S"      [(shift f4)])
-(set-key "\e[26~"     [(shift f4)])
-(set-key "\e[15;2~"   [(shift f5)])
-(set-key "\e[28~"     [(shift f5)])
-(set-key "\e[17;2~"   [(shift f6)])
-(set-key "\e[29~"     [(shift f6)])
-(set-key "\e[18;2~"   [(shift f7)])
-(set-key "\e[31~"     [(shift f7)])
-(set-key "\e[19;2~"   [(shift f8)])
-(set-key "\e[32~"     [(shift f8)])
-(set-key "\e[20;2~"   [(shift f9)])
-(set-key "\e[33~"     [(shift f9)])
-(set-key "\e[21;2~"   [(shift f10)])
-(set-key "\e[34~"     [(shift f10)])
-(set-key "\e[23;2~"   [(shift f11)])
-(set-key "\e[24;2~"   [(shift f12)])
-
-;;}}}
 ;;{{{     F1 - Help
 
 (defun my-help ()
