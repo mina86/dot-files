@@ -15,7 +15,8 @@
 	help = cyan
 [alias]
 	a      = am -3
-	br     = branch
+	b      = branch -v
+	br     = branch -v
 	ci     = commit
 	amend  = commit --amend
 	fixup  = commit --amend -C HEAD
