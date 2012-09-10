@@ -112,7 +112,7 @@ use `use-region-p'."
   (if (and (listp hook) (eq (car hook) 'quote) (listp (cadr hook)))
       (let ((func (make-symbol "func")))
         `(let
-          ((,func (lambda () ,@body)))
+          ((,func (function (lambda () ,@body))))
           . ,(mapcar (lambda (h) `(add-hook (quote ,h) ,func))
                      (cadr hook))))
     `(add-hook ,hook (function (lambda () ,@body)))))
