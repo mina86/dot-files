@@ -1133,9 +1133,7 @@ non-nill or `compile' otherwise."
 (setq backup-by-copying-when-linked t) ;preserve hard links
 (auto-compression-mode 1)         ;automatic compression
 (setq make-backup-files nil)      ;no backup
-;(global-auto-revert-mode 1)       ;automaticly reload buffer when changed
-                                  ; it makes all folds unfload :(
-                                  ; and what's worse - sux with ftp
+(global-auto-revert-mode 1)       ;automaticly reload buffer when changed
 
 
 ;; Indention
