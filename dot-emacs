@@ -696,13 +696,16 @@ With a prefix arg sets global dictionary."
 (set-key [(shift f7)]   ispell-word)
 
 
-(define-globalized-minor-mode global-flyspell-mode flyspell-mode
-  (lambda ()
-    (if (memq major-mode
-              '(c-mode c++-mode php-mode python-mode perl-mode
-                emacs-lisp-mode lisp-mode scheme-mode))
-        (flyspell-prog-mode)
-      (flyspell-mode t))))
+(define-globalized-minor-mode global-flyspell-mode
+  flyspell-mode mn-turn-flyspell-on)
+
+(defun mn-turn-flyspell-on ()
+  (cond ((memq major-mode '(c-mode c++-mode php-mode python-mode perl-mode
+                            emacs-lisp-mode lisp-mode scheme-mode diff-mode))
+         (flyspell-prog-mode))
+        ((memq major-mode '(notmuch-hello-mode notmuch-search-mode
+                            notmuch-show-mode)))
+        ((flyspell-mode t))))
 
 (global-flyspell-mode 1)
 
