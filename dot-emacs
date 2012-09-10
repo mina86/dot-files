@@ -76,8 +76,7 @@ use `use-region-p'."
 
 (defmacro setq-if-bound (name value)
   `(when (boundp (quote ,name))
-     (setq ,name ,value)
-     t))
+     (setq ,name ,value)))
 
 (defun -mn-current-local-map ()
   (let ((map (current-local-map)))
