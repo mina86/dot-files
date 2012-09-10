@@ -533,8 +533,10 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
   (cond ((and (fboundp 'minibufferp) (minibufferp)) (minibuffer-complete))
         ((use-region-p) (indent-region (region-beginning) (region-end)))
         ((set 'indent-or-complete--last-was-complete
-              (or (and (= ?w (char-syntax (char-before)))
-                       (not (= ?w (char-syntax (char-after)))))
+              (or (and (char-before)
+                       (= ?w (char-syntax (char-before)))
+                       (or (not (char-after))
+                           (/= ?w (char-syntax (char-after)))))
                   (and (eq last-command this-command)
                        indent-or-complete--last-was-complete)))
          (funcall indent-or-complete-complete-function nil))
