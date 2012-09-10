@@ -872,7 +872,7 @@ non-nill or `compile' otherwise."
 ;; Show blanks and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
 (add-hook 'font-lock-mode-hook (function (lambda ()
-  (unless (or (eq 'diff-mode major-mode) (eq 'script-mode major-mode))
+  (unless (eq 'diff-mode major-mode)
     (font-lock-add-keywords nil
      '(("\t+" 0 'my-tab-face t)
        ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
