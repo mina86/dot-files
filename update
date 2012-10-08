@@ -53,15 +53,6 @@ to)   echo 'Updating configuration files from files in current directory' ;;
 *)    usage
 esac
 
-if $INTERACTIVE; then
-	printf 'Do you want to continue? [y/N] '
-	if ! read answer; then
-		exit 0
-	elif [ X"${answer#[yY]}" = X"${answer}" ]; then
-		exit 0
-	fi
-fi
-
 
 ##
 ## File arguments
