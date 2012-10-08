@@ -672,7 +672,7 @@ IF `use-region-p' then it calls `fill-region', otherwise --
 (set-key [(f2)]         (find-file user-init-file))
 (set-key [(control f2)] (find-file (concat user-emacs-directory "/mail.el")))
 (set-key [(meta f2)]    (find-file custom-file))
-;(set-key [(shift f2)]   (find-file "~/.bashrc"))
+(set-key [(shift f2)]   (find-file "~/.bashrc"))
 
 ;;}}}
 ;;{{{     F5 - Mail
