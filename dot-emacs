@@ -368,7 +368,7 @@ three times - beginning of buffer; four times - back to where it was."
 ;;}}}
 ;;{{{   Misc
 
-(set-key "\C-x\C-C" :args (arg) "P"
+(set-key "\C-x\C-c" :args (arg) "P"
          (when (yes-or-no-p "Do you really want to quit? ")
            (save-buffers-kill-emacs arg))) ; Never kill by mistake
 
