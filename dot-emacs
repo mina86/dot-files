@@ -592,33 +592,29 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
          (funcall indent-or-complete-complete-function nil))
         ((indent-for-tab-command))))
 
-(if (load "auto-complete-config" t)
-    (progn
-      (add-to-list 'ac-dictionary-directories "~/.emacs.d/elisp/ac-dict")
-      (ac-config-default)
+(when (load "auto-complete-config" t)
+  (add-to-list 'ac-dictionary-directories "~/.emacs.d/elisp/ac-dict")
+  (ac-config-default)
 
-      (setq ac-auto-start 3
-            ac-delay 0.1
-            ac-auto-show-menu 2
-            ac-ignore-case nil
-            ac-use-comphist t
-            indent-or-complete-complete-function 'auto-complete)
+  (setq ac-auto-start 3
+        ac-delay 0.1
+        ac-auto-show-menu 2
+        ac-ignore-case nil
+        ac-use-comphist t
+        indent-or-complete-complete-function 'auto-complete)
 
-      (set-key ac-completing-map "\M-o" ac-previous)
-      (set-key ac-completing-map "\M-p" ac-previous)
-      (set-key ac-completing-map "\M-n" ac-next)
+  (set-key ac-completing-map "\M-o" ac-previous)
+  (set-key ac-completing-map "\M-p" ac-previous)
+  (set-key ac-completing-map "\M-n" ac-next)
 
-      (define-key (current-global-map) "\M-/"
-        indent-or-complete-complete-function))
+  (define-key (current-global-map) "\M-/"
+    indent-or-complete-complete-function))
 
-  (set-key "\t"    indent-or-complete)
-  (set-key [(tab)] indent-or-complete)
+;; (set-key "\t"    indent-or-complete)
+;; (set-key [(tab)] indent-or-complete)
 
-  (add-lambda-hook 'find-file-hooks
-    (unless (eq major-mode 'org-mode)
-      (set-key :local [(tab)] indent-or-complete)))
-  (save-current-buffer
-    (set-buffer "*scratch*")
+(add-lambda-hook 'find-file-hooks
+  (unless (eq major-mode 'org-mode)
     (set-key :local [(tab)] indent-or-complete)))
 
 ;;}}}
