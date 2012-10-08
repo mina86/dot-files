@@ -1223,186 +1223,185 @@ See `sort-regexp-fields'."
 
 ;;{{{   CC Mode
 
-(eval-after-load "cc-mode"
-  (progn
-    (c-add-style
-     "mina86"
-     '((c-basic-offset . 8)             ; 8-char wide indention...
-       (tab-width . 8)                  ; ...which equals single tab...
-       (indent-tabs-mode . t)           ; ...so use tabs
-       (c-comment-only-line-offset . 0)  ; XXX no idea what it does
-       (c-label-minimum-indentation . 1) ; no min. indention for labels
+(add-lambda-hook 'c-initialization-hook
+  (c-add-style
+   "mina86"
+   '((c-basic-offset . 8)             ; 8-char wide indention...
+     (tab-width . 8)                  ; ...which equals single tab...
+     (indent-tabs-mode . t)           ; ...so use tabs
+     (c-comment-only-line-offset . 0)  ; XXX no idea what it does
+     (c-label-minimum-indentation . 1) ; no min. indention for labels
 
-       (c-cleanup-list                 ; Clean ups
-        brace-else-brace                 ; "} else {" in one line
-        brace-elseif-brace               ; "} else if (...) {" in one line
-        brace-catch-brace                ; "} catch (...) {" in one line
-        defun-close-semi                 ; "};" together
-        )
+     (c-cleanup-list                 ; Clean ups
+      brace-else-brace                 ; "} else {" in one line
+      brace-elseif-brace               ; "} else if (...) {" in one line
+      brace-catch-brace                ; "} catch (...) {" in one line
+      defun-close-semi                 ; "};" together
+      )
 
-       (c-offsets-alist                ; Indention levels:
-        ; Don't indent inside namespaces, extern, etc
-        (incomposition          . 0)
-        (inextern-lang          . 0)
-        (inmodule               . 0)
-        (innamespace            . 0)
+     (c-offsets-alist                ; Indention levels:
+      ; Don't indent inside namespaces, extern, etc
+      (incomposition          . 0)
+      (inextern-lang          . 0)
+      (inmodule               . 0)
+      (innamespace            . 0)
 
-        ; Preprocessor macros
-        (cpp-define-intro       c-lineup-cpp-define +)
-        (cpp-macro              . [ 0 ])
-        (cpp-macro-cont         . +)
+      ; Preprocessor macros
+      (cpp-define-intro       c-lineup-cpp-define +)
+      (cpp-macro              . [ 0 ])
+      (cpp-macro-cont         . +)
 
-        ; Brace after newline newer indents
-        (block-open             . 0)
-        (brace-entry-open       . 0)
-        (brace-list-open        . 0)
-        (class-open             . 0)
-        (composition-open       . 0)
-        (defun-open             . 0)
-        (extern-lang-open       . 0)
-        (inline-open            . 0)
-        (module-open            . 0)
-        (namespace-open         . 0)
-        (statement-case-open    . 0)
-        (substatement-open      . 0)
+      ; Brace after newline newer indents
+      (block-open             . 0)
+      (brace-entry-open       . 0)
+      (brace-list-open        . 0)
+      (class-open             . 0)
+      (composition-open       . 0)
+      (defun-open             . 0)
+      (extern-lang-open       . 0)
+      (inline-open            . 0)
+      (module-open            . 0)
+      (namespace-open         . 0)
+      (statement-case-open    . 0)
+      (substatement-open      . 0)
 
-        ; Obviously, do not indent closing brace
-        (arglist-close          . 0)
-        (block-close            . 0)
-        (brace-list-close       . 0)
-        (class-close            . 0)
-        (composition-close      . 0)
-        (defun-close            . 0)
-        (extern-lang-close      . 0)
-        (inline-close           . 0)
-        (module-close           . 0)
-        (namespace-close        . 0)
+      ; Obviously, do not indent closing brace
+      (arglist-close          . 0)
+      (block-close            . 0)
+      (brace-list-close       . 0)
+      (class-close            . 0)
+      (composition-close      . 0)
+      (defun-close            . 0)
+      (extern-lang-close      . 0)
+      (inline-close           . 0)
+      (module-close           . 0)
+      (namespace-close        . 0)
 
-        ; Obviously, indent next line after opening brace and single statements
-        (defun-block-intro      . +)
-        (statement-block-intro  . +)
-        (substatement           . +)
+      ; Obviously, indent next line after opening brace and single statements
+      (defun-block-intro      . +)
+      (statement-block-intro  . +)
+      (substatement           . +)
 
-        ; Handle nicely multi line argument lists
-        (arglist-close c-lineup-arglist 0)
-        (arglist-cont          mn-c-lineup-argcont c-lineup-gcc-asm-reg +)
-        (arglist-cont-nonempty mn-c-lineup-argcont c-lineup-gcc-asm-reg c-lineup-arglist +)
-        (arglist-intro . c-lineup-arglist-intro-after-paren)
+      ; Handle nicely multi line argument lists
+      (arglist-close c-lineup-arglist 0)
+      (arglist-cont          mn-c-lineup-argcont c-lineup-gcc-asm-reg +)
+      (arglist-cont-nonempty mn-c-lineup-argcont c-lineup-gcc-asm-reg c-lineup-arglist +)
+      (arglist-intro . c-lineup-arglist-intro-after-paren)
 
-        ; Misc
-        (brace-list-intro       . +)     ; Indent elements in brace-lists
-        (brace-list-entry       . 0)
-        (c      . c-lineup-C-comments)   ; Indent comments nicely
-        (comment-intro          . c-lineup-comment)
-        (catch-clause           . 0)     ; catch/finally where try
-        (do-while-closure       . 0)     ; while (...) where do
-        (else-clause            . 0)     ; else where if
-        (func-decl-cont         . +)     ; Indent stuff after function
-        (friend                 . 0)     ; friend need no additional indention
-        (inclass                . +)     ; Indent stuff inside class...
-        (access-label           . -)     ; ...expect for access labels
-        (inexpr-statement       . 0)     ; No unneeded indent in ({ ... })...
-        (inexpr-class           . 0)     ; ...& anonymous classes
-        (inher-intro            . +)     ; ndent & lineup inheritance list
-        (inher-cont             . c-lineup-multi-inher)
-        (member-init-intro      . +)     ; Indent & lineup initialisation list
-        (member-init-cont       . c-lineup-multi-inher)
-        (label                  . [ 0 ]) ; Labels always on first column
-        (substatement-label     . [ 0 ])
-        (statement              . 0)     ; Statement same as line above...
-        (statement-cont c-lineup-cascaded-calls +) ; ...but indent cont.
-        (statement-case-intro   . +)     ; Indent statements in switch...
-        (case-label             . 0)     ; ...but not the labels
-        (stream-op . c-lineup-streamop)  ; Lineup << operators in C++
-        (string . c-lineup-dont-change)  ; Do not touch strings!
-        (template-args-cont c-lineup-template-args +) ; Lineup template args
-        (topmost-intro          . 0)     ; Topmost stay topmost
-        (topmost-intro-cont     c-lineup-topmost-intro-cont 0)
+      ; Misc
+      (brace-list-intro       . +)     ; Indent elements in brace-lists
+      (brace-list-entry       . 0)
+      (c      . c-lineup-C-comments)   ; Indent comments nicely
+      (comment-intro          . c-lineup-comment)
+      (catch-clause           . 0)     ; catch/finally where try
+      (do-while-closure       . 0)     ; while (...) where do
+      (else-clause            . 0)     ; else where if
+      (func-decl-cont         . +)     ; Indent stuff after function
+      (friend                 . 0)     ; friend need no additional indention
+      (inclass                . +)     ; Indent stuff inside class...
+      (access-label           . -)     ; ...expect for access labels
+      (inexpr-statement       . 0)     ; No unneeded indent in ({ ... })...
+      (inexpr-class           . 0)     ; ...& anonymous classes
+      (inher-intro            . +)     ; ndent & lineup inheritance list
+      (inher-cont             . c-lineup-multi-inher)
+      (member-init-intro      . +)     ; Indent & lineup initialisation list
+      (member-init-cont       . c-lineup-multi-inher)
+      (label                  . [ 0 ]) ; Labels always on first column
+      (substatement-label     . [ 0 ])
+      (statement              . 0)     ; Statement same as line above...
+      (statement-cont c-lineup-cascaded-calls +) ; ...but indent cont.
+      (statement-case-intro   . +)     ; Indent statements in switch...
+      (case-label             . 0)     ; ...but not the labels
+      (stream-op . c-lineup-streamop)  ; Lineup << operators in C++
+      (string . c-lineup-dont-change)  ; Do not touch strings!
+      (template-args-cont c-lineup-template-args +) ; Lineup template args
+      (topmost-intro          . 0)     ; Topmost stay topmost
+      (topmost-intro-cont     c-lineup-topmost-intro-cont 0)
 
-        ; Other stuff I don't really care about
-        ; I keep it here for the sake of having all symbols specified.
-        (inlambda               . c-lineup-inexpr-block)
-        (knr-argdecl            . 0)
-        (knr-argdecl-intro      . +)
-        (lambda-intro-cont      . +)
-        (objc-method-args-cont  . c-lineup-ObjC-method-args)
-        (objc-method-call-cont
-         ;c-lineup-ObjC-method-call-colons
-         c-lineup-ObjC-method-call +)
-        (objc-method-intro      . [0])
-        )
+      ; Other stuff I don't really care about
+      ; I keep it here for the sake of having all symbols specified.
+      (inlambda               . c-lineup-inexpr-block)
+      (knr-argdecl            . 0)
+      (knr-argdecl-intro      . +)
+      (lambda-intro-cont      . +)
+      (objc-method-args-cont  . c-lineup-ObjC-method-args)
+      (objc-method-call-cont
+       ;c-lineup-ObjC-method-call-colons
+       c-lineup-ObjC-method-call +)
+      (objc-method-intro      . [0])
+      )
 
-       ; I don't care about anything that is below -- not using any
-       ; automagick -- but for the sake of having everything set I'll keep
-       ; it here.
+     ; I don't care about anything that is below -- not using any
+     ; automagick -- but for the sake of having everything set I'll keep
+     ; it here.
 
-       (c-hanging-braces-alist         ; Auto new lines around braces
-        ; In most cases new line after open brace and both before and
-        ; after close brace.  The "before" is however ommited
-        ; from *-close symbols because when editing normally we will
-        ; be on the new line already -- if we're not, user probably
-        ; knows better.
-        (defun-open             after)
-        (defun-close            after)
-        (class-open             after)
-        (class-close            after)
-        (inline-open            after)
-        (inline-close           after)
-        (extern-lang-open       after)
-        (extern-lang-close      after)
-        (namespace-open         after)
-        (namespace-close        after)
-        (module-open            after)
-        (module-close           after)
-        (composition-open       after)
-        (composition-close      after)
+     (c-hanging-braces-alist         ; Auto new lines around braces
+      ; In most cases new line after open brace and both before and
+      ; after close brace.  The "before" is however ommited
+      ; from *-close symbols because when editing normally we will
+      ; be on the new line already -- if we're not, user probably
+      ; knows better.
+      (defun-open             after)
+      (defun-close            after)
+      (class-open             after)
+      (class-close            after)
+      (inline-open            after)
+      (inline-close           after)
+      (extern-lang-open       after)
+      (extern-lang-close      after)
+      (namespace-open         after)
+      (namespace-close        after)
+      (module-open            after)
+      (module-close           after)
+      (composition-open       after)
+      (composition-close      after)
 
-        ; No new line after closing brace if it matches do { or if (...) {
-        (block-open             after)
-        (substatement-open      after)
-        (block-close            . c-snug-do-while)
+      ; No new line after closing brace if it matches do { or if (...) {
+      (block-open             after)
+      (substatement-open      after)
+      (block-close            . c-snug-do-while)
 
-        ; With brace-lists however, do nothing automatically -- user knows
-        ; better
-        (brace-list-open        )
-        (brace-list-close       )
-        (brace-list-intro       )
-        (brace-entry-open       )
+      ; With brace-lists however, do nothing automatically -- user knows
+      ; better
+      (brace-list-open        )
+      (brace-list-close       )
+      (brace-list-intro       )
+      (brace-entry-open       )
 
-        ; Others
-        (statement-cont         )
-        (statement-case-open    after)
-        (inexpr-class-open      )
-        (inexpr-class-close     )
-        (arglist-cont-nonempty  )
-        )
+      ; Others
+      (statement-cont         )
+      (statement-case-open    after)
+      (inexpr-class-open      )
+      (inexpr-class-close     )
+      (arglist-cont-nonempty  )
+      )
 
-       (c-hanging-colons-alist
-        ; Add new line after labels
-        (case-label             after)
-        (label                  after)
-        (access-label           after)
-        ; But nothing else
-        (member-init-intro      )
-        (inher-intro            )
+     (c-hanging-colons-alist
+      ; Add new line after labels
+      (case-label             after)
+      (label                  after)
+      (access-label           after)
+      ; But nothing else
+      (member-init-intro      )
+      (inher-intro            )
 
-        (c-hanging-semi&comma-criteria
-         (mn-c-semi&comma-no-newlines-if-open-brace
-          c-semi&comma-no-newlines-before-nonblanks
-          c-semi&comma-inside-parenlist))
-        )))
+      (c-hanging-semi&comma-criteria
+       (mn-c-semi&comma-no-newlines-if-open-brace
+        c-semi&comma-no-newlines-before-nonblanks
+        c-semi&comma-inside-parenlist))
+      )))
 
 
-    (defun mn-c-semi&comma-no-newlines-if-open-brace ()
-      "Prevents newline after semicolon if there is an open brace
+  (defun mn-c-semi&comma-no-newlines-if-open-brace ()
+    "Prevents newline after semicolon if there is an open brace
 on the same line.  Function is a bit stupid and does not check if
 the open brace was real open brace or part of comment/string."
-      (when (let ((p (point))) (save-excursion (forward-line 0)
-                                               (search-forward "{" p t)))
-        'stop))
+    (when (let ((p (point))) (save-excursion (forward-line 0)
+                                             (search-forward "{" p t)))
+      'stop))
 
-    (defun mn-c-lineup-argcont (elem)
-      "Line up a continued argument's operands (assumes there
+  (defun mn-c-lineup-argcont (elem)
+    "Line up a continued argument's operands (assumes there
 will be a single space after an operator ifit starts the line).
 
 foo(xyz, aaa +
@@ -1421,33 +1420,39 @@ but of course only between operand specifications, not in the expressions
 for the operands.
 
 Works with: arglist-cont, arglist-cont-nonempty."
-      (let ((ret (c-lineup-argcont elem)))
-        (if (and (vectorp ret)
-                 (save-excursion
-                   (back-to-indentation)
-                   (looking-at
-                    (eval-when-compile
-                      (regexp-opt
-                       (list
-                        "+" "+=" "++" "-" "-=" "--" "*" "*=" "/" "/=" "%"
-                        "%=" "^" "^=" "&" "&=" "&&" "|" "|=" "||" "<<"
-                        "<<=" ">>" ">>=" "<" "<=" ">" ">=" "=" "==" ":"
-                        "::" "?"))))))
-            (vector (- (elt ret 0) (- (match-end 0) (match-beginning 0)) 1))
-          ret)))
+    (let ((ret (c-lineup-argcont elem)))
+      (if (and (vectorp ret)
+               (save-excursion
+                 (back-to-indentation)
+                 (looking-at
+                  (eval-when-compile
+                    (regexp-opt
+                     (list
+                      "+" "+=" "++" "-" "-=" "--" "*" "*=" "/" "/=" "%"
+                      "%=" "^" "^=" "&" "&=" "&&" "|" "|=" "||" "<<"
+                      "<<=" ">>" ">>=" "<" "<=" ">" ">=" "=" "==" ":"
+                      "::" "?"))))))
+          (vector (- (elt ret 0) (- (match-end 0) (match-beginning 0)) 1))
+        ret)))
 
 
-    (setq c-default-style '((awk-mode . "awk")
-                            (other    . "mina86")))
+  (setq c-default-style '((awk-mode . "awk")
+                          (other    . "mina86")))
 
-    (eval-after-load "compile"
-      (add-lambda-hook 'c-common-mode-hook
-        (when buffer-file-name
-          (let ((fn (file-name-nondirectory buffer-file-name)))
-            (set (make-local-variable 'compile-command)
-                 (concat "make -k "
-                         (substring
-                          fn 0 (string-match "\\.[^\\.]*$" fn 1))))))))))
+  (add-lambda-hook 'c-common-mode-hook
+    (when buffer-file-name
+      (let ((fn (file-name-nondirectory buffer-file-name)))
+        (set (make-local-variable 'compile-command)
+             (concat "make -k "
+                     (substring
+                      fn 0 (string-match "\\.[^\\.]*$" fn 1)))))))
+
+  (when (load "google-c-style" t)
+    (c-add-style "google" google-c-style)
+    (add-lambda-hook 'c-mode-hook
+      (and buffer-file-name
+           (string-match-p "/google3/" buffer-file-name)
+           (c-set-style "google")))))
 
 ;;}}}
 ;;{{{   HTML/XML & comapny Mode
