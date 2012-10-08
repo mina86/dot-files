@@ -876,14 +876,14 @@ non-nill or `compile' otherwise."
 
 ;; Show blanks and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
-(add-hook 'font-lock-mode-hook (function (lambda ()
+(add-lambda-hook 'font-lock-mode-hook
   (unless (eq 'diff-mode major-mode)
     (font-lock-add-keywords nil
      '(("\t+" 0 'my-tab-face t)
        ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
        ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
        ("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
-       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))))
+       ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))
 
 ;;{{{ Set faces
 
