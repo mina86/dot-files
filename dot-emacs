@@ -940,8 +940,9 @@ non-nill or `compile' otherwise."
 (setq blink-matching-paren-distance nil) ;search for open-paren till point-min
 
 ;; Highlight groups of three digits
-(when (load "num3")
-  (global-num3-mode t))
+(add-lambda-hook 'after-init-hook
+  (when (fboundp 'global-num3-mode)
+    (global-num3-mode t)))
 
 ;; Show blanks and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
@@ -1094,7 +1095,7 @@ non-nill or `compile' otherwise."
        (my-todo-face
         (t :foreground "red" :weight bold))
 
-       (num3-face
+       (num3-face-even
         (t :underline nil :weight normal :background "#000" :foreground "#CFF"))))
   (let ((face (car entry)) (spec (cdr entry)))
     (unless (facep face)
