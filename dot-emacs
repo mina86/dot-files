@@ -346,7 +346,6 @@ three times - beginning of buffer; four times - back to where it was."
   (save-buffer))
 
 (substitute-key-definition 'save-buffer 'save-no-blanks (current-global-map))
-;(set-key "\C-x\C-s"      save-no-blanks)
 
 ;;}}}
 ;;{{{   Misc
@@ -1165,9 +1164,7 @@ non-nill or `compile' otherwise."
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
 (setq gc-cons-threshold 4000000)  ;bytes before garbage collection
 (setq ange-ftp-try-passive-mode t);passive FTP
-;(setq ange-ftp-ftp-program-name "pftp") ;passive FTP
 (blink-cursor-mode nil)           ;do not blink cursor
-;(setq mouse-autoselect-window nil)  ;focus follows mouse
 (setq-if-bound compilation-auto-jump-to-first-error t)
 (setq-if-bound line-move-visual nil) ;move by logical lines not screen lines
 
@@ -1206,14 +1203,10 @@ rules so it is likely not to work."
 
 (setq indent-tabs-mode t)         ;indent using tabs
 (set-tab 8)                       ;tab width and stop list
-;; One could add this to check if tab-width and c-basic-offset correspond
-;(if (not (= 0 (% c-basic-offset tab-width)))
-;    (warn "`tab-width' does not divide `c-basic-offset'"))
 
 
 ;; Scrolling/moving
 (setq scroll-step 1)              ;scroll one line
-;(setq scroll-preserve-screen-position t) ;keep point's position on screen
 (setq hscroll-step 1)             ;scroll one column
 (setq next-line-add-newlines nil) ;no new lines with down arrow key
 
@@ -1751,35 +1744,18 @@ argument ommited returns that number."
   (set-tab 8)
   (setq-if-bound word-wrap t))
 
-
 ;; Assembler mode
 (add-lambda-hook 'asm-mode-hook
   (set-tab 8 16)
   (setq comment-column 40))
 
-
 ;; Org mode
 (setq org-insert-mode-line-in-empty-file t)
-
-
-;; PHP mode
-;; http://sourceforge.net/projects/php-mode
-(autoload 'php-mode "php-mode" "PHP editing mode" t)
-(add-to-list 'auto-mode-alist '("\\.php\\'" . php-mode))
-
-
-;; Shell mode
-;; This prevents shell commands from being echoed
-(eval-when-compile (require 'shell))
-(add-lambda-hook 'comint-mode-hook
-  (setq comint-process-echoes t))
-
 
 ;; Lisp/Scheme mode
 ;; No tabs! and if opening file with tabs, assume 8-char wide
 (add-lambda-hook '(emacs-lisp-mode-hook lisp-mode-hook scheme-mode-hook)
   (setq indent-tabs-mode nil) (set-tab 8))
-
 
 ;; Sawfish mode
 (autoload 'sawfish-mode "sawfish" "Mode for editing Sawfish config files")
@@ -1792,27 +1768,9 @@ argument ommited returns that number."
 (setq bison-decl-type-column   8)
 (setq bison-decl-token-column 16)
 
-
 ;; Flex
 (autoload 'flex-mode "flex-mode")
 (add-to-list 'auto-mode-alist '("\\.l$" . flex-mode))
-
-
-;; LSL mode
-(autoload 'lsl-mode "lsl-mode" "Load LSL mode." t)
-(add-to-list 'auto-mode-alist '("\\.lsl$" . lsl-mode))
-(add-lambda-hook 'lsl-mode-hook (setq indent-tabs-mode nil))
-
-
-;; Haskell mode
-(when (eval-when-compile
-        (file-directory-p (concat user-emacs-directory "elisp/haskell-mode")))
-  (setq load-path (cons (concat user-emacs-directory "elisp/haskell-mode") load-path))
-;  (require 'haskell-indentation)
-  (autoload 'haskell-mode "haskell-mode" "Load Haskell mode." t)
-  (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation))
 
 ;;}}}
 
