@@ -1967,9 +1967,3 @@ argument ommited returns that number."
   (server-start))
 
 ;;}}}
-
-;; Clear messages
-;; You may want to comment it out for debuging
-(setq message-log-max nil)        ;disable messages
-
-(kill-buffer "*Messages*")        ;kill buffer with messages
