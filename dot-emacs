@@ -120,18 +120,9 @@ use `use-region-p'."
 (require 'bytecomp)
 
 (defvar auto-byte-compile-files-list
-  (let ((ghd (or (and (boundp 'gnus-home-directory) gnus-home-directory)
-                 (expand-file-name "~/.gnus"))))
-    (cond
-     ((string-match "\\.elc$" (or user-init-file (expand-file-name "~/.emacs.d/init.el")))
-      (list (substring user-init-file 0 -4)
-            (substring user-init-file 0 -1)
-            (concat ghd "/.gnus")
-            (concat ghd "/.gnus.el")))
-     (t
-      (list user-init-file
-            (concat ghd "/.gnus")
-            (concat ghd "/.gnus.el")))))
+  (list (or user-init-file
+            (concat user-emacs-directory "/init.el"))
+        (concat user-emacs-directory "/mail.el"))
   "List of files to auto compile")
 
 (defun auto-byte-compile-file (&optional file match regexp)
@@ -679,13 +670,7 @@ IF `use-region-p' then it calls `fill-region', otherwise --
 ;;}}}
 ;;{{{     F2 - find configuration files
 
-(set-key [(f2)]         (find-file
-                         (if (string-match "\\.elc$" user-init-file)
-                             (if (file-exists-p
-                                  (substring user-init-file 0 -1))
-                                 (substring user-init-file 0 -1)
-                               (substring user-init-file 0 -4))
-                           user-init-file)))
+(set-key [(f2)]         (find-file user-init-file))
 (set-key [(control f2)] (find-file (concat user-emacs-directory "/mail.el")))
 (set-key [(meta f2)]    (find-file custom-file))
 ;(set-key [(shift f2)]   (find-file "~/.bashrc"))
