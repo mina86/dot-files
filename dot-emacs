@@ -45,17 +45,6 @@ use `use-region-p'."
 ;;}}}
 ;;{{{ System dependend data and directories
 
-;; Gnus
-(let ((gnus-dir (expand-file-name "~/.gnus")))
-  (when (eval-when-compile (file-directory-p (expand-file-name "~/.gnus")))
-    (setq gnus-home-directory gnus-dir
-          gnus-init-file
-          (concat gnus-dir
-                  (if (file-exists-p (concat gnus-dir "/.gnus"))
-                      "/.gnus" "/.gnus.el"))
-          load-path (cons (concat gnus-home-directory "/gnus/lisp") load-path)
-          message-directory (concat gnus-home-directory "/Mail"))))
-
 ;; Make sure user-emacs-directory is defined
 (if (string-equal user-emacs-directory "")
     (setq user-emacs-directory (expand-file-name "~/.emacs.d")))
@@ -70,6 +59,9 @@ use `use-region-p'."
 
 ;; Local
 (load (concat user-emacs-directory "local.el") t)
+
+;; notmuch
+(autoload 'notmuch (concat user-emacs-directory "mail.el") "notmuch mail" t)
 
 ;; Packages repositories
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -694,21 +686,14 @@ IF `use-region-p' then it calls `fill-region', otherwise --
                                  (substring user-init-file 0 -1)
                                (substring user-init-file 0 -4))
                            user-init-file)))
-(set-key [(control f2)] (find-file "~/.gnus/.gnus.el"))
+(set-key [(control f2)] (find-file (concat user-emacs-directory "/mail.el")))
 (set-key [(meta f2)]    (find-file custom-file))
 ;(set-key [(shift f2)]   (find-file "~/.bashrc"))
 
 ;;}}}
-;;{{{     F5 - Gnus
+;;{{{     F5 - Mail
 
-;; http://www.emacswiki.org/cgi-bin/wiki/SwitchToGnus
-(set-key [(f5)]
-  (cond
-   ((eq major-mode 'gnus-group-mode)
-    (and (fboundp 'gnus-group-get-new-news) (gnus-group-get-new-news)))
-   ((and (boundp 'gnus-group-buffer) (fboundp 'gnus-alive-p) (gnus-alive-p))
-    (switch-to-buffer (with-no-warnings gnus-group-buffer)))
-   ((gnus))))
+(set-key [(f5)] notmuch)
 
 ;;}}}
 ;;{{{     F7 - spell checking

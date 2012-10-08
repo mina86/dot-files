@@ -181,7 +181,7 @@ Xresources         ~/.
 bash_profile       ~/.
 bashrc             ~/.
 dot-emacs          ~/.emacs.d/init.el
-dot-gnus           ~/.gnus/.gnus.el
+dot-mail           ~/.emacs.d/mail.el
 gitconfig          ~/.
 gitignore          ~/.
 inputrc            ~/.
