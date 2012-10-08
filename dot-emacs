@@ -488,14 +488,83 @@ uninteresting.  This comes as an addition to
 ;;}}}
 ;;{{{   Just one space
 
-(defun mn-just-one-space ()
-  "When called for the first time Works just like `just-one-space'.
-When called second time deletes all spaces, tabs and new lines after
-the point."
-  (interactive)
-  (just-one-space (if (equal last-command this-command) -1 1)))
+(defvar smart-space--context nil
+  "Store context used in consecutive calls to `smart-space' command.
+The first time this function is run, it saves the original point
+position and original spacing around the point in this variable.")
 
-(substitute-key-definition 'just-one-space 'mn-just-one-space
+(defun smart-space (&optional n preserve-nl-back single-shot)
+  "Manipulate spaces around the point in a smart way.
+
+When run as an interactive command, the first time it's called
+in a sequence, deletes all spaces and tabs around point leaving
+one (or N spaces).  If this does not change content of the
+buffer, skips to the second step:
+
+When run for the second time in a sequence, deletes all the
+spaces it has previously inserted.
+
+When run for the third time, returns the whitespace and point in
+a state encountered when it had been run for the first time.
+
+So, for example, if buffer contains \"foo ^ bar\" with \"^\"
+donating the point, calling `smart-space' command will replace
+two spaces with a single space, calling it again immediately
+after, will remove all spaces, and calling it for the third time
+will bring two spaces back together.
+
+If N is negative, delete newlines as well.  However, if
+PRESERVE-NL-BACK is non-nill, regardless of the value of N, new line
+characters won't be removed prior to the point.
+
+If SINGLE-SHOT is non-nil, will only perform the first step.  In
+other words, it will work just like `just-on-space' command."
+  (interactive "*p")
+  (let ((orig-pos        (point))
+        (skip-characters (if (and n (< n 0)) " \t\n\r" " \t"))
+        (n               (abs (or n 1))))
+    (skip-chars-backward (if preserve-nl-back " \t" skip-characters))
+    (constrain-to-field nil orig-pos)
+    (cond
+     ;; Comman run for the first time or single-shot is non-nil
+     ((or single-shot
+          (not (equal last-command this-command))
+          (not smart-space--context))
+      (let* ((start (point))
+             (n     (- n (skip-chars-forward " " (+ n (point)))))
+             (mid   (point))
+             (end   (progn
+                      (skip-chars-forward skip-characters)
+                      (constrain-to-field nil orig-pos t))))
+        (setq smart-space--context  ;; Save for later
+              ;; Special handling for case where there was no space at all
+              (unless (= start end)
+                (cons orig-pos (buffer-substring start (point)))))
+        ;; If this run causes no change in buffer content, delete all spaces,
+        ;; otherwise delete all excees spaces.
+        (delete-region (if (and (not single-shot) (zerop n) (= mid end))
+                           start mid) end)
+        (dotimes (_ n)
+          (insert ?\s))))
+
+     ;; Command run for the second time
+     ((not (equal orig-pos (point)))
+      (delete-region (point) orig-pos))
+
+     ;; Command run for the third time
+     (t
+      (insert (cdr smart-space--context))
+      (goto-char (car smart-space--context))
+      (setq smart-space--context nil)))))
+
+(defun just-one-space (&optional n)
+  "Delete all spaces and tabs around point, leaving one space (or N spaces).
+If N is negative, delete newlines as well."
+  (smart-space n nil t))
+
+(defun mn-smart-space () (interactive) (smart-space -1 t))
+
+(substitute-key-definition 'just-one-space 'mn-smart-space
                            (current-global-map))
 
 ;;}}}
