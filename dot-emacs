@@ -1955,9 +1955,10 @@ argument ommited returns that number."
 ;;}}}
 ;;{{{   Fill Column Indicator
 
-(when (load "fill-column-indicator" t)
-  (define-globalized-minor-mode global-fci-mode fci-mode turn-on-fci-mode)
-  (global-fci-mode 1))
+(add-lambda-hook 'after-init-hook
+  (when (fboundp 'fci-mode)
+    (define-globalized-minor-mode global-fci-mode fci-mode turn-on-fci-mode)
+    (global-fci-mode 1)))
 
 ;;}}}
 
