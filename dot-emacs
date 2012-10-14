@@ -1252,6 +1252,10 @@ See `sort-regexp-fields'."
 
 ;;{{{   CC Mode
 
+(eval-when-compile ; make compiler happy
+  (require 'cc-mode)
+  (load "google-c-style" t))
+
 (add-lambda-hook 'c-initialization-hook
   (c-add-style
    "mina86"
