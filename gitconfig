@@ -23,7 +23,6 @@
 	wip    = commit -m wip
 	co     = checkout
 	df     = diff -p --stat
-	cached = diff -p --stat --cached
 	ch     = diff -p --stat --cached
 	pick   = cherry-pick
 	rb     = rebase
@@ -41,14 +40,10 @@
 	k      = !gitk
 	edit   = "!f() { GIT_EDITOR=\"sed -i 1s/pick/edit/\" git rebase -i \"$1\"~; }; f"
 	ed     = edit
-	tpush  = !tsocks git push
 	patch  = "!f() { file=\"$1\"; shift; patch -p1 <$file \"$@\"; }; f"
 [user]
 	name = Michal Nazarewicz
 	email = mina86@mina86.com
-;[i18n]
-	;commitencoding = ISO-8859-2
-	;logoutputencoding = ISO-8859-2
 [core]
 	pager = less -FRSX
 [push]
@@ -64,8 +59,6 @@
 
 [sendemail]
 	from = Michal Nazarewicz <mina86@mina86.com>
-	; format-patch takes care of threading
-	thread = no
 	confirm = always
 [gui]
 	spellingdictionary = en_GB
