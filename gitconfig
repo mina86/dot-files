@@ -19,7 +19,7 @@
 	br     = branch -v
 	ci     = commit
 	amend  = commit --amend
-	fixup  = commit --amend -C HEAD
+	fix    = "!f() { if [ $# -eq 0 ]; then git commit --amend -C HEAD; else git commit --fixup \"$@\"; fi; }; f"
 	wip    = commit -m wip
 	co     = checkout
 	df     = diff -p --stat
@@ -41,7 +41,6 @@
 	k      = !gitk
 	edit   = "!f() { GIT_EDITOR=\"sed -i 1s/pick/edit/\" git rebase -i \"$1\"~; }; f"
 	ed     = edit
-	fix    = "!f() { git commit -m\"fixup! $(git log -1 --pretty=%s $1)\"; }; f"
 	tpush  = !tsocks git push
 	patch  = "!f() { file=\"$1\"; shift; patch -p1 <$file \"$@\"; }; f"
 [user]
