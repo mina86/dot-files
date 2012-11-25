@@ -75,27 +75,19 @@ fi
 ## Interactive asking
 ##
 if $INTERACTIVE; then
-	difference () {
-		case "$1" in [dD])
-			set -- r "$3" "$2"
-		esac
+	ask() {
 		if which cdiff >/dev/null 2>&1; then
-			cdiff -u "$2" "$3"
+			cdiff -u "$2" "$1"
 		else
-			diff  -u "$2" "$3"
+			diff  -u "$2" "$1"
 		fi
-	}
 
-	ask () {
 		while :; do
-			printf '%s: [yndre?] ' "$2"
+			printf '%s: [yn] ' "$2"
 			read answer || exit 0
 			case "$answer" in
 			[yY]) return 0 ;;
 			[nN]) return 1 ;;
-			[dDrR]) difference $answer "$1" "$2" ;;
-			[eE]) exit 0 ;;
-			'?') echo 'y - copy, n - skip, d - diff, r - reverse diff, e - exit'
 			esac
 		done
 	}
