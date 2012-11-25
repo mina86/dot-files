@@ -41,8 +41,6 @@ while [ x"${1#-}" != x"$1" ]; do
 	done
 done
 
-[ -n "$DIRECTION" ] || usage
-
 
 ##
 ## Print info
