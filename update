@@ -101,24 +101,16 @@ fi
 ##
 ## Backup & copy
 ##
-if $BACKUP; then
-	cp_backup () {
-		if ! [ -e "$2" ]; then
-			cp -v -- "$1" "$2"
-		elif ! cmp -s -- "$1" "$2" && ask "$1" "$2"; then
+cp_backup() {
+	if ! [ -e "$2" ]; then
+		cp -v -- "$1" "$2"
+	elif ! cmp -s -- "$1" "$2" && ask "$1" "$2"; then
+		if $BACKUP; then
 			mv -- "$2" "$2~"
-			cp -v -- "$1" "$2"
 		fi
-	}
-else
-	cp_backup () {
-		if ! [ -e "$2" ]; then
-			cp -v -- "$1" "$2"
-		elif ! cmp -s -- "$1" "$2" && ask "$1" "$2"; then
-			cp -v -- "$1" "$2"
-		fi
-	}
-fi
+		cp -v -- "$1" "$2"
+	fi
+}
 
 
 ##
