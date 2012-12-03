@@ -1161,7 +1161,10 @@ non-nill or `compile' otherwise."
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
 (setq gc-cons-threshold 4000000)  ;bytes before garbage collection
 (setq ange-ftp-try-passive-mode t);passive FTP
-(blink-cursor-mode nil)           ;do not blink cursor
+(blink-cursor-mode -1)            ;do not blink cursor
+(setq blink-cursor-alist '((t      . box)  ;seriously, don't blink,
+                           (box    . box)) ;blink-cursor-mode does not
+      cursor-type 'box)                    ;work for me.
 (setq-if-bound compilation-auto-jump-to-first-error t)
 (setq-if-bound line-move-visual nil) ;move by logical lines not screen lines
 
