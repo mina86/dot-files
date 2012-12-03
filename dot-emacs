@@ -1,6 +1,7 @@
 ;;                                -*- mode: emacs-lisp; lexical-binding: t -*-
 ;; .emacs  -- Emacs configuration file
-;; Copyright 2004-2011 by Michal Nazarewicz (mina86@mina86.com)
+;; Copyright 2004-2012 by Michal Nazarewicz (mina86@mina86.com)
+;; Some parts of the code may be © by their respective authors.
 ;;
 ;;{{{ Compatibility with old Emacses
 
