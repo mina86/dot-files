@@ -99,8 +99,9 @@ URxvt.color14:         #00FFFF
 URxvt.color15:         #FFFFFF
 
 ! Terminal in urxvt
+URxvt.perl-lib: {{HOME}}/.urxvt
 Term.perl-ext-common:  matcher,tabbedex,selection-popup,option-popup,searchable-scrollback<M-s>,selection-pastebin
-URxvt.perl-lib: /home/mina86/.urxvt
+URxvt.backgroundPixmap: {{HOME}}/.urxvt/80-char.png;0x0+0+0:tile
 URxvt.tabbed.new-button: false
 URxvt.tabbed.autohide: true
 URxvt.tabbed.tabs-style: nonum nopipe

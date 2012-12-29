@@ -103,14 +103,51 @@ fi
 ##
 cp_backup() {
 	if ! [ -e "$2" ]; then
-		cp -v -- "$1" "$2"
+		cp "$1" "$2"
+		return 0
 	elif ! cmp -s -- "$1" "$2" && ask "$1" "$2"; then
 		if $BACKUP; then
 			mv -- "$2" "$2~"
 		fi
-		cp -v -- "$1" "$2"
+		cp "$1" "$2"
+		return 0
+	else
+		return 1
 	fi
 }
+
+cp_backup_from() {
+	cp_backup "$2" "$1"
+}
+
+cp_backup_to() {
+	cp_backup "$@"
+}
+
+##
+## Template handling
+##
+TEMPFILE=$(umask 077; tempfile -d /tmp)
+trap 'rm -f -- "$TEMPFILE"' 0
+
+cp_tpl_from() {
+	if ! [ -e "$1" ]; then
+		sed "s-$HOME-{{HOME}}-g" <$2 >$1
+	else
+		sed "s-{{HOME}}-$HOME-g" <$1 >$TEMPFILE
+		if cp_backup "$2" "$TEMPFILE"; then
+			sed "s-$HOME-{{HOME}}-g" <$TEMPFILE >$1
+		fi
+	fi
+}
+
+cp_tpl_to() {
+	if [ -e "$1" ]; then
+		sed "s-{{HOME}}-$HOME-g" <$1 >$TEMPFILE
+		cp_backup "$TEMPFILE" "$2"
+	fi
+}
+
 
 
 ##
@@ -121,14 +158,20 @@ handle() {
 		case "$DEST" in '~'*)   DEST=$HOME${DEST#'~'}; esac
 		case "$DEST" in */@)    DEST=${DEST%@}${FILE##*/}; esac
 		case "$DEST" in */.|*/) DEST=$DEST$FILE; esac
+
 		if ! [ -d "${DEST%/*}" ]; then
 			echo "Skipping $FILE"
-		else
-			case "$DIRECTION" in
-			from) cp_backup "$DEST" "$FILE" <&3 ;;
-			to)   cp_backup "$FILE" "$DEST" <&3 ;;
-			esac
+			return 0
 		fi
+
+		case "$FILE" in
+		*.tpl)
+			DEST=${DEST%.tpl}
+			cp_tpl_$DIRECTION "$FILE" "$DEST" <&3
+			;;
+		*)
+			cp_backup_$DIRECTION "$FILE" "$DEST" cp <&3 || true
+		esac
 	fi
 }
 
@@ -150,7 +193,7 @@ while read FILE DEST; do
 		handle "$@"
 	esac
 done 3<&1 <<EOF
-Xresources         ~/.
+Xresources.tpl     ~/.
 bash_profile       ~/.
 bashrc             ~/.
 dot-emacs          ~/.emacs.d/init.el
