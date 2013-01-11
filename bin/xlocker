@@ -1,0 +1,18 @@
+#!/bin/sh
+
+playing_file=$(umask 077; mktemp)
+trap 'rm -f -- "$playing_file"' 0
+
+(
+	if music pause-maybe; then
+		ln -sf ~/bin/music "$playing_file"
+	fi
+
+	sleep 1
+	exec xset dpms force off
+) &
+
+xlock -mode blank -bg black -fg gray3
+
+set -- toggle
+. "$playing_file"
