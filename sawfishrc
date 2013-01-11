@@ -214,11 +214,13 @@ Windows are matched in most recently focused first order."
    (?o  "Geeqie"         "geeqie")
 
    (?l  .                "xlocker")
-   (?"  .                "mpc seek 0:00:00" ;"; Make system highlighting happy
+   (?"  .                "music rewind" ;"; Make source highlighting happy
      )
-   (?'  .                "mpc prev")
-   (?j  .                "mpc toggle")
-   (?k  .                "mpc next")))
+   (?'  .                "music prev")
+   (?j  .                "music toggle")
+   (?k  .                "music next")
+
+   (?i   .               "/home/mpn/bin/getotp")))
 
 ;; Run some applications
 (add-hook 'after-initialization-hook
