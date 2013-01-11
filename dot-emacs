@@ -1585,11 +1585,6 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
                                   ("-"          1 " –")
                                   ("–"          1 "—")
                                   ("&#8211;"    7 "—")))
-  (mn-magick-self-insert-define mode-map "/"
-                                '(("<"          1
-                                   (lambda (n)
-                                     (backward-delete-char 1)
-                                     (nxml-finish-element)))))
   (mn-magick-self-insert-define mode-map [(backspace)]
                                 '(("&lt;"       4 "<")
                                   ("«"          1 "&lt;")
@@ -1627,6 +1622,9 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
 
 (when (fboundp 'nxml-mode)
   (eval-when-compile (require 'nxml-mode))
+  (setq nxml-slash-auto-complete-flag t
+        nxml-auto-insert-xml-declaration-flag t
+        nxml-bind-meta-tab-to-complete-flag t)
   (add-to-list 'auto-mode-alist '("\\.\\(?:x\\|ht\\)ml\\'" . nxml-mode))
   (eval-after-load "nxml-mode"
     (add-lambda-hook 'nxml-mode-hook
