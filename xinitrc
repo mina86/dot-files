@@ -3,6 +3,9 @@
 ## Copyright 2008-2011 by Michal Nazarewicz (mina86@mina86.com)
 
 cd ~
+
+exec >>/tmp/sawfish-log 2>&1
+
 for DIR in /usr/X11R6/lib/X11/xinit/ .; do
 	[ -f "$DIR/.Xresources" ]  && xrdb -merge "$DIR/.Xresources"
 	[ -f "$DIR/.Xmodmap" ]     && xmodmap     "$DIR/.Xmodmap"
