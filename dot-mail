@@ -118,8 +118,10 @@
       notmuch-message-headers '("Subject" "To" "Cc" "Bcc" "Date")
 
       notmuch-saved-searches
-      '(("unread/me"   . "tag:unread and     ( tag:me or is:sent )")
-        ("unread/rest" . "tag:unread and not ( tag:me or is:sent )"))
+      '(("unread/me"    . "tag:unread and not tag:linux and     tag:me")
+        ("unread/menux" . "tag:unread and     tag:linux and     tag:me")
+        ("unread/linux" . "tag:unread and     tag:linux and not tag:me")
+        ("unread/rest"  . "tag:unread and not tag:linux and not tag:me"))
 
       notmuch-search-result-format
       '(("subject" . " %-69.69s")
