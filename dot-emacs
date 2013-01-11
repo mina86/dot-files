@@ -1883,14 +1883,6 @@ argument ommited returns that number."
 (add-hook 'kill-emacs-hook 'kill-emacs-scratch-save)
 
 ;;}}}
-;;{{{   Fill Column Indicator
-
-(add-lambda-hook 'after-init-hook
-  (when (fboundp 'fci-mode)
-    (define-globalized-minor-mode global-fci-mode fci-mode turn-on-fci-mode)
-    (global-fci-mode 1)))
-
-;;}}}
 
 ;; Start server
 (unless (and (fboundp 'daemonp) (daemonp))
