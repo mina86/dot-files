@@ -198,8 +198,8 @@ bash_profile       ~/.
 bashrc             ~/.
 dot-emacs          ~/.emacs.d/init.el
 dot-mail           ~/.emacs.d/mail.el
-gitconfig          ~/.
-gitignore          ~/.
+git/config         ~/.gitconfig
+git/ignore         ~/.gitignore
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
 profile            ~/.
