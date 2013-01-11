@@ -1,0 +1,9 @@
+alias	lkml	linux-kernel@vger.kernel.org
+alias	usb	linux-usb@vger.kernel.org
+
+alias	alan	Alan Stern <stern@rowland.harvard.edu>
+alias	akpm	Andrew Morton <akpm@linux-foundation.org>
+alias	balbi	Felipe Balbi <balbi@ti.com>
+alias	felipe	Felipe Balbi <balbi@ti.com>
+alias	greg	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+alias	linus	Linus Torvalds <torvalds@linux-foundation.org>

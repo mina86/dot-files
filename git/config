@@ -60,5 +60,7 @@
 [sendemail]
 	from = Michal Nazarewicz <mina86@mina86.com>
 	confirm = always
+	aliasesfile = /home/mpn/.gitaliases
+	aliasfiletype = mutt
 [gui]
 	spellingdictionary = en_GB

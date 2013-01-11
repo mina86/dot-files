@@ -198,6 +198,7 @@ bash_profile       ~/.
 bashrc             ~/.
 dot-emacs          ~/.emacs.d/init.el
 dot-mail           ~/.emacs.d/mail.el
+git/aliases        ~/.gitaliases
 git/config         ~/.gitconfig
 git/ignore         ~/.gitignore
 inputrc            ~/.
