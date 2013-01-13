@@ -144,7 +144,7 @@ cp_tpl_from() {
 cp_tpl_to() {
 	if [ -e "$1" ]; then
 		sed "s-{{HOME}}-$HOME-g" <$1 >$TEMPFILE
-		cp_backup "$TEMPFILE" "$2"
+		cp_backup "$TEMPFILE" "$2" || true
 	fi
 }
 
