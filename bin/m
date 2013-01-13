@@ -1,22 +1,54 @@
 #!/bin/sh
 
 ## MPD
+_mpc() {
+	mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]' "$@" | head -n 1
+}
+
+mpd_file() {
+	FILE="/data/music/$(mpc --format %file% |head -n1)"
+}
+
 mpd_ctl() {
-	case $1 in
+	case ${1:-show} in
 	play|pause|stop|prev|toggle|next)
-		mpc "$@"
+		_mpc "$@"
 		;;
 	rewind)
-		mpc seek 0:00:00
-		;;
-	tag)
-		source ~/bin/libexec/music-tag
+		_mpc seek 0:00:00
 		;;
 	is-playing)
 		mpc -f '' | grep -wq playing
 		;;
+	file|path)
+		mpd_file
+		echo "$FILE"
+		;;
+	dir)
+		mpd_file
+		dirname "$FILE"
+		;;
+	ls)
+		mpd_file
+		DIR=$(dirname "$FILE")
+		printf %s:\\n "$DIR"
+		ls -- "$DIR"
+		;;
+	tag)
+		mpd_file
+		if ! [ -f "$FILE" ]; then
+			printf '%s: file does not exists\n' "$MP3_DIR/$FILE"
+			exit 2
+		fi
+		chmod 755 -- "$FILE"
+		echo "$FILE"
+		_mpc next
+		;;
+	show)
+		_mpc
+		;;
 	*)
-		echo "unknown action: $1"
+		echo "unknown or unsupported action: $1"
 		return 1
 	esac
 }
@@ -36,7 +68,7 @@ spotify_query() {
 }
 
 spotify_ctl() {
-	case "$1" in
+	case ${1:-show} in
 	play)
 		spotify_cmd Play
 		;;
@@ -55,35 +87,37 @@ spotify_ctl() {
 	stop)
 		spotify_cmd Stop
 		;;
-	rewind|tag)
-		echo "$1: unsupported with Spotify"
-		;;
 	is-playing)
 		spotify_query | grep -wq Playing
 		;;
 	*)
-		echo "unknown action: $1"
+		echo "unknown or unsupported action: $1"
 		return 1
 	esac
 }
 
 ## Main part
 if spotify_query >/dev/null 2>&1; then
-	ctl=spotify_ctl
+	player=spotify
 else
-	ctl=mpd_ctl
+	player=mpd
+fi
+
+if [ -e ~/bin/libexec/"music-$player-$1" ]; then
+	source ~/bin/libexec/"music-$player-$1"
+	exit $?
 fi
 
 case $1 in
 pause-maybe)
-	if $ctl is-playing; then
-		$ctl pause
+	if ${player}_ctl is-playing; then
+		${player}_ctl pause
 		exit 0
 	else
 		exit 1
 	fi
 	;;
 *)
-	$ctl  "$@"
+	${player}_ctl "$@"
 	exit $?
 esac
