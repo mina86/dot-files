@@ -737,7 +737,8 @@ With a prefix arg sets global dictionary."
 
 (defun mn-turn-flyspell-on ()
   (cond ((memq major-mode '(c-mode c++-mode php-mode python-mode perl-mode
-                            emacs-lisp-mode lisp-mode scheme-mode diff-mode))
+                            cperl-mode emacs-lisp-mode lisp-mode scheme-mode
+                            diff-mode))
          (flyspell-prog-mode))
         ((memq major-mode '(notmuch-hello-mode notmuch-search-mode
                             notmuch-show-mode)))
@@ -1773,6 +1774,17 @@ argument ommited returns that number."
 ;; Flex
 (autoload 'flex-mode "flex-mode")
 (add-to-list 'auto-mode-alist '("\\.l$" . flex-mode))
+
+;; Use cperl-mode for Perl
+(mapc
+ (lambda (list)
+   (mapc
+    (lambda (pair)
+      (if (eq (cdr pair) 'perl-mode)
+          (setcdr pair 'cperl-mode)))
+    list))
+ (list auto-mode-alist interpreter-mode-alist))
+(setq cperl-invalid-face nil) ; don't highlight trailing white-space
 
 ;;}}}
 
