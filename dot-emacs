@@ -1486,7 +1486,8 @@ Works with: arglist-cont, arglist-cont-nonempty."
                      (substring
                       fn 0 (string-match "\\.[^\\.]*$" fn 1)))))))
 
-  (when (load "google-c-style" t)
+  (when (and (load "google-c-style" t)
+             (boundp 'google-c-style))
     (c-add-style "google" google-c-style)
     (add-lambda-hook 'c-mode-hook
       (and buffer-file-name
