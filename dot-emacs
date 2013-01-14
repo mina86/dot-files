@@ -1198,6 +1198,7 @@ rules so it is likely not to work."
     (setq tab-stop-list (or stop-list (number-sequence tab 120 tab-width)))
     (setq-if-bound c-basic-offset tab-width)
     (setq-if-bound perl-indent-level tab-width)
+    (setq-if-bound js-indent-level tab-width)
     (if negative
         (setq indent-tabs-mode nil)
       (when prefix-arg (setq indent-tabs-mode t)))))
