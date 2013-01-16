@@ -1,8 +1,5 @@
-##                                                      -*- shell-script -*-
-## .shellrc  -- global shell configuration file
-## Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-## $Id: shellrc,v 1.13 2008/07/29 07:38:01 mina86 Exp $
-##
+## .shellrc                                             -*- shell-script -*-
+## Copyright 2004-2013 by Michal Nazarewicz (mina86@mina86.com)
 
 # Not interactive?
 [ X"${-#*i}" != X"$-" ] || return

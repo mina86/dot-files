@@ -1,7 +1,4 @@
-##                                                      -*- shell-script -*-
-## .bash_profile
-## Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-##
+## .bash_profile                                        -*- shell-script -*-
+## Copyright 2004-2013 by Michal Nazarewicz (mina86@mina86.com)
 
-# Source .profile
 . ~/.profile ~/.bashrc

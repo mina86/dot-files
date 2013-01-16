@@ -1,7 +1,5 @@
-##                                                      -*- shell-script -*-
-## .bashrc  -- bash configuration file
-## Copyright 2004-2010 by Michal Nazarewicz (mina86@mina86.com)
-##
+## .bashrc                                              -*- shell-script -*-
+## Copyright 2004-2013 by Michal Nazarewicz (mina86@mina86.com)
 
 # Not interactive?
 [ X"${-#*i}" != X"$-" ] || return

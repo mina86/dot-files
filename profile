@@ -1,7 +1,5 @@
-##                                                      -*- shell-script -*-
-## .profile
-## Copyright 2004-2008 by Michal Nazarewicz (mina86@mina86.com)
-##
+## .profile                                             -*- shell-script -*-
+## Copyright 2004-2013 by Michal Nazarewicz (mina86@mina86.com)
 
 # Set ENV
 export ENV=~/.shellrc
