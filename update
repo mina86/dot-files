@@ -210,7 +210,6 @@ sawfish-lisp/*.jl  ~/.sawfish/lisp/@
 shellrc            ~/.
 statuses           ~/.irssi/
 xinitrc            ~/.
-zshrc              ~/.
 bin/*              ~/
 userjs/*.js        ~/.opera/
 userjs/*.css       ~/.opera/usercss/@
