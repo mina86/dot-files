@@ -1790,7 +1790,9 @@ argument ommited returns that number."
           (setcdr pair 'cperl-mode)))
     list))
  (list auto-mode-alist interpreter-mode-alist))
-(setq cperl-invalid-face nil) ; don't highlight trailing white-space
+(setq cperl-invalid-face nil  ; don't highlight trailing white-space
+      cperl-highlight-variables-indiscriminately t
+      cperl-electric-backspace-untabify nil)
 
 ;; shell-script-mode
 (setq sh-indent-for-case-label 0
