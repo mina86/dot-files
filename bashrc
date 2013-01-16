@@ -203,10 +203,3 @@ fi
 export HISTFILE="/tmp/.$(id -un)-history"
 HISTCONTROL="ignorespace:erasedups"
 HISTIGNORE="ls:su:cd:bc:wp rm:mp3 mv:cd -"
-
-##
-## Some local stuff
-##
-if [ -e ~/.bash_local ]; then
-	. ~/.bash_local
-fi
