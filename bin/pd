@@ -1,0 +1,9 @@
+#!/bin/sh
+
+case "$1" in
+perl*|*::*|-*|*[A-Z]*)
+	exec perldoc "$@"
+	;;
+*)
+	exec perldoc "perl$1"
+esac

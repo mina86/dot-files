@@ -75,22 +75,6 @@ alias rmd=rmdir
 which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
 alias make='nice make'
 
-# Perl stuff
-unalias pf pd 2>/dev/null
-pf () {
-	if [ $# -eq 0 ]; then perldoc perlfunc; else perldoc -f "$@"; fi
-}
-
-pd () {
-	case "$1" in
-		perl*|*::*|-*|*[A-Z]*)
-			perldoc "$@"
-			;;
-		*)
-			perldoc "perl$1"
-	esac
-}
-
 # tinyapps stuff
 if ! which xrun >/dev/null 2>&1; then
 	xrun () { "$@" & }
