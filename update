@@ -156,7 +156,7 @@ cp_tpl_to() {
 handle() {
 	if match "$@"; then
 		case "$DEST" in '~'*)   DEST=$HOME${DEST#'~'}; esac
-		case "$DEST" in */@)    DEST=${DEST%@}${FILE##*/}; esac
+		case "$DEST" in *@)     DEST=${DEST%@}${FILE##*/}; esac
 		case "$DEST" in */.|*/) DEST=$DEST$FILE; esac
 
 		if ! [ -d "${DEST%/*}" ]; then
@@ -194,8 +194,6 @@ while read FILE DEST; do
 	esac
 done 3<&1 <<EOF
 Xresources.tpl     ~/.
-bash_profile       ~/.
-bashrc             ~/.
 dot-emacs          ~/.emacs.d/init.el
 dot-mail           ~/.emacs.d/mail.el
 git/aliases        ~/.gitaliases
@@ -203,14 +201,13 @@ git/config         ~/.gitconfig
 git/ignore         ~/.gitignore
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
-profile            ~/.
 risc-mode.el       ~/.emacs.d/elisp/
 sawfishrc          ~/.sawfish/rc
 sawfish-lisp/*.jl  ~/.sawfish/lisp/@
-shellrc            ~/.
 statuses           ~/.irssi/
 xinitrc            ~/.
 bin/*              ~/
+sh/*               ~/.@
 userjs/*.js        ~/.opera/
 userjs/*.css       ~/.opera/usercss/@
 opera/*.css        ~/.opera/usercss/@
