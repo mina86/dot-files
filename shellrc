@@ -137,16 +137,6 @@ export LESS_TERMCAP_se=$'\E[0m'     # end standout-mode
 export LESS_TERMCAP_ue=$'\E[0m'     # end underline
 export LESS_TERMCAP_me=$'\E[0m'     # end mode
 
-# LaTeX
-TEX=`which platex 2>/dev/null`
-[ -n "$TEX" ] || TEX=`which latex 2>/dev/null`
-[ -n "$TEX" ] || TEX=`which tex 2>/dev/null`
-if [ -z "$TEX" ]; then
-	unset TEX
-else
-	export TEX
-fi
-
 # LS options and colors
 if [ -z "$LS_COLORS" ] && ls --color / >/dev/null 2>&1; then
 	if which dircolors >/dev/null 2>&1; then
