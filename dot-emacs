@@ -1195,13 +1195,17 @@ rules so it is likely not to work."
   (interactive "nTab-width: ")
   (let ((negative (< tab 0)))
     (setq tab-width (abs tab))
-    (setq tab-stop-list (or stop-list (number-sequence tab 120 tab-width)))
-    (setq-if-bound c-basic-offset tab-width)
-    (setq-if-bound perl-indent-level tab-width)
-    (setq-if-bound js-indent-level tab-width)
-    (if negative
-        (setq indent-tabs-mode nil)
-      (when prefix-arg (setq indent-tabs-mode t)))))
+    (set (make-local-variable 'tab-stop-list)
+         (or stop-list (number-sequence tab 120 tab-width)))
+    (mapc
+     (lambda (var)
+       (when (boundp var)
+         (set (make-local-variable var) tab-width)))
+     '(c-basic-offset perl-indent-level cperl-indent-level  js-indent-level
+       sh-basic-offset sh-indentation))
+    (cond
+     (negative (setq indent-tabs-mode nil))
+     (prefix-arg (setq indent-tabs-mode t)))))
 
 (setq indent-tabs-mode t)         ;indent using tabs
 (set-tab 8)                       ;tab width and stop list
@@ -1787,6 +1791,10 @@ argument ommited returns that number."
     list))
  (list auto-mode-alist interpreter-mode-alist))
 (setq cperl-invalid-face nil) ; don't highlight trailing white-space
+
+;; shell-script-mode
+(setq sh-indent-for-case-label 0
+      sh-indent-for-case-alt '+)
 
 ;;}}}
 
