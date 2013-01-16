@@ -10,12 +10,12 @@ export ENV=~/.shellrc
 TMOUT=1200
 
 # Source .shellrc
-if [ x"$1" != xnothing ]; then
-	if [ -n "$1" ] && [ -r "$1" ]; then
-		. "$1"
-	elif [ -r ~/.shellrc ]; then
-		. ~/.shellrc
-	fi
+if [ x"$1" = xnothing ]; then
+	: nothing
+elif [ -r "$1" ]; then
+	. "$1"
+elif [ -r ~/.shellrc ]; then
+	. ~/.shellrc
 fi
 
 # 64/32 bit differences
@@ -25,7 +25,7 @@ if [ x"`uname -m`" = xx86_64 ]; then
 fi
 for dir in ~/.gkrellm2/plugins ~/.fvwm/modules ~/.irssi/modules; do
 	if [ -e "$dir$bits" ]; then
-		rm "$dir" && ln -s "${dir##*/}$bits" "$dir"
+		ln -sf -- "${dir##*/}$bits" "$dir"
 	fi
 done
 
