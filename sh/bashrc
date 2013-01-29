@@ -21,61 +21,52 @@ case "$TERM" in rxvt*)
 	TERM=xterm
 esac
 
+__PS1='\[\e[0;37;44m\]['
 
-# path
-if declare -f tpwd >/dev/null 2>&1; then
-	P='$(tpwd -n 30 {)'
-elif P="$(which tpwd 2>/dev/null)"; then
-	eval "$("$P" --bash)"
-	P='$(tpwd -n 30 {)'
+__sp=
+if [ $UID -eq 0 ]; then
+	__PS1+='\[\e[1;31;44m\]\u\[\e[1;37;44m\]'
+	__sp=' '
+fi
+if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then
+	__PS1+='@\[\e[1;33;44m\]\h '
 else
-	P='\w'
+	__PS1+=$__sp
+fi
+unset __sp
+
+__PS1+='{{}}'
+__PS1+='\[\e[1;32;44m\]'
+
+if declare -f tpwd >/dev/null 2>&1; then
+	__PS1+='$(tpwd -n 30 {)'
+elif which tpwd >/dev/null 2>&1; then
+	eval "$(tpwd --bash)"
+	__PS1+='$(tpwd -n 30 {)'
+else
+	__PS1+='\w'
 fi
 
-
-PS1=
-case "$TERM" in
-dumb)                   # EMACS' eshell  (no colors)
-	PS1+='[\u@\h {{GIT}}'"$P"']\$ '
-	;;
-*)                      # FIXME: I need to check if term sup. colors
-	if [ x"$TERM" != xeterm ]; then
-		__sp=
-		PS1+='\[\e[0;37;44m\]['
-		if [ $UID -eq 0 ]; then
-			PS1+='\[\e[1;31;44m\]\u\[\e[1;37;44m\]'
-			__sp=' '
-		fi
-		if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then
-			PS1+='@\[\e[1;33;44m\]\h '
-		else
-			PS1+=$__sp
-		fi
-		unset __sp
-	fi
-	PS1+='{{GIT}}'
-	PS1+='\[\e[1;32;44m\]'
-	PS1+="$P"
-	PS1+='\[\e[0;37;44m\]]'
-	PS1+='\[\e[0;1;3$(($??5:3))m\]\$\[\e[0m\] '
-esac
+__PS1+='\[\e[0;37;44m\]]'
+__PS1+='\[\e[0;1;3$(($??5:3))m\]\$\[\e[0m\] '
 
 # Add title to terminals
 case "$TERM" in xterm*|rxvt*)
-	PS1+='\[\e]2;'
+	__PS1+='\[\e]2;'
 	case "$(id -nu)@$SSH_CLIENT$SSH_CONNECTION" in
-	mina86@)   PS1+='(\s)' ;;
-	mina86@*)  PS1+='@\h'  ;;
-	*@)        PS1+='\u'   ;;
-	*@*)       PS1+='\u@\u';;
+	mina86@)   __PS1+='(\s)' ;;
+	mina86@*)  __PS1+='@\h'  ;;
+	*@)        __PS1+='\u'   ;;
+	*@*)       __PS1+='\u@\u';;
 	esac
-	PS1+=' \w\007\]'
+	__PS1+=' \w\007\]'
 esac
 PS2=':; '
 
-unset PROMPT_COMMAND P
-export PS1 PS2
+unset P
 
+PROMPT_COMMANDS=:
+PROMPT_COMMAND='PS1=${__PS1//"{{}}"/"$(eval "$PROMPT_COMMANDS")"}'
 
 
 ##
@@ -89,15 +80,18 @@ export PS1 PS2
 # * and of course rewritten a lot by myself
 
 if which git >/dev/null 2>&1; then
-	__PS1=$PS1
+	__GIT_PROMPT=
 	__git_prompt () {
-		test "$PWD" = "$__GIT_PROMPT_PWD" && return 0
+		if [ "x$PWD" = "x$__GIT_PROMPT_PWD" ]; then
+			echo -n "$__GIT_PROMPT "
+			return 0
+		fi
 
 		__GIT_PROMPT_PWD=$PWD
 		local dir
 		dir=$__GIT_PROMPT_GITDIR
 		if ! __GIT_PROMPT_GITDIR=$(git rev-parse --git-dir 2>/dev/null); then
-			PS1=${__PS1//'{{GIT}}'/}
+			__GIT_PROMPT=
 			return 0
 		fi
 
@@ -143,19 +137,19 @@ if which git >/dev/null 2>&1; then
 # 		case "$_flags" in *'u'*) flags+='?'                    ; esac
 
 		case "$flags$state" in                 # branch
-		?*) ps1="\[\e[1;32;44m\]$branch" ;;
-		*)  ps1="\[\e[0;32;44m\]$branch"
+		?*) __GIT_PROMPT="\[\e[1;32;44m\]$branch" ;;
+		*)  __GIT_PROMPT="\[\e[0;32;44m\]$branch"
 		esac
 		case "$state" in ?*)                   # (state)
-			ps1+="\[\e[0;37;44m\]("
-			ps1+="\[\e[0;32;44m\]$state"
-			ps1+="\[\e[0;37;44m\])"
+			__GIT_PROMPT+="\[\e[0;37;44m\]("
+			__GIT_PROMPT+="\[\e[0;32;44m\]$state"
+			__GIT_PROMPT+="\[\e[0;37;44m\])"
 		esac
 		# case "$flags" in ?*)                   # flags
-		# 	ps1+="\[\e[1;31;44m\]$flags\[\e[0;37;44m\]"
+		# 	__GIT_PROMPT+="\[\e[1;31;44m\]$flags\[\e[0;37;44m\]"
 		# esac
 
-		PS1=${__PS1//'{{GIT}}'/"$ps1 "}
+		echo -n "$__GIT_PROMPT "
 	}
 
 	g () {
@@ -175,9 +169,7 @@ if which git >/dev/null 2>&1; then
 
 	}
 
-	PROMPT_COMMAND='__git_prompt'
-else
-	PS1=${PS1//'{{GIT}}'/}
+	PROMPT_COMMANDS+=' ; __git_prompt'
 fi
 
 
