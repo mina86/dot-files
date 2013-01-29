@@ -1,14 +1,36 @@
 $include /etc/inputrc
 
+set convert-meta off
+set input-meta on
+set output-meta on
+
 set editing-mode emacs
+set horizontal-scroll-mode off
+
+set mark-directories on
 set mark-symlinked-directories on
+
 set expand-tilde on
+
+set menu-complete-display-prefix on
+set skip-completed-text on
+set match-hidden-files off
+set show-all-if-unmodified on
+
 set history-preserve-point on
+Control-p: history-search-backward
+Control-n: history-search-forward
+"\e\e[A": menu-complete-backward
+"\e\e[B": menu-complete
+Control-d: delete-char-or-list
 
-Control-u: universal-argument
+Control-w: kill-word
 
-"\C-p": history-search-backward
-"\C-n": history-search-forward
+Control-l: redraw-current-line
+
+"\C-xf": dump-functions
+"\C-xm": dump-macros
+"\C-xv": dump-variables
 
 $if Bash
     Space: magic-space
