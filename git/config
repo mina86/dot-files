@@ -62,5 +62,7 @@
 	confirm = always
 	aliasesfile = /home/mpn/.gitaliases
 	aliasfiletype = mutt
+	suppresscc = author
+
 [gui]
 	spellingdictionary = en_GB
