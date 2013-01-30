@@ -18,7 +18,7 @@ bits=32
 if [ x"`uname -m`" = xx86_64 ]; then
 	bits=64
 fi
-for dir in ~/.gkrellm2/plugins ~/.fvwm/modules ~/.irssi/modules; do
+for dir in ~/.gkrellm2/plugins ~/.irssi/modules; do
 	if [ -e "$dir$bits" ]; then
 		ln -sf -- "${dir##*/}$bits" "$dir"
 	fi
