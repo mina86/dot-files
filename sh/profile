@@ -4,9 +4,6 @@
 # Set ENV
 export ENV=~/.shellrc
 
-# Auto logout on time out
-TMOUT=1200
-
 # Source .shellrc
 if [ x"$1" = xnothing ]; then
 	: nothing
