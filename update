@@ -127,7 +127,7 @@ cp_backup_to() {
 ##
 ## Template handling
 ##
-TEMPFILE=$(umask 077; tempfile -d /tmp)
+TEMPFILE=$(umask 077; mktemp)
 trap 'rm -f -- "$TEMPFILE"' 0
 
 cp_tpl_from() {
