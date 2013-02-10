@@ -132,18 +132,18 @@ trap 'rm -f -- "$TEMPFILE"' 0
 
 cp_tpl_from() {
 	if ! [ -e "$1" ]; then
-		sed "s-$HOME-{{HOME}}-g" <$2 >$1
+		sed "s#$HOME#{{HOME}}#g" <$2 >$1
 	else
-		sed "s-{{HOME}}-$HOME-g" <$1 >$TEMPFILE
+		sed "s#{{HOME}}#$HOME#g" <$1 >$TEMPFILE
 		if cp_backup "$2" "$TEMPFILE"; then
-			sed "s-$HOME-{{HOME}}-g" <$TEMPFILE >$1
+			sed "s#$HOME#{{HOME}}#g" <$TEMPFILE >$1
 		fi
 	fi
 }
 
 cp_tpl_to() {
 	if [ -e "$1" ]; then
-		sed "s-{{HOME}}-$HOME-g" <$1 >$TEMPFILE
+		sed "s#{{HOME}}#$HOME#g" <$1 >$TEMPFILE
 		cp_backup "$TEMPFILE" "$2" || true
 	fi
 }
