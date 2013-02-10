@@ -28,6 +28,7 @@ for dir in ~/.gkrellm2/plugins ~/.fvwm/modules ~/.irssi/modules; do
 done
 
 # Start emacs if not running
-if ! [ -e /tmp/emacs$UID/server ]; then
-	xrun emacs --daemon
+if which emacs >/dev/null 2>/dev/null &&
+   ! [ -e /tmp/emacs$UID/server ]; then
+	emacs --daemon
 fi
