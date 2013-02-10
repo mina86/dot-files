@@ -1,27 +1,95 @@
 #!/bin/sh
 
-# If "$1" is not one of the known commands, assume install
-case "$1" in
-install|remove|purge|hold|unhold|markauto|unmarkauto|forbid-version|update|upgrade|safe-upgrade|full-upgrade|forget-new|search|show|clean|autoclean|changelog|download|reinstall|why|why-not)
-	;;
-	?*)
-		set -- install "$@"
-esac
-
 have() {
 	have=`which "$1" 2>/dev/null` && test -n "$have"
 }
 
+if ! have apt-get && ! have yum; then
+	echo "a: could not find package manager software" >&2
+	exit 1
+fi
+cmd=$have
+
 if [ 0 -eq $(id -u) ]; then
-	if have apt-get || have aptitude; then
-		"$have" "$@"
-	fi
-	if [ $# -eq 1 ] && [ x"$1" = xupdate ] && have apt-file; then
-		apt-file update
-	fi
-elif have sudo || have s; then
-	exec "$have" "$0" "$@"
+	sudo=
+elif have sudo; then
+	sudo=sudo
+elif have s; then
+	sudo=s
 else
 	echo 'a requires s or sudo' >&2
 	exit 1
+fi
+
+# If "$1" is not one of the known commands, assume install.  Also do some
+# mapping so yum commands look more like apt-get commands.  I have nothing
+# against yum but I'm more used to apt-get.
+case "${cmd##*/}:$1" in
+yum:remove|yum:purge)
+	shift
+	set -- erase "$@"
+	;;
+
+yum:--help)
+	shift
+	set -- help "$@"
+	;;
+
+yum:check | \
+yum:check-update | \
+yum:clean | \
+yum:deplist | \
+yum:distribution-synchronization | \
+yum:downgrade | \
+yum:groupinfo | \
+yum:groupinstall | \
+yum:grouplist | \
+yum:groupremove | \
+yum:history | \
+yum:info | \
+yum:install | \
+yum:list | \
+yum:load-transaction | \
+yum:makecache | \
+yum:provides | \
+yum:reinstall | \
+yum:repolist | \
+yum:resolvedep | \
+yum:search | \
+yum:shell | \
+yum:update-minimal | \
+yum:updateinfo | \
+yum:upgrade | \
+yum:help | \
+apt-get:install | \
+apt-get:remove | \
+apt-get:purge | \
+apt-get:hold | \
+apt-get:unhold | \
+apt-get:markauto | \
+apt-get:unmarkauto | \
+apt-get:forbid-version | \
+apt-get:update | \
+apt-get:upgrade | \
+apt-get:safe-upgrade | \
+apt-get:full-upgrade | \
+apt-get:forget-new | \
+apt-get:search | \
+apt-get:show | \
+apt-get:clean | \
+apt-get:autoclean | \
+apt-get:changelog | \
+apt-get:download | \
+apt-get:reinstall | \
+apt-get:why | \
+apt-get:why-not)
+	;;
+
+*:?*)
+	set -- install "$@"
+esac
+
+$sudo "$cmd" "$@"
+if [ $# -eq 1 ] && [ x"$cmd:$1" = xapt-get:update ] && have apt-file; then
+	exec $sudo apt-file update
 fi
