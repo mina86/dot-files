@@ -51,8 +51,8 @@ fi
 	if [ -f ~/.wallpaper.bmp ]; then
 		run Esetroot -scale ~/.wallpaper.bmp &
 	fi
-) >/dev/null 2>&1 </dev/null &
 
+) &
 
 if has gpg-agent; then
 	exec gpg-agent --daemon sawfish
