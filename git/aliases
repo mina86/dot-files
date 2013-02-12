@@ -1,5 +1,6 @@
 alias	lkml	linux-kernel@vger.kernel.org
 alias	usb	linux-usb@vger.kernel.org
+alias	git	git@vger.kernel.org
 
 alias	emacs	emacs-devel@gnu.org
 
