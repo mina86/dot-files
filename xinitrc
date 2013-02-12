@@ -1,4 +1,3 @@
-
 ## .xinitrc  -- X init script
 ## Copyright 2008-2011 by Michal Nazarewicz (mina86@mina86.com)
 
@@ -21,9 +20,7 @@ has() {
 	run() {
 		if has "$1"; then
 			"$@"
-			return 0
 		fi
-		return 1
 	}
 
 	xset -b -c r rate 250 50 s off +dpms
