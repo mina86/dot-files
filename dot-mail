@@ -1,6 +1,6 @@
 ;;                                -*- mode: emacs-lisp; lexical-binding: t -*-
 ;; mail.el  -- Mail configuration file
-;; Copyright 2006-2012 by Michal Nazarewicz (mina86@mina86.com)
+;; Copyright 2006-2013 by Michal Nazarewicz (mina86@mina86.com)
 ;;
 
 ;;{{{ Identify
@@ -37,18 +37,16 @@
         (when has-corp
           `(("non-google-address"
              ,(lambda ()
-                (save-excursion
-                  (save-restriction
-                    (message-narrow-to-headers)
-                    (goto-char (point-min))
-                    (catch 'break
-                      (let ((n 0))
-                        (while (re-search-forward "@[-A-Za-z0-9.]+" nil t)
-                          (when (string= "@google.com"
-                                         (downcase (match-string-no-properties 0)))
-                            (throw 'break nil))
-                          (setq n (1+ n)))
-                        (not (= n 0)))))))
+                (save-restriction
+                  (message-narrow-to-headers)
+                  (catch 'break
+                    (let ((val (mapconcat 'message-fetch-field
+                                          '("to" "cc" "bcc") " ")))
+                      (set-match-data (list 0 0))
+                      (while (string-match "@[-A-Za-z0-9.]+" val (match-end 0))
+                        (unless (string= "@google.com"
+                                         (downcase (match-string 0 val)))
+                          (throw 'break t)))))))
              "priv")))
 
         gnus-alias-default-identity
@@ -57,8 +55,8 @@
   (add-hook 'message-setup-hook 'gnus-alias-determine-identity))
 
 ;;}}}
-
 ;;{{{ Message mode
+
 (setq message-directory          (expand-file-name "~/.mail/Mail")
       nndraft-directory          (expand-file-name "~/.mail/Drafts")
       nnml-use-compressed-files  t)
