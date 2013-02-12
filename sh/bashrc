@@ -14,13 +14,6 @@ fi
 ## Prompt
 ##
 
-# Bash seems to have some problems with TERM=rxvt-unicode, probably
-# due to invalid terminfo file or some such. I'll need to investigate
-# it further when I have the time.
-case "$TERM" in rxvt*)
-	TERM=xterm
-esac
-
 __PS1='\[\e[0;37;44m\]['
 
 __sp=
