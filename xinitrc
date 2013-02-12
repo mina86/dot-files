@@ -39,6 +39,13 @@ has() {
 	fi
 
 
+	if [ -e /etc/default/keyboard ]; then
+		. /etc/default/keyboard
+		if [ -n "$XKBLAYOUT$XKBVARIANT$XKBOPTIONS" ]; then
+			# xdotool works better if layout is set by setxkbmap
+			setxkbmap "$XKBLAYOUT" "$XKBVARIANT" "$XKBOPTIONS"
+		fi
+	fi
 ) &
 
 if has gpg-agent; then
