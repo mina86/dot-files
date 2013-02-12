@@ -6,25 +6,15 @@ cd ~
 
 exec >>/tmp/sawfish-log 2>&1
 
-for DIR in /usr/X11R6/lib/X11/xinit/ .; do
-	[ -f "$DIR/.Xresources" ]  && xrdb -merge "$DIR/.Xresources"
-	[ -f "$DIR/.Xmodmap" ]     && xmodmap     "$DIR/.Xmodmap"
-done
-
 has() {
 	which "$1" >/dev/null 2>&1
 }
 
-if [ -e /etc/default/keyboard ]; then
-	. /etc/default/keyboard
-	if [ -n "$XKBLAYOUT$XKBVARIANT$XKBOPTIONS" ]; then
-		# xdotool works better if layout is set by setxkbmap
-		setxkbmap "$XKBLAYOUT" "$XKBVARIANT" "$XKBOPTIONS"
-	fi
-fi
-
 (
-	sleep 2
+	for DIR in /usr/X11R6/lib/X11/xinit/ .; do
+		[ -f "$DIR/.Xresources" ]  && xrdb -merge "$DIR/.Xresources"
+		[ -f "$DIR/.Xmodmap" ]     && xmodmap     "$DIR/.Xmodmap"
+	done
 
 	cd /
 
@@ -48,9 +38,6 @@ fi
 		run synergyc
 	fi
 
-	if [ -f ~/.wallpaper.bmp ]; then
-		run Esetroot -scale ~/.wallpaper.bmp &
-	fi
 
 ) &
 
