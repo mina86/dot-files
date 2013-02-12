@@ -68,3 +68,6 @@
 
 [gui]
 	spellingdictionary = en_GB
+
+[include]
+	path = ~/.gitconfig_local
