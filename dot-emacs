@@ -1487,7 +1487,8 @@ in a <a href=\"...\">...</a>.  Returns whether it happend."
     "If the word before cursor appears to be an URL wrap it
 around in a <a href=\"...\">...</a>.  Returns whether it happend.
 
-This is however a stub implementation (because thingatpt could not be loaded) which does nothing and returns nul."
+This is however a stub implementation (because thingatpt could not be
+loaded) which does nothing and returns nil."
     nil))
 
 
