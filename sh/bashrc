@@ -177,6 +177,11 @@ fi
 ##
 ## Shell optons and parameters
 ##
+if type complete >/dev/null 2>/dev/null; then
+	# I don't use auto completion and it has some weird interactions
+	complete -r
+fi
+
 shopt -qu cdable_vars checkhash dotglob execfail extglob interactive_comments
 shopt -qu interactive_comments lithist no_empty_cmd_completion nocaseglob
 shopt -qu shift_verbose sourcepath xpg_echo
