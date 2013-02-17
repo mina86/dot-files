@@ -421,6 +421,8 @@ uninteresting.  This comes as an addition to
 (set-key "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
 (set-key [(control ";")] comment-dwim)          ; C-; comments
 
+(when (fboundp 'windmove-default-keybindings)
+  (windmove-default-keybindings))
 
 ;; Jump
 (require 'ffap)
