@@ -1034,13 +1034,13 @@ non-nill or `compile' otherwise."
         (t (:background "RoyalBlue3")))
 
        (mode-line
-        (t (:background "#009" :foreground "white" :box nil)))
+        (t (:background "#009" :foreground "#FFF" :box nil)))
        (mode-line-buffer-id
         (t (:foreground "#9FF" :weight bold)))
        (mode-line-highlight
         (t (:background "#00F")))
        (mode-line-inactive
-        (t (:inherit mode-line :box nil :background nil :foreground "#CCC")))
+        (t (:inherit mode-line :box nil :background "#000" :foreground "#CCC")))
 
        (widget-button
         (t (:background "blue" :foreground "cyan" :weight bold)))
