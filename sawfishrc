@@ -198,13 +198,14 @@ Windows are matched in most recently focused first order."
 
 (mapc
  (lambda (spec)
-   (bind-keys
-    global-keymap
-    (concat "W-" (car spec))
-    (lambda ()
-      (if (listp (cdr spec))
-          (display-window (apply mn-run-unless (cdr spec)))
-        (mn-run (cdr spec))))))
+   (when spec
+     (bind-keys
+      global-keymap
+      (concat "W-" (car spec))
+      (lambda ()
+        (if (listp (cdr spec))
+            (display-window (apply mn-run-unless (cdr spec)))
+          (mn-run (cdr spec)))))))
 
  `((?$  "/Term$"         ,mn-term-command t)
    (?\; "^Emacs/emacs$"  "e")
@@ -220,7 +221,8 @@ Windows are matched in most recently focused first order."
    (?j  .                "m toggle")
    (?k  .                "m next")
 
-   (?i   .               "/home/mpn/bin/getotp")))
+   ,(and (file-exists-p "/home/mpn/bin/getotp")
+         (?i   .               "/home/mpn/bin/getotp"))))
 
 ;; Run some applications
 (add-hook 'after-initialization-hook
