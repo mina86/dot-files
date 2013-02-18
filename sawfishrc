@@ -214,11 +214,11 @@ Windows are matched in most recently focused first order."
    (?o  "Geeqie"         "geeqie")
 
    (?l  .                "xlocker")
-   (?"  .                "music rewind" ;"; Make source highlighting happy
+   (?"  .                "m rewind" ;"; Make source highlighting happy
      )
-   (?'  .                "music prev")
-   (?j  .                "music toggle")
-   (?k  .                "music next")
+   (?'  .                "m prev")
+   (?j  .                "m toggle")
+   (?k  .                "m next")
 
    (?i   .               "/home/mpn/bin/getotp")))
 
