@@ -43,12 +43,34 @@ done
 
 
 ##
+## Color handling
+##
+if ! which tput >/dev/null 2>&1; then
+	tput () {
+		return 0
+	}
+fi
+
+
+##
 ## Print info
 ##
+
 case "$DIRECTION" in
-from) echo 'Updating files in current directory from configuration files' ;;
-to)   echo 'Updating configuration files from files in current directory' ;;
-*)    usage
+from)
+	tput bold
+	tput setaf 7
+	echo 'Updating files in current directory from configuration files'
+	tput sgr0
+	;;
+to)
+	tput bold
+	tput setaf 7
+	echo 'Updating configuration files from files in current directory'
+	tput sgr0
+	;;
+*)
+	usage
 esac
 
 
@@ -83,7 +105,16 @@ if $INTERACTIVE; then
 		fi
 
 		while :; do
-			printf '%s: [yn] ' "$2"
+			echo
+			tput bold
+			tput setaf 7
+			tput setab 4
+			printf '%s:' "$2"
+			tput sgr0
+			tput setaf 7
+			tput setab 4
+			printf ' [yn] '
+			tput sgr0
 			read answer || exit 0
 			case "$answer" in
 			[yY]) return 0 ;;
@@ -160,7 +191,9 @@ handle() {
 		case "$DEST" in */.|*/) DEST=$DEST$FILE; esac
 
 		if ! [ -d "${DEST%/*}" ]; then
+			tput setaf 6
 			echo "Skipping $FILE"
+			tput sgr0
 			return 0
 		fi
 
