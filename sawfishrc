@@ -198,7 +198,7 @@ Windows are matched in most recently focused first order."
 
 (mapc
  (lambda (spec)
-   (when spec
+   (when (cdr spec)
      (bind-keys
       global-keymap
       (concat "W-" (car spec))
@@ -221,8 +221,9 @@ Windows are matched in most recently focused first order."
    (?j  .                "m toggle")
    (?k  .                "m next")
 
-   ,(and (file-exists-p "/home/mpn/bin/getotp")
-         (?i   .               "/home/mpn/bin/getotp"))))
+   (?i  .                ,(if (file-exists-p "/home/mpn/bin/getotp")
+                              "/home/mpn/bin/getotp"))))
+
 
 ;; Run some applications
 (add-hook 'after-initialization-hook
