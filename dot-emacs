@@ -1040,7 +1040,7 @@ non-nill or `compile' otherwise."
        (mode-line-highlight
         (t (:background "#00F")))
        (mode-line-inactive
-        (t (:inherit mode-line :box nil :background "#000" :foreground "#CCC")))
+        (t (:inherit mode-line :box nil :background "#333" :foreground "#CCC")))
 
        (widget-button
         (t (:background "blue" :foreground "cyan" :weight bold)))
