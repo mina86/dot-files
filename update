@@ -105,7 +105,6 @@ if $INTERACTIVE; then
 		fi
 
 		while :; do
-			echo
 			tput bold
 			tput setaf 7
 			tput setab 4
@@ -121,6 +120,7 @@ if $INTERACTIVE; then
 			[nN]) return 1 ;;
 			esac
 		done
+		echo
 	}
 else
 	ask() {
