@@ -550,18 +550,6 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
 ;;{{{   Filling
 
 ;; Alt+q - Fill
-(unless (fboundp 'fill-paragraph-or-region)
-  ;; Taken from emacs 23.0.50.1 (CVS)
-  (defun fill-paragraph-or-region (arg)
-    "Fill the active region or current paragraph.
-IF `use-region-p' then it calls `fill-region', otherwise --
-`fill-paragraph'."
-    (interactive (progn (barf-if-buffer-read-only)
-                        (list (if current-prefix-arg 'full))))
-    (if (use-region-p)
-        (fill-region (region-beginning) (region-end) arg)
-      (fill-paragraph arg))))
-
 (defun my-fill (&optional arg)
   (interactive "*P")
   (if arg
@@ -608,9 +596,6 @@ IF `use-region-p' then it calls `fill-region', otherwise --
 ;;{{{     F7 - spell checking
 
 (require 'ispell)
-
-;; my ispell-change-dictionary bugfix now commited to CVS
-;; not need for it here
 
 (defvar mn-spell-dictionaries '("polish" "british")
   "List of dictionaries to cycle through with `mn-spell-switch-dictionary'.")
