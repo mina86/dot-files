@@ -732,35 +732,6 @@ non-nill or `compile' otherwise."
 ;;}}}
 ;;{{{   Copy/Kill
 
-;; Copy w/o Selection
-;; http://www.emacswiki.org/cgi-bin/wiki/CopyWithoutSelection
-
-(defun copy-word (&optional arg)
-  "Copy words at point"
-  (interactive "P")
-  (let ((beg (progn (if (looking-back "[a-zA-Z]" 1) (backward-word 1)) (point)))
-        (end (progn (forward-word arg) (point))))
-    (copy-region-as-kill beg end)))
-
-(defun copy-line (&optional _)
-  "Save current line into Kill-Ring without mark the line "
-  (interactive "P")
-  (let ((beg (line-beginning-position))
-        (end (line-end-position)))
-    (copy-region-as-kill beg end)))
-
-(defun copy-paragraph (&optional arg)
-  "Copy paragraphes at point"
-  (interactive "P")
-  (let ((beg (progn (backward-paragraph 1) (point)))
-        (end (progn (forward-paragraph arg) (point))))
-    (copy-region-as-kill beg end)))
-
-(set-key "\C-cw"         copy-word)
-(set-key "\C-cl"         copy-line)
-(set-key "\C-cp"         copy-paragraph)
-
-
 ;; Make C-w, M-w work on word if no selection
 (set-key "\C-w" (call-interactively
                  (if (use-region-p) 'kill-region 'kill-word)))
