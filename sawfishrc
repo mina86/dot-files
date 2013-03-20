@@ -225,6 +225,33 @@ Windows are matched in most recently focused first order."
                               "/home/mpn/bin/getotp"))))
 
 
+;; Window manipulations
+(let ((shrink-keymap (make-keymap))
+      (move-keymap (make-keymap)))
+  (bind-keys shrink-keymap  ; resize till it overlaps with one less window
+             "c"   'shrink-window-up
+             "t"   'shrink-window-down
+             "h"   'shrink-window-left
+             "n"   'shrink-window-right)
+  (bind-keys move-keymap    ; move to an edge
+             "c"   'pack-window-up
+             "t"   'pack-window-down
+             "h"   'pack-window-left
+             "n"   'pack-window-right
+                            ; move till it overlaps with one less window
+             "W-c" 'yank-window-up
+             "W-t" 'yank-window-down
+             "W-h" 'yank-window-left
+             "W-n" 'yank-window-right)
+  (bind-keys window-keymap
+             "W-c" 'grow-window-up
+             "W-t" 'grow-window-down
+             "W-h" 'grow-window-left
+             "W-n" 'grow-window-right
+             "W-s" shrink-keymap
+             "W-m" move-keymap))
+
+
 ;; Run some applications
 (add-hook 'after-initialization-hook
           (lambda ()
