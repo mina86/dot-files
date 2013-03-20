@@ -1436,61 +1436,59 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
       (if (stringp action) (replace-match action)
         (funcall (or action 'self-insert-command) 1)))))
 
-(defmacro mn-magick-self-insert-define
-  (map key spec &optional default when-prefix)
-  `(define-key ,map ,key
-     (lambda () (interactive ,"*")
-       (mn-magick-self-insert-command ,spec ,default ,when-prefix))))
+(defsubst mn-magick-self-insert-define (map key spec
+                                        &optional default when-prefix)
+  (define-key map key
+    (function (lambda () (interactive "*")
+                (mn-magick-self-insert-command spec default when-prefix)))))
 
 (defun mn-xml-configure-bindings (mode-map)
-  (mn-magick-self-insert-define mode-map " "
-                                '(("[^<]\\b\\w" 2 "\\& ")
-                                  ("^\\w"       1 "\\& ")
-                                  ("&#160;"     6 " ")
-                                  (" "          1 " "))
-                                (lambda (n)
-                                  (mn-linkify-maybe)
-                                  (self-insert-command n)))
-  (mn-magick-self-insert-define mode-map "<"
-                                '(("<"          1 "&lt;")))
-  (mn-magick-self-insert-define mode-map ">"
-                                '(("&#160;&#8211;" 13 " -->")
-                                  (" –"         2 " -->")
-                                  (">"          1 "&gt;")))
-  (mn-magick-self-insert-define mode-map "&"
-                                '(("&"          1 "&amp;")))
-  (mn-magick-self-insert-define mode-map "."
-                                '(("\\.\\."     2 "…")))
-  (mn-magick-self-insert-define mode-map "\""
-                                '(("\""         1 "&quot;")))
-  (mn-magick-self-insert-define mode-map "~"
-                                '(("~"          1 " ")))
-  (mn-magick-self-insert-define mode-map "-"
-                                '(("[-!]-"      2 nil)
-                                  (" -"         2 " –")
-                                  ("-"          1 " –")
-                                  ("–"          1 "—")
-                                  ("&#8211;"    7 "—")))
-  (mn-magick-self-insert-define mode-map [(backspace)]
-                                '(("&lt;"       4 "<")
-                                  ("«"          1 "&lt;")
-                                  ("&gt;"       4 ">")
-                                  ("»"          1 "&gt;")
-                                  ("&amp;"      5 "&")
-                                  ("&quot;"     6 "\"")
-                                  ("&#8230;"    7 "..")
-                                  ("…"          1 "..")
-                                  ("&#8220;"    7 "`")
-                                  ("&#8221;"    7 "'")
-                                  ("&#8222;"    7 ",")
-                                  ("&#8212;"    7 "&#8211;")
-                                  ("&#82\\(?:11\\|09\\);" 7 "-")
-                                  ("&.....;"    7 "")
-                                  ("&....;"     6 "")
-                                  ("&...;"      5 "")
-                                  ("&..;"       4 ""))
-                                'delete-backward-char
-                                'delete-backward-char)
+  (mapc
+   (function (lambda (args)
+               (apply 'mn-magick-self-insert-define mode-map args)))
+   (let* ((en-dash "–") (em-dash "—") (nbsp    " ") (thin-sp " ")
+          (nbsp-en      (concat nbsp en-dash))
+          (nbsp-en-nbsp (concat nbsp en-dash nbsp))
+          (thin-em      (concat thin-sp em-dash))
+          (thin-em-thin (concat thin-sp em-dash thin-sp)))
+     `((" "  (("[^<]\\b\\w"             2 ,(concat "\\&" nbsp))
+              ("^\\w"                   1 ,(concat "\\&" nbsp))
+              ("&nbsp;"                 6 " ")
+              ("&#160;"                 6 " ")
+              (,nbsp                    1 " ")
+              (,thin-sp                 1 " ")
+              (,nbsp-en                 2 ,nbsp-en-nbsp)
+              (,thin-em                 2 ,thin-em-thin))
+             ,(lambda (n) (mn-linkify-maybe) (self-insert-command n)))
+       ("<"  (("<"                      1 "&lt;")))
+       (">"  (("&#160;&#8211;"         13 " -->")
+              ("&nbsp;&#8211;"         13 " -->")
+              (,nbsp-en                 2 " -->")
+              (">"                      1 "&gt;")))
+       ("&"  (("&"                      1 "&amp;")))
+       ("."  (("\\.\\."                 2 "…")))
+       ("\"" (("\""                     1 "&quot;")))
+       ("~"  (("~"                      1 ,nbsp)))
+       ("-"  (("[-!]-"                  2 nil)
+              (" -"                     2 ,nbsp-en)
+              ("-"                      1 ,nbsp-en)
+              (,nbsp-en                 2 ,thin-em)
+              (,(concat nbsp "&#8211;") 8 ,thin-em)
+              (,en-dash                 1 ,em-dash)
+              ("&#8211;"                7 ,em-dash)))
+       ([(backspace)]
+             (("&lt;"                   4 "<")
+              ("&gt;"                   4 ">")
+              ("&amp;"                  5 "&")
+              ("&quot;"                 6 "\"")
+              ("&#8230;"                7 "..")
+              ("…"                      1 "..")
+              ("&.....;"                7 "")
+              ("&....;"                 6 "")
+              ("&...;"                  5 "")
+              ("&..;"                   4 ""))
+             delete-backward-char
+             delete-backward-char))))
   (setq indent-tabs-mode nil
         next-error-function 'nxml-next-error))
 
