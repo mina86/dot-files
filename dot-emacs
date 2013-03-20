@@ -356,7 +356,7 @@ three times - beginning of buffer; four times - back to where it was."
            (save-buffers-kill-emacs arg))) ; Never kill by mistake
 
 
-(set-key "\C-h"          delete-backward-char)
+(set-key "\C-h"          [(backspace)])
 (set-key [(backspace)]   delete-backward-char)
 (set-key [(delete)]      delete-char)
 
