@@ -556,7 +556,7 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
     (fill-region (save-excursion (beginning-of-line) (point))
                  (save-excursion (end-of-line)       (point))
                  (seq-times-nth () () left full right center))
-    (fill-paragraph-or-region (seq-times-nth () () left full right center))))
+    (fill-paragraph (seq-times-nth () () left full right center) t)))
 
 (set-key "\M-q"          my-fill)
 
@@ -1351,28 +1351,33 @@ the open brace was real open brace or part of comment/string."
 ;;{{{   HTML/XML & comapny Mode
 
 ;; Create a link out of the preceeding word if it appears to be a URL
-(if (load "thingatpt" t)
-    (defun mn-linkify-maybe ()
-      "If the word before cursor appears to be an URL wrap it around
-in a <a href=\"...\">...</a>.  Returns whether it happend."
-      (interactive "*")
-      (when (save-excursion
-              (save-restriction
-                (let ((end (point)))
-                  (beginning-of-line)
-                  (narrow-to-region (point) end)
-                  (looking-at
-                   (concat ".*\\(" thing-at-point-url-regexp "\\)\\'")))))
-        (let ((url (delete-and-extract-region (match-beginning 1)
-                                              (match-end 1))))
-          (insert "<a href=\"" url "\">" url "</a>"))))
-  (defun mn-linkify-maybe ()
-    "If the word before cursor appears to be an URL wrap it
+(defun mn-linkify-maybe ()
+  "If the word before cursor appears to be an URL wrap it
 around in a <a href=\"...\">...</a>.  Returns whether it happend.
 
 This is however a stub implementation (because thingatpt could not be
 loaded) which does nothing and returns nil."
-    nil))
+  nil)
+
+(when (load "thingatpt" t)
+  (let ((url-regexp
+         (cond ((boundp 'thing-at-point-url-regexp) thing-at-point-url-regexp)
+               ((boundp 'ffap-url-regexp) ffap-url-regexp))))
+    (when url-regexp
+      (defun mn-linkify-maybe ()
+        "If the word before cursor appears to be an URL wrap it around
+in a <a href=\"...\">...</a>.  Returns whether it happend."
+        (interactive "*")
+        (when (save-excursion
+                (save-restriction
+                  (let ((end (point)))
+                    (beginning-of-line)
+                    (narrow-to-region (point) end)
+                    (looking-at
+                     (concat ".*\\(" url-regexp "\\)\\'")))))
+          (let ((url (delete-and-extract-region (match-beginning 1)
+                                                (match-end 1))))
+            (insert "<a href=\"" url "\">" url "</a>")))))))
 
 
 (defun mn-magick-self-insert-command (spec &optional default when-prefix)
