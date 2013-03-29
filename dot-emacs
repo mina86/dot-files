@@ -1493,7 +1493,7 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
   (setq nxml-slash-auto-complete-flag t
         nxml-auto-insert-xml-declaration-flag t
         nxml-bind-meta-tab-to-complete-flag t)
-  (add-to-list 'auto-mode-alist '("\\.\\(?:x\\|ht\\)ml\\'" . nxml-mode))
+  (add-to-list 'auto-mode-alist '("\\.xml\\'" . nxml-mode))
   (eval-after-load "nxml-mode"
     (add-lambda-hook 'nxml-mode-hook
       (mn-xml-configure-bindings nxml-mode-map))))
