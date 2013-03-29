@@ -1478,7 +1478,15 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
 (eval-when-compile (require 'sgml-mode))
 (eval-after-load "sgml-mode"
   (add-lambda-hook 'sgml-mode-hook
-    (mn-xml-configure-bindings sgml-mode-map)))
+    (mn-xml-configure-bindings sgml-mode-map)
+    (set-key sgml-mode-map "/" "P"
+             (if (and (not prefix-arg)
+                      (eq (char-before) ?<))
+                 (let (delete-active-region)
+                   (delete-backward-char 1)
+                   (sgml-close-tag))
+               (funcall 'self-insert-command
+                        (prefix-numeric-value prefix-arg))))))
 
 (when (fboundp 'nxml-mode)
   (eval-when-compile (require 'nxml-mode))
