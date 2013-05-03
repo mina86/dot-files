@@ -180,7 +180,7 @@ shopt -qu interactive_comments lithist no_empty_cmd_completion nocaseglob
 shopt -qu shift_verbose sourcepath xpg_echo
 
 shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit
-shopt -qs histverify hostcomplete nullglob promptvars huponexit
+shopt -qs histverify hostcomplete nullglob promptvars huponexit globstar
 
 if [ "$_hostname" != Xdedal ]; then
 	shopt -qu extdebug force_fignore
