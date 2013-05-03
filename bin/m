@@ -2,7 +2,19 @@
 
 ## MPD
 _mpc() {
-	mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]' "$@" | head -n 1
+	mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]' "$@" | sed -n -e '
+		1 h
+		/^\(\[[a-z]*\] \).*/ {
+			s//\1/
+			G
+			s/\n//
+			x
+		}
+		$ {
+			x
+			p
+		}
+'
 }
 
 mpd_file() {
