@@ -83,6 +83,28 @@ use `use-region-p'."
     map))
 
 (defmacro set-key (key &rest body)
+  "(set-key [<keymap>] <key> <function>...)
+
+<keymap> can be either :local or a symbol.  :local will use local
+keymap (and create it if necessary).  A symbol must be a variable
+name holding the keymap to modify.  If omitted, global keymap is
+used.
+
+<key> may be anything other than a symbol describing the key.
+The following won't work: (let ((key \"a\")) (set-key key
+self-insert-command)).
+
+If <function> is just a single value which is not a list it will
+be quoted and passed as argument to `define-key' so in the
+simplest case it's just an unquoted name of the
+function: (set-key \"a\" self-insert-command).  Using a variable
+holding a symbol won't work: (let ((callback
+'self-insert-command)) (set-key \"a\" callback)).
+
+Alternatively, a <function> is a body of a lambda that is to be
+bound to the key.  The body can be preceded by :args (args)
+interactive where args is the list of lambda's arguments and
+interactive is argument of the `interactive' command."
   (let ((keymap '(current-global-map)))
     (cond
      ((eq :local key)
