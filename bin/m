@@ -109,6 +109,11 @@ spotify_ctl() {
 }
 
 ## Main part
+if [ -e ~/bin/libexec/"music-pre-$1" ]; then
+	source ~/bin/libexec/"music-pre-$1"
+	exit $?
+fi
+
 if spotify_query >/dev/null 2>&1; then
 	player=spotify
 else
