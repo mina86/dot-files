@@ -24,13 +24,13 @@
                 ,(concat user-full-name " <" user-mail-address ">")
                 "http://mina86.com/"
                 ,headers
-                "\n\n"
+                "\n"
                 ,signature)
               (and has-corp `(("corp" nil
                                ,(concat user-full-name " <mpn@google.com>")
                                "Google Inc"
                                ,headers
-                               "\n\n"
+                               "\n"
                                ,signature))))
 
         gnus-alias-identity-rules
