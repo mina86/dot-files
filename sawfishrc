@@ -221,8 +221,8 @@ Windows are matched in most recently focused first order."
    (?j  .                "m toggle")
    (?k  .                "m next")
 
-   (?i  .                ,(if (file-exists-p "/home/mpn/bin/getotp")
-                              "/home/mpn/bin/getotp"))))
+   (?i  .                ,(if (file-exists-p "/home/mpn/bin/libexec/getotp")
+                              "/home/mpn/bin/libexec/getotp"))))
 
 
 ;; Window manipulations
