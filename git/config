@@ -31,12 +31,15 @@
 	ct     = rebase --continue
 	s      = status -uno
 	st     = status -uno
+	sh     = stash
+	pop    = stash pop
 	mt     = mergetool
 	sw     = show
 	wc     = whatchanged
 	l      = log
 	lg     = log
 	lp     = log -p
+	tip    = log -n1
 	k      = !gitk
 	edit   = "!f() { GIT_EDITOR=\"sed -i 1s/pick/edit/\" git rebase -i \"$1\"~; }; f"
 	ed     = edit
