@@ -897,7 +897,7 @@ non-nill or `compile' otherwise."
        (font-lock-warning-face
         (t (:foreground "pink" :weight bold)))
        (fringe
-        (t (:background "#002")))
+        (t (:background "#112211")))
        (header-line
         (t (:inherit mode-line :background "#006" :foreground "#FFF" :box nil)))
        (help-argument-name
@@ -948,7 +948,9 @@ non-nill or `compile' otherwise."
         (t :foreground "red" :weight bold))
 
        (num3-face-even
-        (t :underline nil :weight normal :background "#000" :foreground "#CFF"))))
+        (t :underline nil :weight normal :background "#000" :foreground "#CFF"))
+       (auto-dim-other-buffers-face
+        (t :background "#112222"))))
   (let ((face (car entry)) (spec (cdr entry)))
     (unless (facep face)
       (make-empty-face face))
@@ -1024,6 +1026,10 @@ non-nill or `compile' otherwise."
                                (down-mouse-1 . mouse-major-mode-menu))))
         ") "))
 
+;; Dim buffers which are not (current-buffer)
+(add-lambda-hook 'after-init-hook
+  (when (fboundp 'auto-dim-other-buffers-mode)
+    (auto-dim-other-buffers-mode t)))
 
 ;; Other
 (icomplete-mode 1)                ;nicer completion in minibuffer
