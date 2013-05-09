@@ -4,11 +4,14 @@ have() {
 	have=`which "$1" 2>/dev/null` && test -n "$have"
 }
 
-if ! have apt-get && ! have yum; then
+if [ -e /etc/slackware-version ]; then
+	cmd=slack
+elif  have apt-get || have yum; then
+	cmd=$have
+else
 	echo "a: could not find package manager software" >&2
 	exit 1
 fi
-cmd=$have
 
 if [ 0 -eq $(id -u) ]; then
 	sudo=
@@ -17,7 +20,7 @@ elif have sudo; then
 elif have s; then
 	sudo=s
 else
-	echo 'a requires s or sudo' >&2
+	echo 'a: s or sudo required' >&2
 	exit 1
 fi
 
@@ -85,11 +88,29 @@ apt-get:why | \
 apt-get:why-not)
 	;;
 
-*:?*)
+yum:?*|apt-get:?*)
 	set -- install "$@"
+	;;
+
+slack:remove|slack:purge)
+	shift
+	cmd=removepkg
+	;;
+slack:upgrade|slack:update)
+	shift
+	cmd=upgradepkg
+	;;
+slack:?*.t?z)
+	cmd=upgradepkg
+	set -- --install-new "$@"
+	;;
+
+*)
+	echo 'a: do not know what to do' >&2
+	exit 1
 esac
 
 $sudo "$cmd" "$@"
-if [ $# -eq 1 ] && [ x"$cmd:$1" = xapt-get:update ] && have apt-file; then
+if [ $# -eq 1 ] && have apt-file && [ x"$1" = xupdate ]; then
 	exec $sudo apt-file update
 fi
