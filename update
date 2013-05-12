@@ -179,6 +179,22 @@ cp_tpl_to() {
 	fi
 }
 
+##
+## Emacs files handling
+##
+compile_el() {
+	if [ -e "${1}c" ] &&
+	   [ "$1" -nt  "${1}c" ] &&
+	   file "${1}c" | grep -q 'Emacs.*byte-compiled' &&
+	   [ -n "$(which emacs 2>/dev/null)" ]; then
+		tput bold
+		tput setaf 7
+		echo "Compiling $1"
+		tput sgr0
+		emacs --batch --eval \
+			'(if argv (byte-compile-file (car argv)))' "$1"
+	fi
+}
 
 
 ##
@@ -192,7 +208,7 @@ handle() {
 
 		if ! [ -d "${DEST%/*}" ]; then
 			tput setaf 6
-			echo "Skipping $FILE"
+			echo "Skipping $FILE, ${DEST%/*}/ missing"
 			tput sgr0
 			return 0
 		fi
@@ -203,7 +219,10 @@ handle() {
 			cp_tpl_$DIRECTION "$FILE" "$DEST" <&3
 			;;
 		*)
-			cp_backup_$DIRECTION "$FILE" "$DEST" cp <&3 || true
+			cp_backup_$DIRECTION "$FILE" "$DEST" <&3 || true
+		esac
+		case "$DEST:$DIRECTION" in *.el:to)
+			compile_el "$DEST"
 		esac
 	fi
 }
