@@ -51,9 +51,11 @@ use `use-region-p'."
     (setq user-emacs-directory (expand-file-name "~/.emacs.d")))
 
 ;; Add  ~/.emacs.d/elisp  to load path
-(if (eval-when-compile
-      (file-directory-p (concat user-emacs-directory "elisp")))
-    (setq load-path (cons (concat user-emacs-directory "elisp") load-path)))
+(when (eval-when-compile
+        (file-directory-p (concat user-emacs-directory "elisp")))
+  (setq load-path (cons (concat user-emacs-directory "elisp") load-path))
+  (eval-when-compile
+    (setq load-path (cons (concat user-emacs-directory "elisp") load-path))))
 
 ;; Local
 (load (concat user-emacs-directory "local.el") t)
@@ -62,6 +64,7 @@ use `use-region-p'."
 (autoload 'notmuch (concat user-emacs-directory "mail.el") "notmuch mail" t)
 
 ;; Packages repositories
+(eval-when-compile (require 'package))
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                          ("marmalade" . "http://marmalade-repo.org/packages/")
                          ("melpa" . "http://melpa.milkbox.net/packages/")))
@@ -343,7 +346,8 @@ three times - beginning of buffer; four times - back to where it was."
 ;; Makes paging functions work the way god intended
 ;; http://www.docs.uu.se/~mic/emacs.html
 ;; pager.el was modified by me
-(when (load "pager" t)
+(when (eval-when-compile (load "pager" t))
+  (require 'pager)
   (setq pager-goto-edge t)
   (substitute-key-definition 'scroll-down 'pager-page-up
                              (current-global-map))
@@ -484,6 +488,7 @@ uninteresting.  This comes as an addition to
 ;;}}}
 ;;{{{   Tab - indent or complete
 
+(eval-when-compile (require 'hippie-exp))
 (setq hippie-expand-try-functions-list
       '(
 ;        try-expand-all-abbrevs
@@ -524,7 +529,8 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
          (funcall indent-or-complete-complete-function nil))
         ((indent-for-tab-command))))
 
-(when (load "auto-complete-config" t)
+(when (eval-when-compile (load "auto-complete-config" t))
+  (require 'auto-complete-config)
   (add-to-list 'ac-dictionary-directories "~/.emacs.d/elisp/ac-dict")
   (ac-config-default)
 
@@ -685,6 +691,11 @@ variables to be set and cadr is a list is a list of alternative
 enviroment variables.  Each list is a list of two element lists
 which car is a enviroment variables name and cadr is value.")
 
+(autoload 'recompile "compile"
+  "Re-compile the program including the current buffer.
+If this is run in a Compilation mode buffer, re-use the arguments from the
+original use.  Otherwise, recompile using `compile-command'.
+If the optional argument `edit-command' is non-nil, the command can be edited." t)
 
 (defun mn-compile (&optional alt recompile touch)
   "If alt is omited or nil sets CFLAGS, CXXFLAGS, CPPFLAGS and
@@ -715,6 +726,7 @@ non-nill or `compile' otherwise."
 (set-key [(meta f9)]    :args (a) "P" (mn-compile (not a) t t))
 (set-key [(shift f9)]   next-error)
 
+(eval-when-compile (require 'compile))
 (setq compilation-scroll-output 'first-error  ; scroll until first error
       compilation-window-height 12)           ; keep it readable
 
@@ -729,8 +741,7 @@ non-nill or `compile' otherwise."
  (set-key isearch-mode-map "\C-c"      isearch-toggle-case-fold)
  (set-key isearch-mode-map "\C-j"      isearch-edit-string)
  (set-key isearch-mode-map "\C-h"      isearch-del-char)
- (set-key isearch-mode-map [backspace] isearch-del-char)
-))
+ (set-key isearch-mode-map [backspace] isearch-del-char)))
 
 ;;}}}
 ;;{{{   Copy/Kill
@@ -1035,6 +1046,7 @@ non-nill or `compile' otherwise."
     (auto-dim-other-buffers-mode t)))
 
 ;; Other
+(eval-when-compile (require 'icomplete))
 (icomplete-mode 1)                ;nicer completion in minibuffer
 (setq icomplete-prospects-height 2) ; don't spam my minibuffer
 (set-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
@@ -1045,8 +1057,7 @@ non-nill or `compile' otherwise."
 (setq inhibit-splash-screen   t   ;don't show splash screen
       inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
                                   ; many files               (EMACS 21.4+)
-(setq sentence-end-double-space 1 ;sentance end with double space
-      sentance-end-base "[.?!…][]\"'”)}]*" ; "…" also ends sentence
+(setq sentence-end-base "[.?!…][]\"'”)}]*" ; "…" also ends sentence
       require-final-newline t)    ;always end file with NL
 (setq truncate-lines nil)         ;wrap lines
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
@@ -1054,6 +1065,7 @@ non-nill or `compile' otherwise."
 (set-default 'indicate-buffer-boundaries t) ;show buffer boundries on fringe
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
 (setq gc-cons-threshold 4000000)  ;bytes before garbage collection
+(eval-when-compile (require 'ange-ftp))
 (setq ange-ftp-try-passive-mode t);passive FTP
 (blink-cursor-mode -1)            ;do not blink cursor
 (setq blink-cursor-alist '((t      . box)  ;seriously, don't blink,
@@ -1120,12 +1132,6 @@ rules so it is likely not to work."
 ;; http://www.emacswiki.org/cgi-bin/wiki/FillParagraph
 (setq paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
       paragraph-separate "$")
-
-
-;; GDB
-(setq gdb-many-windows t
-      gdb-show-main t
-      gdb-use-separate-io-buffer nil)
 
 
 ;; Do not break line after single character when filling
@@ -1615,6 +1621,7 @@ argument ommited returns that number."
   (setq comment-column 40))
 
 ;; Org mode
+(eval-when-compile (require 'org))
 (setq org-insert-mode-line-in-empty-file t)
 
 ;; Lisp/Scheme mode
@@ -1628,16 +1635,18 @@ argument ommited returns that number."
 (add-to-list 'auto-mode-alist '("\\.jl\\'" . sawfish-mode))
 
 ;; Bison mode
-(autoload 'bison-mode "bison-mode.el")
-(add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
-(setq bison-decl-type-column   8)
-(setq bison-decl-token-column 16)
+(when (eval-when-compile (load "bison-mode.el" t))
+  (autoload 'bison-mode "bison-mode.el")
+  (add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
+  (setq bison-decl-type-column   8)
+  (setq bison-decl-token-column 16))
 
 ;; Flex
 (autoload 'flex-mode "flex-mode")
 (add-to-list 'auto-mode-alist '("\\.l$" . flex-mode))
 
 ;; Use cperl-mode for Perl
+(eval-when-compile (require 'cperl-mode))
 (mapc
  (lambda (list)
    (mapc
@@ -1651,6 +1660,7 @@ argument ommited returns that number."
       cperl-electric-backspace-untabify nil)
 
 ;; shell-script-mode
+(eval-when-compile (require 'sh-script))
 (setq sh-indent-for-case-label 0
       sh-indent-for-case-alt '+)
 
@@ -1660,7 +1670,8 @@ argument ommited returns that number."
 ;;{{{ Various features
 
 ;; uniquify
-(when (load "uniquify" t)
+(when (eval-when-compile (load "uniquify" t))
+  (require 'uniquify)
   (setq uniquify-buffer-name-style 'reverse
         uniquify-strip-common-suffix t))
 
