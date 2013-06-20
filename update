@@ -246,8 +246,7 @@ while read FILE DEST; do
 	esac
 done 3<&1 <<EOF
 Xresources.tpl     ~/.
-dot-emacs          ~/.emacs.d/init.el
-dot-mail           ~/.emacs.d/mail.el
+emacs/*            ~/.emacs.d/@
 git/aliases        ~/.gitaliases
 git/config         ~/.gitconfig
 git/ignore         ~/.gitignore
