@@ -253,7 +253,7 @@ MATCH will equal nil."
 
 ;;{{{   Sequence commands
 
-;; Sequence commands  1.3  by me, Michal Nazarewicz ;)
+;; Sequence commands  1.4  by me, Michal Nazarewicz ;)
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
 (defvar seq-times 0
   "Number of times command was executed.
@@ -267,26 +267,19 @@ wrap around at the value of MAX never reaching it.  If body is given
 it will be evaluated if the command is run for the first time in
 a sequence."
   (declare (indent 2))
-
-  ;; Build incrementation part
-  (setq max (cond ((null max) '(setq seq-times (1+ seq-times)))
-                  ((atom max) (if (and (integerp max) (> max 0))
-                                  `(setq seq-times (% (1+ seq-times) ,max))
-                                '(setq seq-times (1+ seq-times))))
-                  (t          `(let ((max ,max))
-                                 (if (and (integerp max) (> max 0))
-                                     (setq seq-times (% (1+ seq-times) max))
-                                   (setq seq-times (1+ seq-times)))))))
-
-  ;; Make macro
-  (if (eq name 'last-command)
-      max
-    (cond ((null  name) (setq name 'this-command))
-          ((consp name) (setq name `(or ,name this-command))))
-    `(if (eq last-command ,name)
-         ,max
-       ,@body
-       (setq seq-times 0))))
+  (let ((next (if (or (null max) (eq max 'nil))
+                  '(1+ seq-times)
+                `(% (1+ seq-times) ,max)))
+        (cnd (cond ((or (eq name 'last-command) (eq name 't)) t)
+                   ((or (null name) (eq name 'nil)) 'this-command)
+                   (`(or ,name this-command)))))
+    `(setq seq-times
+           ,(if (eq cnd t)
+                next
+              `(if (eq last-command ,cnd)
+                   ,next
+                 ,@body
+                 0)))))
 
 (defmacro seq-times-nth (name body &rest list)
   "Return element of the LIST depending on number of times command was called.
