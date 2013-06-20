@@ -12,7 +12,11 @@ trap 'rm -f -- "$playing_file"' 0
 	exec xset dpms force off
 ) &
 
-xlock -mode blank -bg black -fg gray3
+if [ -e ~/bin/libexec/slock ]; then
+	~/bin/libexec/slock
+else
+	xlock -mode blank -bg black -fg gray3
+fi
 
 set -- toggle
 . "$playing_file"
