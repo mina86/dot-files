@@ -11,29 +11,14 @@
 Various programs in Emacs store information in this directory.
 Note that this should end with a directory separator."))
 
-(unless (boundp 'use-empty-active-region)
-  (defcustom use-empty-active-region nil
-    "If non-nil, an active region takes control even if empty.
-This applies to certain commands which, in Transient Mark mode,
-apply to the active region if there is one.  If the setting is t,
-these commands apply to an empty active region if there is one.
-If the setting is nil, these commands treat an empty active
-region as if it were not active."
-    :type 'boolean
-    :version "23.1"
-    :group 'editing-basics))
-
 (unless (fboundp 'use-region-p)
   (defun use-region-p ()
     "Return t if certain commands should apply to the region.
 Certain commands normally apply to text near point,
 but in Transient Mark mode when the mark is active they apply
 to the region instead.  Such commands should use this subroutine to
-test whether to do that.
-
-This function also obeys `use-empty-active-region'."
-    (and (region-active-p)
-         (or use-empty-active-region (> (region-end) (region-beginning))))))
+test whether to do that."
+    (and (region-active-p) (> (region-end) (region-beginning)))))
 
 (unless (fboundp 'region-active-p)
   (defun region-active-p ()
