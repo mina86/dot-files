@@ -58,42 +58,48 @@ use `use-region-p'."
 ;;{{{ Utilities
 
 (defmacro setq-if-bound (name value)
+  "Set value of variable NAME to VALUE if its bound.
+This may be especially useful when dealing with code that needs
+to run on variety of systems and its not always know whether
+certain feature, and thus variable, will be present."
   `(when (boundp (quote ,name))
      (setq ,name ,value)))
 
-(defun -mn-current-local-map ()
+(defun mn--current-local-map ()
+  "Return current local map creating one if not set yet."
   (let ((map (current-local-map)))
     (unless map
       (use-local-map (setq map (make-sparse-keymap))))
     map))
 
 (defmacro set-key (key &rest body)
-  "(set-key [<keymap>] <key> <function>...)
+  "(set-key [KEYMAP] KEY BODY...)
 
-<keymap> can be either :local or a symbol.  :local will use local
+KEYMAP can be either :local or a symbol.  :local will use local
 keymap (and create it if necessary).  A symbol must be a variable
 name holding the keymap to modify.  If omitted, global keymap is
 used.
 
-<key> may be anything other than a symbol describing the key.
-The following won't work: (let ((key \"a\")) (set-key key
-self-insert-command)).
+KEY may be anything other than a symbol describing the key.
+The following won't work:
+	(let ((key \"a\")) (set-key key self-insert-command)).
 
-If <function> is just a single value which is not a list it will
+If BODY is just a single value which is not a list it will
 be quoted and passed as argument to `define-key' so in the
-simplest case it's just an unquoted name of the
-function: (set-key \"a\" self-insert-command).  Using a variable
-holding a symbol won't work: (let ((callback
-'self-insert-command)) (set-key \"a\" callback)).
+simplest case it's just an unquoted name of the function:
+	(set-key \"a\" self-insert-command)
+Using a variable holding a symbol won't work:
+	(let ((callback 'self-insert-command))
+	   (set-key \"a\" callback))
 
-Alternatively, a <function> is a body of a lambda that is to be
-bound to the key.  The body can be preceded by :args (args)
-interactive where args is the list of lambda's arguments and
-interactive is argument of the `interactive' command."
+Alternatively, BODY is a body of a lambda that is to be bound to
+the key.  The body can be preceded by \":args (ARGS)
+INTERACTIVE\" where ARGS is the list of lambda's arguments and
+INTERACTIVE is argument of the `interactive' command."
   (let ((keymap '(current-global-map)))
     (cond
      ((eq :local key)
-      (setq keymap '(-mn-current-local-map)
+      (setq keymap '(mn--current-local-map)
             key    (car body)
             body   (cdr body)))
      ((symbolp key)
@@ -113,6 +119,10 @@ interactive is argument of the `interactive' command."
               `(function (lambda ,args ,int ,@body)))))))
 
 (defmacro add-lambda-hook (hook &rest body)
+  "Add a lambda to a hook.
+HOOK is either a hook (just as with `add-hook' function) or a list of
+hooks in which case lambda will be added to all the hooks in HOOK
+list.  BODY is body of the lambda to be added."
   (declare (indent 1))
   (if (and (listp hook) (eq (car hook) 'quote) (listp (cadr hook)))
       (let ((func (make-symbol "func")))
@@ -136,12 +146,13 @@ interactive is argument of the `interactive' command."
          (list user-init-file)))
      (list (concat user-emacs-directory "/init.el")
            (concat user-emacs-directory "/mail.el"))))
-  "List of files to auto compile")
+  "List of files to auto compile.")
 
 (defun auto-byte-compile-file (&optional files match regexp)
-  "files can be
-- nil in which case value returned by `buffer-file-name' will be used
-  unless it returns nil in which case no action will be taken;
+  "Byte compiles file matching criteria.
+FILES can be
+- nil in which case value of the `buffer-file-name' variable will be
+  used unless it returns nil in which case no action will be taken;
 - a string which is equivalent to passing list with that string as the
   only element;
 - a list of strings representing file names; or
@@ -151,26 +162,26 @@ interactive is argument of the `interactive' command."
 Entries equal to \".\", \"..\" or ending with \"/.\" or \"/..\"
 are ignored.  Directories starting with a dot will be ignored.
 If element is a directory it will be processed recursively but if
-regexp is nil only files ending with \".el\" will be processed.
+REGEXP is nil only files ending with \".el\" will be processed.
 
-match can be
+MATCH can be
 - nil which is equivalent to passing `auto-byte-compile-files-list';
 - a string which is equivalent to passing list with that string as the
   only element;
 - a list in which case file have to be in that list to be processed; or
 - anything else in which case file will be processed regardless of name.
 
-If any element of match is a string ending with a slash ('/') it
+If any element of MATCH is a string ending with a slash ('/') it
 is treated as directory name (no checking is done if it is really
 a directory or even if it exists) and file is said to match such
 entry if it begins with it thus all files in given directory will
 match.
 
 If called interacivelly without prefix arg will behave as with
-match equal t.  With prefix arg will behave as with match equal
+MATCH equal t.  With prefix arg will behave as with MATCH equal
 nil.
 
-regexp must be nil which is equivalent with passing a list
+REGEXP must be nil which is equivalent with passing a list
 containing only empty string or a list of regular expressions
 which file have to match to be processed.
 
@@ -185,7 +196,7 @@ itself."
   (interactive (list (read-file-name "Auto byte compile file:" nil nil t)
                      (not current-prefix-arg)))
 
-  (when (or files (setq files (buffer-file-name)))
+  (when (or files (setq files buffer-file-name))
     (setq files (cond ((stringp files) (list files))
                       ((listp   files) files)
                       (t               auto-byte-compile-files-list))
@@ -220,19 +231,18 @@ itself."
                (byte-compile-file f))))))))
 
 (defun auto-byte-compile-buffer (&optional match buffer)
-  "Auto compiles file in given buffer (if buffer is nil current
-buffer is used) providing that major mode of the buffer is
-lisp-mode or emacs-lisp-mode.  match has the same meaning as in
-`auto-byte-compile-file'.
+  "Auto compiles file in given buffer if in Lisp mode.
+MATCH has the same meaning as in `auto-byte-compile-file' function.
+If BUFFER is nil, current buffer is used.  Buffer is compiled only if
+major mode of BUFFER is 'lisp-mode or 'emacs-lisp-mode.
 
-If called interacivelly will behave as with match equal t and
-buffer equal nil unless prefix argument was given in which case
-match will equal nil."
+If called interacivelly will behave as with MATCH equal t and
+BUFFER equal nil unless prefix argument was given in which case
+MATCH will equal nil."
   (interactive (list (not current-prefix-arg) nil))
   (and (buffer-file-name buffer)
-       (memq (if buffer (save-current-buffer (set-buffer buffer)
-                                             major-mode) major-mode)
-               '(lisp-mode emacs-lisp-mode))
+       (memq (if buffer (with-current-buffer buffer major-mode) major-mode)
+             '(lisp-mode emacs-lisp-mode))
        (auto-byte-compile-file (buffer-file-name buffer) match)))
 
 (add-hook 'kill-buffer-hook 'auto-byte-compile-buffer)
@@ -246,16 +256,16 @@ match will equal nil."
 ;; Sequence commands  1.3  by me, Michal Nazarewicz ;)
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
 (defvar seq-times 0
-  "Stores number of times command was executed.  It cotnains
-random data before `seq-times' macro is called.")
+  "Number of times command was executed.
+Contains random data before `seq-times' macro is called.")
 
 (defmacro seq-times (&optional name max &rest body)
-  "Returns number of times command NAME was executed and updates
-`seq-times' variable accordingly.  If NAME is nil `this-command'
-will be used.  If MAX is specified the counter will wrap around
-at the value of MAX never reaching it.  If body is given it will
-be evaluated if the command is run for the first time in a
-sequence."
+  "Returns number of times command NAME was executed.
+Updates `seq-times' variable accordingly to keep track.  If NAME is
+Nil `this-command' will be used.  If MAX is specified the counter will
+wrap around at the value of MAX never reaching it.  If body is given
+it will be evaluated if the command is run for the first time in
+a sequence."
   (declare (indent 2))
 
   ;; Build incrementation part
@@ -279,16 +289,20 @@ sequence."
        (setq seq-times 0))))
 
 (defmacro seq-times-nth (name body &rest list)
-  "Calls `seq-times' with arguments NAME, length and BODY
-and (where length is the number of elements in LIST) then returns
-`seq-times'th element of LIST."
+  "Return element of the LIST depending on number of times command was called.
+NAME and BODY has the same meaning as in `seq-times' function.  LIST
+is a list of values to return.  Depending how many times command was
+called, element with that index will be returned.  The counter will
+wrap around."
   (declare (indent 2))
   `(nth (seq-times ,name ,(length list) ,body) ',list))
 
 (defmacro seq-times-do (name body &rest commands)
-  "Calls `seq-times' with arguments NAME, length and BODY (where
-length is the number of COMMANDS) and then runs `seq-times'th
-command from COMMANDS."
+  "Evaluates command depending on number of times command was called.
+NAME and BODY has the same meaning as in `seq-times' function.
+COMMANDS is a list of sexps to evaluate.  Depending how many times
+command was called, sexp with that index will be evaluated.  The
+counter will wrap around."
   (declare (indent 2))
   `(eval (nth (seq-times ,name ,(length commands) ,body) ',commands)))
 
@@ -298,9 +312,10 @@ command from COMMANDS."
 ;; My home
 (defvar my-home-end--point 0)
 (defun my-home ()
-   "Depending on how many times it was called moves the point to:
-once - beginning of line; twice - indent;
-three times - beginning of buffer; four times - back to where it was."
+   "Go to beginning of line, indent or buffer.
+When called once move point to beginning of line, twice - indent,
+three times - beginning of the buffer, four times - back to where it
+was at the beginning."
    (interactive)
    (seq-times-do nil (setq my-home-end--point (point))
      (beginning-of-line)
@@ -312,9 +327,13 @@ three times - beginning of buffer; four times - back to where it was."
                            (current-global-map))
 
 ;; My end
-(defun my-end () "Go to end of line or buffer" (interactive)
+(defun my-end ()
+  "Go to end of line or buffer.
+When called once move point to end of line, twice - end of buffer,
+three times - back to where it was at the beginning."
+  (interactive)
   (seq-times-do nil (setq my-home-end--point (point))
-    (if (and (boundp 'folding-mode) folding-mode)
+    (if (bound-and-true-p folding-mode)
         (folding-end-of-line) (end-of-line))
     (forward-paragraph)
     (goto-char (point-max))
@@ -347,8 +366,12 @@ three times - beginning of buffer; four times - back to where it was."
 ;;{{{   Save with no blanks
 
 ;; Save with no trailing whitespaces
-(defun save-no-blanks (&optional arg) (interactive "P")
-  (unless arg
+(defun save-no-blanks (&optional no-strip)
+  "Save file stripping all trailing white space and empty lines from EOF.
+When called with prefix argument (or NO-STRIP being non-nill) does not
+perform stripping and behaves as plain `save-buffer'."
+  (interactive "P")
+  (unless no-strip
     (save-restriction
       (delete-trailing-whitespace)))
   (save-buffer))
@@ -369,20 +392,18 @@ three times - beginning of buffer; four times - back to where it was."
 
 
 (defvar mn-window-skip-modes '(compilation-mode)
-  "List of major modes that `mn-window-skip-p' should treat as
-uninteresting.")
+  "List of major modes `mn-window-skip-p' treats as uninteresting.")
 
 (defvar mn-window-skip-names '("*Compile-Log*" "*Backtrace*" "*compilation*")
-  "List of buffer names `mn-window-skip-p' should treat as
-uninteresting.  This comes as an addition to
-`mn-window-skip-regexp'.")
+  "List of buffer names `mn-window-skip-p' treats as uninteresting.
+This comes as an addition to `mn-window-skip-regexp'.")
 
 (defvar mn-window-skip-regexp nil
-  "A regexp List of major modes `mn-window-skip-p' should treat as
-uninteresting.  This comes as an addition to
-`mn-window-skip-names'.")
+  "A regexp matching buffer names `mn-window-skip-p' treats as uninteresting.
+This comes as an addition to `mn-window-skip-names'.")
 
 (defun mn-window-skip-p (window)
+  "Check whether WINDOW is uninteresting to `mn-other-window'."
   (catch 'done
     ; catch is ugly, I know, but it saves on some indention
     (let ((b (window-buffer window)) n)
@@ -401,6 +422,12 @@ uninteresting.  This comes as an addition to
       nil)))
 
 (defun mn-other-window (count &optional all-frames)
+  "Select another interesting window in cyclic ordering of windows.
+COUNT and ALL-FRAMES has the same meaning as in `other-window' function.
+
+Window is not interesting id buffer it contains has one of the
+major modes from `mn-window-skip-modes' list, its name is on the
+`mn-window-skip-names' list or matches `mn-window-skip-regexp'."
   (interactive "p")
   (let ((func (cond ((> count 0) 'next-window)
                     ((< count 0) (setq count (- count)) 'previous-window))))
@@ -491,15 +518,16 @@ uninteresting.  This comes as an addition to
 
 ;; Indent or complete
 (defvar indent-or-complete-complete-function 'hippie-expand
-  "Function to complete the word when using `indent-or-complete'
-It is called with one argument - nil")
+  "Function to complete the word when using `indent-or-complete'.
+It is called with one argument - nil.")
 
 (defvar indent-or-complete--last-was-complete nil)
 
 (defun indent-or-complete ()
-  "In minibuffer runs `minibuffer-complete'.  Otherwise if
-`use-region-p' runs `indent-region'.  Otherwise if point is at end of
-a word runs `inent-or-complete-complete-function'.  Otherwise runs
+  "Indent or complete depending on context.
+In minibuffer run `minibuffer-complete', if `use-region-p' run
+`indent-region', if point is at end of a word run
+`inent-or-complete-complete-function', else run
 `indent-for-tab-command'."
   (interactive)
   (cond ((and (fboundp 'minibufferp) (minibufferp)) (minibuffer-complete))
@@ -544,13 +572,12 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
 ;;{{{   Filling
 
 ;; Alt+q - Fill
-(defun my-fill (&optional arg)
-  (interactive "*P")
-  (if arg
-    (fill-region (save-excursion (beginning-of-line) (point))
-                 (save-excursion (end-of-line)       (point))
-                 (seq-times-nth () () left full right center))
-    (fill-paragraph (seq-times-nth () () left full right center) t)))
+(defun my-fill ()
+  "Fills paragraph (or region) using a cyclic order alignment.
+If called once fills the paragraph to the left, twice - justifies,
+three times - to the right, four times - centers."
+  (interactive)
+  (fill-paragraph (seq-times-nth () () left full right center) t))
 
 (set-key "\M-q"          my-fill)
 
@@ -560,7 +587,8 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
 ;;{{{     F1 - Help
 
 (defun my-help ()
-  "If function given tries to `describe-function' otherwise uses
+  "Show context dependent help.
+If function given tries to `describe-function' otherwise uses
 `manual-entry' to display manpage of a `current-word'."
   (interactive)
   (let ((var (variable-at-point)))
@@ -598,7 +626,8 @@ a word runs `inent-or-complete-complete-function'.  Otherwise runs
   "List of dictionaries to cycle through with `mn-spell-switch-dictionary'.")
 
 (defun mn-spell (&optional lang start end)
-  "If LANG is not-nil sets ispell dictionary to lang, then checks
+  "Spell check region, buffer or from point.
+If LANG is not-nil sets Ispell dictionary to LANG, then checks
 region from START to END for spelling errors.  The default values
 for START and END are `region-beginning' and `region-end' if
 `use-region-p' or `point-min' and `point-max' otherwise.
@@ -621,16 +650,16 @@ returned."
          (e  (or end   (if rp (region-end)       (point-max)))))
     (if (< s e) (ispell-region s e))))
 
-(defun mn-spell-switch-dictionary (&optional arg)
-  "Switches dictionary to the next dictionary from `mn-spell-dictionaries'.
-With a prefix arg sets global dictionary."
+(defun mn-spell-switch-dictionary (&optional global)
+  "Switche dictionary to the next dictionary from `mn-spell-dictionaries'.
+If GLOBAL is non-nil, or with a prefix argument set global dictionary."
   (interactive "P")
   (ispell-change-dictionary
-   (let ((dic (or (and (not arg) ispell-local-dictionary) ispell-dictionary))
+   (let ((dic (or (and (not global) ispell-local-dictionary) ispell-dictionary))
          (list mn-spell-dictionaries))
      (while (and list (not (string= (car list) dic))) (setq list (cdr list)))
      (or (cadr list) (car mn-spell-dictionaries)))
-   arg))
+   global))
 
 
 (set-key [(f7)]         (mn-spell))
@@ -670,11 +699,11 @@ With a prefix arg sets global dictionary."
      ("CPPFLAGS" ,-mn-compile-common)
      ("LDFLAGS"  nil)))
 
-  "List of enviroment variables set by `mn-compile' priory to
-compilation.  The car of the list is a list of default enviroment
-variables to be set and cadr is a list is a list of alternative
-enviroment variables.  Each list is a list of two element lists
-which car is a enviroment variables name and cadr is value.")
+  "Enviroment variables set by `mn-compile' priory to compilation.
+The car of the list is a list of default enviroment variables to be
+set and cadr is a list is a list of alternative enviroment variables.
+Each list is a list of two element lists which car is a enviroment
+variables name and cadr is value.")
 
 (autoload 'recompile "compile"
   "Re-compile the program including the current buffer.
@@ -683,19 +712,19 @@ original use.  Otherwise, recompile using `compile-command'.
 If the optional argument `edit-command' is non-nil, the command can be edited." t)
 
 (defun mn-compile (&optional alt recompile touch)
-  "If alt is omited or nil sets CFLAGS, CXXFLAGS, CPPFLAGS and
+  "Compile current file.
+If ALT is omited or nil sets CFLAGS, CXXFLAGS, CPPFLAGS and
 LDFLAGS enviroment variables to `mn-cflags', `mn-cxxflags',
 `mn-cppflags', `mn-ldflags' respectively.
 
-If alt is non-nil (or when called interactive with any prefix
+If ALT is non-nil (or when called interactive with any prefix
 argument) sets CFLAGS, CXXFLAGS, CPPFLAGS and LDFLAGS enviroment
 variables to `mn-alt-cflags', `mn-alt-cxxflags',
 `mn-alt-cppflags', `mn-alt-ldflags' respectively.
 
-Afterwards, if touch is non-nil marks buffer as modified.  Saves
-buffer (`save-buffer') and executes `recompile' if recompile is
-non-nill or `compile' otherwise."
-
+Executes `recompile' function if RECOMPILE is non-nill or
+`compile' otherwise.  If TOUCH is non-nil marks buffer as
+modified beforehand."
   (interactive "P")
   (if touch (set-buffer-modified-p t))
   (save-buffer)
@@ -1070,8 +1099,11 @@ non-nill or `compile' otherwise."
 
 ;; Indention
 (defun set-tab (tab &optional stop-list)
-  "Sets `tab-stop-list' to a list of all positive from smallest to
-largest which are multiplications of TAB and are lower or equal 120.
+  "Adjust `tab-width', `tab-stop-list' and indent level in current buffer.
+`tab-width' is set to absolute value of TAB, while `tab-stop-list' to
+STOP-LIST (if given and not-nil) or a list of all positive from
+smallest to largest which are multiplications of TAB and are lower or
+equal 120.
 
 If called interactively user will be prompted for desired width.  With
 prefix argument, `indent-tabs-mode' will also be set to t.
@@ -1338,8 +1370,9 @@ the open brace was real open brace or part of comment/string."
 
 ;; Create a link out of the preceeding word if it appears to be a URL
 (defun mn-linkify-maybe ()
-  "If the word before cursor appears to be an URL wrap it
-around in a <a href=\"...\">...</a>.  Returns whether it happend.
+  "Maybe turn URL before cursor into a link.
+If the word before cursor appears to be an URL wrap it around in a <a
+href=\"...\">...</a>.  Returns whether it happend.
 
 This is however a stub implementation (because thingatpt could not be
 loaded) which does nothing and returns nil."
@@ -1466,7 +1499,7 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
 (eval-after-load "sgml-mode"
   (add-lambda-hook 'sgml-mode-hook
     (mn-xml-configure-bindings sgml-mode-map)
-    (set-key sgml-mode-map "/" "P"
+    (set-key sgml-mode-map "/"
              (if (and (not prefix-arg)
                       (eq (char-before) ?<))
                  (let (delete-active-region)
@@ -1498,7 +1531,7 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
             (replace-match (cdr pair) nil t)))))))
 
 (defun html-escape ()
-  "Replaces HTML special characters with HTML entities.
+  "Replace HTML special characters with HTML entities.
 
 In Transient Mark mode, if the mark is active, operate on the contents
 of the region.  Otherwise, operate from point to the end of the buffer."
@@ -1507,7 +1540,7 @@ of the region.  Otherwise, operate from point to the end of the buffer."
    '(("&" . "&amp;") ("<" . "&lt;") (">" . "&gt;") ("\"" . "&quot;"))))
 
 (defun html-unescape ()
-  "Replaces (some) HTML entities with characters.
+  "Replace (some) HTML entities with characters.
 
 In Transient Mark mode, if the mark is active, operate on the contents
 of the region.  Otherwise, operate from point to the end of the buffer."
@@ -1520,8 +1553,7 @@ of the region.  Otherwise, operate from point to the end of the buffer."
 
 ;; Helper for tex-space
 (defmacro my-tex-looking-back (regexp len)
-  "Returns non-nil if text LEN chars backward matches REGEXP
-prefixed with \\b."
+  "Return non-nil if REGEXP prefixed with \\b matches LEN chars backward."
   `(save-excursion
      (backward-char ,len)
      (looking-at ,(concat "\\b" regexp))))
@@ -1529,8 +1561,22 @@ prefixed with \\b."
 ;; insert '~' or '\ ' instead of ' ' in LaTeX when needed
 ;; Also removes '~' when 2nd space added
 ;; http://www.debianusers.pl/article.php?aid=39
-(defun tex-space (arg) (interactive "P")
+(defun tex-space (arg)
+  "Insert \"~\", \"\\ \" or just a space depending on context.
+
+If point follows a tilde or \"\\ \" sequence, replace it with a space
+\(or ARG spaces); otherwise if ARG is specified (or called with prefix
+argument), insert ARG spaces; otherwise if point follows a one-letter
+word, insert \"~\"; otherwise if point follows something that looks
+like an abbreviation with a dot, insert \"\\ \"; otherwise just insert
+space.
+
+Function actually uses `self-insert-command' to insert spaces so if
+it's not bound to space, the results may be somehow surprising."
+  (interactive "P")
   (cond
+   ((re-search-backward "\\\\ " (- (point) 2) t)
+    (delete-char 2) (self-insert-command arg))
    ((re-search-backward "\\~" (- (point) 1) t)
     (delete-char 1) (self-insert-command (prefix-numeric-value arg)))
    (arg (self-insert-command (prefix-numeric-value arg)))
@@ -1549,11 +1595,20 @@ prefixed with \\b."
 
 ;; Insert '\ ' instead of ' ' in nroff when needed
 ;; Also removes '\' when 2nd space added
-(defun nroff-space (arg) (interactive "p")
+(defun nroff-space (arg)
+  "Insert \"\\ \" or just a space depending on context.
+If point follows a \"\\ \" sequence, replace it with a space (or ARG
+spaces); otherwise if ARG is specified (or called with prefix
+argument), insert ARG spaces; otherwise if point follows a one-letter
+word, insert \"\\ \"; otherwise if just insert space.
+
+Function actually uses `self-insert-command' to insert spaces so if
+it's not bound to space, the results may be somehow surprising."
+  (interactive "p")
   (cond
    ((re-search-backward "\\\\ " (- (point) 2) t)
-    (delete-char 1) (forward-char) (self-insert-command arg))
-   ((> arg 1) (self-insert-command arg))
+    (delete-char 2) (self-insert-command arg))
+   (arg (self-insert-command arg))
    ((my-tex-looking-back "[a-z]" 1)
 ;        (my-tex-looking-back "[a-z][a-z]" 2))
 ;        (my-tex-search-back "do\\|na\\|od\\|po\\|za\\|we\\|to\\|co" 2))
@@ -1568,10 +1623,11 @@ prefixed with \\b."
 ;;{{{   Generate serialVersionUID in Java
 
 (defun mn-serialVersionUID (&optional insert)
-  "When called interactivly or with a non nil argument inserts
-a random 64-bit hexadecimal integer prefixed with \"0x\" and
-suffixed with \"L\".  When called with nil argument or with
-argument ommited returns that number."
+  "Generate serialVersionUID and possibly insert it to current buffer.
+When called interactivly or with a non nil INSERT argument insert
+a random 64-bit hexadecimal integer prefixed with \"0x\" and suffixed
+with \"L\".  When called with nil argument or with argument ommited
+returns that number."
   (interactive (list t))
   (if insert
       (insert (mn-serialVersionUID))
