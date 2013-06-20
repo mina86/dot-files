@@ -800,7 +800,7 @@ modified beforehand."
 (setq font-lock-verbose nil)          ;no messages
 
 ;; Let customize keep config there
-(setq custom-file (concat user-emacs-directory "custom"))
+(setq custom-file (concat user-emacs-directory "custom.el"))
 (when (file-exists-p custom-file)
   (load-file custom-file))
 (setq-if-bound auto-byte-compile-files-list
@@ -812,10 +812,33 @@ modified beforehand."
 (show-paren-mode t)               ;show matching parenthesis.
 (setq blink-matching-paren-distance nil) ;search for open-paren till point-min
 
-;; Highlight groups of three digits
-(add-lambda-hook 'after-init-hook
-  (when (fboundp 'global-num3-mode)
-    (global-num3-mode t)))
+(defface my-tab-face
+  '((((class color) (min-colors 216)) (:background "#666"))
+    (t (:background "yellow")))
+  "Face used to show TAB characters."
+  :group 'whitespace)
+
+(defface my-big-indent-face
+  '((((class color) (min-colors 216)) (:background "#966"))
+    (t (:background "red")))
+  "Face used to show a sequence of 4-5 tabs at the beginning of a line."
+  :group 'whitespace)
+
+(defface my-huge-indent-face
+  '((((class color) (min-colors 216)) (:background "#C66"))
+    (t (:background "magenta")))
+  "Face used to show a sequence of 6 or more tabs at the beginning of a line."
+  :group 'whitespace)
+
+(defface my-fixme-face
+  '((t :background "red" :foreground "white" :weight bold))
+  "Face use to show FIXME and XXX markers in the text."
+  :group 'whitespace)
+
+(defface my-todo-face
+  '((t :foreground "red" :weight bold))
+  "Face used to show TODO markers in the text."
+  :group 'whitespace)
 
 ;; Show blanks and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
@@ -828,160 +851,6 @@ modified beforehand."
        ("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
        ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))
 
-;;{{{ Set faces
-
-;; Code based on color-theme but simplified
-(dolist
-    (entry
-     '((default
-         (t (:stipple nil
-             :background "black"
-             :foreground "#CCC"
-             :inverse-video nil
-             :box nil
-             :strike-through nil
-             :overline nil
-             :underline nil
-             :slant normal
-             :weight normal
-             :height 80
-             :width normal
-             :family "courier"
-             :foundry "adobe")))
-
-       (region
-        (((type x-toolkit)) (:foreground nil :background "blue"))
-        (t (:foreground nil :background nil :inverse-video t)))
-       (secondary-selection
-        (((type x-toolkit)) (:foreground nil :background "SkyBlue4"))
-        (t (:foreground nil :background nil :inverse-video t)))
-       (tooltip
-        (t (:inherit variable-pitch :background "lightyellow" :foreground "black")))
-
-       (completions-common-part
-        (t (:inherit default :foreground "yellow")))
-       (completions-first-difference
-        (t (:inherit default :foreground "cyan" :weight bold)))
-
-       (custom-button
-        (t (:foreground "cyan")))
-       (custom-button-face
-        (t (:foreground "cyan")))
-       (custom-documentation
-        (t (:foreground "yellow" :weight bold)))
-       (custom-documentation-face
-        (t (:foreground "yellow" :weight bold)))
-       (custom-group-tag
-        (t (:foreground "cyan" :underline t :weight bold)))
-       (custom-group-tag-face
-        (t (:foreground "cyan" :underline t :weight bold)))
-       (custom-variable-tag
-        (t (:foreground "cyan" :underline t :weight bold)))
-       (custom-variable-tag-face
-        (t (:foreground "cyan" :underline t :weight bold)))
-
-       (diff-added
-        (t (:inherit diff-changed :foreground "green")))
-       (diff-added-face
-        (t (:foreground "green" :weight bold)))
-       (diff-changed
-        (t (:foreground "yellow")))
-       (diff-changed-face
-        (t (:foreground "yellow" :weight bold)))
-       (diff-indicator-added
-        (t (:inherit diff-added)))
-       (diff-removed
-        (t (:inherit diff-changed :foreground "red")))
-       (diff-removed-face
-        (t (:foreground "red" :weight bold)))
-
-       (font-lock-builtin-face
-        (t (:foreground "#99F")))
-       (font-lock-comment-face
-        (t (:foreground "green" :slant italic)))
-       (font-lock-constant-face
-        (t (:foreground "aquamarine")))
-       (font-lock-doc-face
-        (t (:inherit font-lock-comment-face :foreground "#CF0")))
-       (font-lock-function-name-face
-        (t (:foreground "lightskyblue")))
-       (font-lock-keyword-face
-        (t (:foreground "#0FF")))
-       (font-lock-negation-char-face
-        (t nil))
-       (font-lock-string-face
-        (t (:foreground "lightsalmon")))
-       (font-lock-type-face
-        (t (:foreground "palegreen")))
-       (font-lock-variable-name-face
-        (t (:foreground "lightgoldenrod")))
-       (font-lock-warning-face
-        (t (:foreground "pink" :weight bold)))
-       (fringe
-        (t (:background "#112211")))
-       (header-line
-        (t (:inherit mode-line :background "#006" :foreground "#FFF" :box nil)))
-       (help-argument-name
-        (t (:inherit font-lock-variable-name-face)))
-       (highlight
-        (t (:background "#060" :underline "#0F0")))
-       (hl-line
-        (t (:background "#003")))
-       (lazy-highlight
-        (t (:background "paleturquoise4")))
-       (link
-        (t (:foreground "cyan" :underline t)))
-       (link-visited
-        (t (:inherit link :foreground "#96F")))
-       (match
-        (t (:background "RoyalBlue3")))
-
-       (mode-line
-        (t (:background "#009" :foreground "#FFF" :box nil)))
-       (mode-line-buffer-id
-        (t (:foreground "#9FF" :weight bold)))
-       (mode-line-highlight
-        (t (:background "#00F")))
-       (mode-line-inactive
-        (t (:inherit mode-line :box nil :background "#333" :foreground "#CCC")))
-
-       (widget-button
-        (t (:background "blue" :foreground "cyan" :weight bold)))
-       (widget-button-face
-        (t (:background "blue" :foreground "cyan" :weight bold)))
-       (widget-field
-        (t (:background "blue")))
-       (widget-field-face
-        (t (:background "blue")))
-
-       (my-tab-face
-        (((class color) (min-colors 216)) (:background "#666"))
-        (t (:background "yellow")))
-       (my-big-indent-face
-        (((class color) (min-colors 216)) (:background "#966"))
-        (t (:background "red")))
-       (my-huge-indent-face
-        (((class color) (min-colors 216)) (:background "#C66"))
-        (t (:background "magenta")))
-       (my-fixme-face
-        (t :background "red" :foreground "white" :weight bold))
-       (my-todo-face
-        (t :foreground "red" :weight bold))
-
-       (num3-face-even
-        (t :underline nil :weight normal :background "#000" :foreground "#CFF"))
-       (auto-dim-other-buffers-face
-        (t :background "#112222"))))
-  (let ((face (car entry)) (spec (cdr entry)))
-    (unless (facep face)
-      (make-empty-face face))
-    (condition-case var
-        (progn
-          (put face 'face-override-spec spec)
-          (face-spec-set face spec))
-      (error (message "Error using spec %S: %S" spec var)))))
-
-;;}}}
 
 ;;}}}
 ;;{{{ Misc small config
@@ -1047,8 +916,11 @@ modified beforehand."
                                (down-mouse-1 . mouse-major-mode-menu))))
         ") "))
 
-;; Dim buffers which are not (current-buffer)
 (add-lambda-hook 'after-init-hook
+  ;; Highlight groups of three digits
+  (when (fboundp 'global-num3-mode)
+    (global-num3-mode t))
+  ;; Dim buffers which are not (current-buffer)
   (when (fboundp 'auto-dim-other-buffers-mode)
     (auto-dim-other-buffers-mode t)))
 
