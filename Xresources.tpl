@@ -100,12 +100,12 @@ URxvt.color15:         #FFFFFF
 
 ! Terminal in urxvt
 URxvt.perl-lib: {{HOME}}/.urxvt
-Term.perl-ext-common:  matcher,tabbedex,selection-popup,option-popup,searchable-scrollback<M-s>,selection-pastebin
+Term.perl-ext-common:  matcher,tabbedex,searchable-scrollback<M-s>,selection-pastebin,google-osc
 URxvt.backgroundPixmap: {{HOME}}/.urxvt/80-char.png;0x0+0+0:tile
 URxvt.tabbed.new-button: false
 URxvt.tabbed.autohide: true
-URxvt.tabbed.tabs-style: nonum nopipe
-URxvt.tabbed.tabbar-timeouts: 16:::8:+:4:@:-:.
+URxvt.tabbed.tabbar-timeouts: 0:#:2:@:6:*:12:+:20:::30:.
+URxvt.tabbed.bell-timeout: 0
 
 ! Irssi in urxvt
 IRC.title:     IRC
