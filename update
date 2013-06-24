@@ -191,8 +191,7 @@ compile_el() {
 		tput setaf 7
 		echo "Compiling $1"
 		tput sgr0
-		emacs --batch --eval \
-			'(if argv (byte-compile-file (car argv)))' "$1"
+		emacs --batch -f batch-byte-compile "$1"
 	fi
 }
 
