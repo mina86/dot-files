@@ -43,6 +43,12 @@ fi
 __PS1+='\[\e[0;37;44m\]]'
 __PS1+='\[\e[0;1;3$(($??5:3))m\]\$\[\e[0m\] '
 
+# urxvt-tabbedex has nice handling of bell
+# See https://github.com/mina86/urxvt-tabbedex for latest copy
+case "$TERM" in rxvt*)
+	__PS1+='\[\a\]'
+esac
+
 # Add title to terminals
 case "$TERM" in xterm*|rxvt*)
 	__PS1+='\[\e]2;'
@@ -164,6 +170,23 @@ if which git >/dev/null 2>&1; then
 
 	PROMPT_COMMANDS+=' ; __git_prompt'
 fi
+
+
+##
+## Show times on the right, behaves a bit like zsh's right prompt, but
+## not exactly the same way.
+##
+__command_rprompt() {
+	local times='' n=$COLUMNS tz
+	for tz in ZRH:Europe/Zurich MTV:US/Pacific PIT:US/Eastern; do
+		[ $n -gt 40 ] || break
+		times="$times ${tz%%:*}\e[30;1m:\e[0;36;1m$(TZ=${tz#*:} date +%H:%M)\e[0m"
+		n=$(( $n - 10 ))
+	done
+	printf "%${n}s%s" '' >&2
+	printf "$times\\r" >&2
+}
+PROMPT_COMMANDS+=' ; __command_rprompt'
 
 
 
