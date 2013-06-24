@@ -42,9 +42,6 @@ use `use-region-p'."
   (eval-when-compile
     (setq load-path (cons (concat user-emacs-directory "elisp") load-path))))
 
-;; Local
-(load (concat user-emacs-directory "local.el") t)
-
 ;; notmuch
 (autoload 'notmuch (concat user-emacs-directory "mail.el") "notmuch mail" t)
 
@@ -1682,3 +1679,6 @@ returns that number."
   (server-start))
 
 ;;}}}
+
+;; Local
+(load (concat user-emacs-directory "local.el") t)
