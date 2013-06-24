@@ -95,6 +95,55 @@ if [ -e ~/bin/flags-do ]; then
 	}
 fi
 
+# Powerful cd
+_cd_sub() {
+	while :; do
+		case "$1" in
+		*/"$3"/*)
+			set -- "${1%/"$3"/*}" "${1##*/"$3"/}$2" "$3" "$4"
+			if [ -d "$1/$4/$2" ]; then
+				echo "$1/$4/$2"
+				\cd "$1/$4/$2"
+				return $?
+			fi
+			set -- "$1/" "$3/$2" "$1" "$2"
+			;;
+		*)
+			echo "cd: $3 not found in $1$2 or resulting path does not point to a directory" >&2
+			return 1
+		esac
+	done
+}
+
+_cd() {
+	if [ $# -eq 0 ]; then
+		\cd
+		return $?
+	elif [ $# -eq 1 ] && [ x"$1" != x-P ]; then
+		\cd "$1"
+		return $?
+	elif [ $# -eq 2 ]; then
+		if [ x"$1" = x-P ]; then
+			\cd "$2" || return $?
+		else
+			_cd_sub "$PWD/" '' "$1" "$2"
+			return $?
+		fi
+	elif [ $# -eq 3 ] && [ x"$1" = x-P ]; then
+		_cd_sub "$(pwd -P)/" '' "$2" "$3"
+		return $?
+	elif [ $# -ge 3 ]; then
+		echo "cd: too many arguments" >&2
+		return 1
+	fi
+
+	set -- "$(pwd -P)"
+	echo "$1"
+	\cd "$1"
+}
+alias cd=_cd
+
+
 # No need to set it once again
 if [ -n "$MINA86RC" ]; then
 	return
