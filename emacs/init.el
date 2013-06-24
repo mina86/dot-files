@@ -759,33 +759,6 @@ modified beforehand."
     (kill-ring-save (point) (progn (forward-word 1) (point)))
     (setq this-command 'kill-region)))
 
-;; C-S-w, M-S-w, C-S-y -- works on registers
-(defvar copy-or-append-to-register--register nil)
-
-(defun copy-or-append-to-register (register start end &optional delete append)
-  (interactive
-   (let ((append-p (equal last-command this-command)))
-     (list
-      (or (and append-p copy-or-append-to-register--register)
-          (read-char (if append-p
-                       "Append to register: " "Copy to register: ") nil nil))
-      (if (use-region-p) (region-beginning) (point))
-      (if (use-region-p) (region-end) (progn (forward-word 1) (point)))
-      prefix-arg
-      append-p)))
-  (if append
-      (append-to-register register start end delete)
-    (copy-or-append-to-register register start end delete))
-  (setq copy-or-append-to-register--register register))
-
-(defun kill-or-append-to-register ()
-  (setq prefix-arg t)
-  (call-interactively 'copy-or-append-to-register))
-
-(set-key [(control shift w)] copy-or-append-to-register)
-(set-key [(meta    shift w)] kill-or-append-to-register)
-(set-key [(control shift y)] insert-register)
-
 ;;}}}
 
 ;;}}}
@@ -794,7 +767,6 @@ modified beforehand."
 ;; Font lock
 (require 'font-lock)
 (global-font-lock-mode t)
-(setq font-lock-verbose nil)          ;no messages
 
 ;; Let customize keep config there
 (setq custom-file (concat user-emacs-directory "custom.el"))
@@ -804,10 +776,7 @@ modified beforehand."
                (cons custom-file auto-byte-compile-files-list))
 
 ;; Other
-(setq query-replace-highlight t   ;highlight during query
-      search-highlight t)         ;highlight incremental search
 (show-paren-mode t)               ;show matching parenthesis.
-(setq blink-matching-paren-distance nil) ;search for open-paren till point-min
 
 (defface my-tab-face
   '((((class color) (min-colors 216)) (:background "#666"))
@@ -922,7 +891,7 @@ modified beforehand."
     (auto-dim-other-buffers-mode t)))
 
 ;; Other
-(eval-when-compile (require 'icomplete))
+(require 'icomplete)
 (icomplete-mode 1)                ;nicer completion in minibuffer
 (setq icomplete-prospects-height 2) ; don't spam my minibuffer
 (set-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
@@ -933,9 +902,11 @@ modified beforehand."
 (setq inhibit-splash-screen   t   ;don't show splash screen
       inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
                                   ; many files               (EMACS 21.4+)
-(setq sentence-end-base "[.?!…][]\"'”)}]*" ; "…" also ends sentence
+(setq sentence-end-base "[.?!…][]\"'”)}]*" ; "…" also ends a sentence
+      sentence-end-double-space 1 ;sentance end with double space
+      paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
+      paragraph-separate "$"
       require-final-newline t)    ;always end file with NL
-(setq truncate-lines nil)         ;wrap lines
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
 (set-default 'indicate-empty-lines t) ;show empty lines at the end of file
 (set-default 'indicate-buffer-boundaries t) ;show buffer boundries on fringe
@@ -952,7 +923,7 @@ modified beforehand."
 
 ;; Saving etc
 (when (fboundp recentf-mode)
-  (recentf-mode nil))           ;no recent files
+  (recentf-mode -1))           ;no recent files
 (setq backup-by-copying-when-linked t) ;preserve hard links
 (auto-compression-mode 1)         ;automatic compression
 (setq make-backup-files nil)      ;no backup
@@ -993,24 +964,13 @@ rules so it is likely not to work."
 
 (setq indent-tabs-mode t)         ;indent using tabs
 (set-tab 8)                       ;tab width and stop list
-
+(eval-when-compile (require 'tabify))
+(setq tabify-regexp "^\t* [ \t]+");tabify only at the beginning of line
 
 ;; Scrolling/moving
 (setq scroll-step 1               ;scroll one line
       hscroll-step 1              ;scroll one column
       next-line-add-newlines nil) ;no new lines with down arrow key
-
-
-;; Blink Scroll Lock LED instead of beep
-(setq visible-bell nil            ;no visual bell
-      ring-bell-function (function (lambda ()
-  (call-process-shell-command "xset led 3; xset -led 3" nil 0 nil))))
-
-
-;; Each list element as new paragraph
-;; http://www.emacswiki.org/cgi-bin/wiki/FillParagraph
-(setq paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
-      paragraph-separate "$")
 
 
 ;; Do not break line after single character when filling
@@ -1242,8 +1202,8 @@ loaded) which does nothing and returns nil."
 
 (when (load "thingatpt" t)
   (let ((url-regexp
-         (cond ((boundp 'thing-at-point-url-regexp) thing-at-point-url-regexp)
-               ((boundp 'ffap-url-regexp) ffap-url-regexp))))
+         (or (bound-and-true-p thing-at-point-url-regexp)
+             (bound-and-true-p ffap-url-regexp))))
     (when url-regexp
       (defun mn-linkify-maybe ()
         "If the word before cursor appears to be an URL wrap it around
@@ -1585,7 +1545,8 @@ returns that number."
 
 ;;{{{   Folding
 
-(when (load "folding" t)
+(when (eval-when-compile (load "folding" t))
+  (require 'folding)
   (defconst folding-default-keys-function
     '(folding-bind-backward-compatible-keys))
 
@@ -1682,3 +1643,5 @@ returns that number."
 
 ;; Local
 (load (concat user-emacs-directory "local.el") t)
+
+;;; init.el ends here
