@@ -251,7 +251,6 @@ git/config         ~/.gitconfig
 git/ignore         ~/.gitignore
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
-risc-mode.el       ~/.emacs.d/elisp/
 sawfishrc          ~/.sawfish/rc
 sawfish-lisp/*.jl  ~/.sawfish/lisp/@
 statuses           ~/.irssi/
