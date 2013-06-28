@@ -115,31 +115,61 @@ _cd_sub() {
 	done
 }
 
-_cd() {
-	if [ $# -eq 0 ]; then
-		\cd
-		return $?
-	elif [ $# -eq 1 ] && [ x"$1" != x-P ]; then
-		\cd "$1"
-		return $?
-	elif [ $# -eq 2 ]; then
-		if [ x"$1" = x-P ]; then
-			\cd "$2" || return $?
-		else
-			_cd_sub "$PWD/" '' "$1" "$2"
+_cd_ddd() {
+	set -- "${1%/}" "${2#.../}"
+	while :; do
+		if [ -z "$1" ]; then
+			echo "cd: .../$2: could not find path" >&2
+			return 1
+		fi
+
+		set -- "${1%/*}" "$2"
+		if [ -d "$1/$2" ]; then
+			echo "$1/$2"
+			\cd "$1/$2"
 			return $?
 		fi
-	elif [ $# -eq 3 ] && [ x"$1" = x-P ]; then
-		_cd_sub "$(pwd -P)/" '' "$2" "$3"
-		return $?
-	elif [ $# -ge 3 ]; then
-		echo "cd: too many arguments" >&2
-		return 1
-	fi
+	done
+}
 
+_cd_P() {
 	set -- "$(pwd -P)"
 	echo "$1"
 	\cd "$1"
+}
+
+_cd() {
+	case "$#:$1:$2" in
+	1:-h:)
+		cat <<EOF
+cd -P
+    Resolve all symbolic links in \$PWD.
+cd [-P] [<dir>]
+    Move to <dir>, or home directory if <dir> is not given, or \$OPWD
+    if <dir> is "-".  With -P, resolves all symlinks.
+cd [-P] <from> <to>
+    Replaces right-most occurrence of "/<from>/" with "/<to>/" and
+    tries to change CWD to resulting path.  If it does not resolve to
+    a directory, tries the next occurrence of "/<from>/" until there
+    aren't any more left.  With -P looks at CWD with symlinks resolved.
+cd [-P] .../<dir>
+    Goes to parent directories until ./<dir> is a valid directory and
+    then changes to it.  With -P looks at CWD with symlinks resolved.
+EOF
+		;;
+
+	0:*)		\cd ;;
+	1:-P:)		_cd_P ;;
+	1:.../*)	_cd_ddd "$PWD" "$1" ;;
+	1:*)		\cd      "$1" ;;
+	2:-P:.../*)	_cd_ddd "$(pwd -P)" "$2" ;;
+	2:-P:*)		\cd      "$2" >/dev/null && _cd_P ;;
+	2:*)		_cd_sub "$PWD" "$1" "$2" ;;
+	3:-P:*)		_cd_sub "$(pwd -P)" "$2" "$3" ;;
+	*)
+		echo "cd: too many arguments" >&2
+		return 1
+	esac
 }
 alias cd=_cd
 
