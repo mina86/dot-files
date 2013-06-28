@@ -9,21 +9,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:stipple nil
-              :background "black"
-             :foreground "#CCC"
-             :inverse-video nil
-             :box nil
-             :strike-through nil
-             :overline nil
-             :underline nil
-             :slant normal
-             :weight normal
-             :height 80
-             :width normal
-             :family "courier"
-             :foundry "adobe"))))
-
+ '(default ((t (:stipple nil :background "black" :foreground "#CCC" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 80 :width normal :family "courier" :foundry "adobe"))))
  '(auto-dim-other-buffers-face ((t :background "#112222")))
  '(completions-common-part ((t (:inherit default :foreground "yellow"))))
  '(completions-first-difference ((t (:inherit default :foreground "cyan" :weight bold))))
@@ -36,9 +22,9 @@
  '(custom-variable-tag ((t (:foreground "cyan" :underline t :weight bold))))
  '(custom-variable-tag-face ((t (:foreground "cyan" :underline t :weight bold))))
  '(diff-added ((t (:inherit diff-changed :foreground "green"))))
- '(diff-added-face ((t (:foreground "green" :weight bold))))
+ '(diff-added-face ((t (:foreground "green" :weight bold))) t)
  '(diff-changed ((t (:foreground "yellow"))))
- '(diff-changed-face ((t (:foreground "yellow" :weight bold))))
+ '(diff-changed-face ((t (:foreground "yellow" :weight bold))) t)
  '(diff-context ((t nil)))
  '(diff-file-header ((t (:background "grey30" :weight bold))))
  '(diff-header ((t (:background "grey20"))))
@@ -47,7 +33,7 @@
  '(diff-refine-change ((t (:inherit diff-changed :background "#666600"))))
  '(diff-refine-removed ((t (:inherit diff-removed :background "#660000"))))
  '(diff-removed ((t (:inherit diff-changed :foreground "red"))))
- '(diff-removed-face ((t (:foreground "red" :weight bold))))
+ '(diff-removed-face ((t (:foreground "red" :weight bold))) t)
  '(font-lock-builtin-face ((t (:foreground "#99F"))))
  '(font-lock-comment-face ((t (:foreground "green" :slant italic))))
  '(font-lock-constant-face ((t (:foreground "aquamarine"))))
@@ -78,7 +64,7 @@
  '(notmuch-search-matching-authors ((t (:inherit default))))
  '(notmuch-search-non-matching-authors ((t (:inherit default :foreground "dim grey"))))
  '(notmuch-search-subject ((t (:inherit default :foreground "cyan"))))
- '(num3-face-even ((t :underline nil :weight normal :background "#000" :foreground "#CFF")))
+ '(num3-face-even ((t (:foreground "#CFF" :underline nil :weight normal))))
  '(region ((((type x-toolkit)) (:foreground nil :background "blue")) (t (:foreground nil :background nil :inverse-video t))))
  '(secondary-selection ((((type x-toolkit)) (:foreground nil :background "SkyBlue4")) (t (:foreground nil :background nil :inverse-video t))))
  '(tooltip ((t (:inherit variable-pitch :background "lightyellow" :foreground "black"))))
