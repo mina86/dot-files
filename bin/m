@@ -60,7 +60,7 @@ mpd_ctl() {
 		_mpc
 		;;
 	*)
-		echo "unknown or unsupported action: $1"
+		echo "unknown or unsupported action: $1" >&2
 		return 1
 	esac
 }
@@ -103,7 +103,7 @@ spotify_ctl() {
 		spotify_query | grep -wq Playing
 		;;
 	*)
-		echo "unknown or unsupported action: $1"
+		echo "unknown or unsupported action: $1" >&2
 		return 1
 	esac
 }
@@ -118,6 +118,17 @@ if spotify_query >/dev/null 2>&1; then
 	player=spotify
 else
 	player=mpd
+fi
+
+if [ x"$1" = xif ]; then
+	if [ x"$2" != x$player ]; then
+		echo "running $player, not $2" >&2
+		exit 255
+	fi
+	shift 2
+	if [ $# -eq 0 ]; then
+		exit 0
+	fi
 fi
 
 if [ -e ~/bin/libexec/"music-$player-$1" ]; then
