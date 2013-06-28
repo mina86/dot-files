@@ -108,78 +108,90 @@
 ;;}}}
 ;;{{{ Notmuch
 
-(when (eval-when-compile (load "notmuch" t))
-  (require 'notmuch)
+(require 'notmuch)
 
-  (setq notmuch-search-oldest-first nil
-        notmuch-show-logo nil
-        notmuch-show-mark-read-tags nil
-        notmuch-message-replied-tags '("replied" "-unread")
-        notmuch-hello-count-messages nil
+(setq notmuch-show-logo nil
 
-        notmuch-message-headers '("Subject" "To" "Cc" "Bcc" "Date")
+      notmuch-search-oldest-first nil
+      notmuch-search-result-format
+      '(("subject" . " %-69.69s")
+        ("count"   . "  %7s")
+        ("tags"    . "  (%s)\n")
+        ("authors" . "  %-63.63s")
+        ("date"    . "  %12s"))
 
-        notmuch-saved-searches
-        '(("to me"    . "tag:unread and not tag:linux and                      tag:me")
-          ("me+linux" . "tag:unread and     tag:linux and                      tag:me")
-          ("goog"     . "tag:unread and not tag:linux and     tag:goog and not tag:me")
-          ("linux"    . "tag:unread and     tag:linux and not tag:goog and not tag:me")
-          ("rest"     . "tag:unread and not tag:linux and not tag:goog and not tag:me"))
+      notmuch-show-mark-read-tags nil
+      notmuch-show-all-multipart/alternative-parts nil
+      notmuch-show-relative-dates nil
+      notmuch-show-insert-text/plain-hook
+      '(notmuch-wash-wrap-long-lines notmuch-wash-tidy-citations
+        notmuch-wash-elide-blank-lines notmuch-wash-excerpt-citations)
 
-        notmuch-search-result-format
-        '(("subject" . " %-69.69s")
-          ("count"   . "  %7s")
-          ("tags"    . "  (%s)\n")
-          ("authors" . "  %-63.63s")
-          ("date"    . "  %12s")))
+      notmuch-message-replied-tags '("replied" "-unread")
+      notmuch-message-headers '("Subject" "To" "Cc" "Bcc" "Date")
 
-                                        ;(define-key notmuch-hello-mode-map [tab] 'widget-forward)
+      notmuch-hello-sections
+      '(notmuch-hello-insert-saved-searches
+        notmuch-hello-insert-search notmuch-hello-insert-recent-searches
+        notmuch-hello-insert-alltags)
 
-  (set-key notmuch-show-mode-map "h"
-           (unless (notmuch-show-next-open-message)
-             (notmuch-show-next-thread t)))
-  (set-key notmuch-show-mode-map "H" (notmuch-show-next-message t))
-  (set-key notmuch-show-mode-map "t"
-           (unless (notmuch-show-previous-open-message)
-             (notmuch-show-previous-thread t)))
-  (set-key notmuch-show-mode-map "T" (notmuch-show-previous-message))
+      notmuch-saved-searches
+      '(("to me"    . "tag:unread and not tag:linux and                      tag:me")
+        ("me+linux" . "tag:unread and     tag:linux and                      tag:me")
+        ("goog"     . "tag:unread and not tag:linux and     tag:goog and not tag:me")
+        ("linux"    . "tag:unread and     tag:linux and not tag:goog and not tag:me")
+        ("rest"     . "tag:unread and not tag:linux and not tag:goog and not tag:me")))
 
-  (define-key notmuch-search-mode-map "h" 'notmuch-search-next-thread)
-  (define-key notmuch-search-mode-map "t" 'notmuch-search-previous-thread)
+;(define-key notmuch-hello-mode-map [tab] 'widget-forward)
 
-  (define-key notmuch-show-mode-map "\C-t" 'notmuch-show-view-raw-message)
-  (define-key notmuch-show-mode-map "q"    'notmuch-kill-this-buffer)
+(set-key notmuch-show-mode-map "h"
+         (unless (notmuch-show-next-open-message)
+           (notmuch-show-next-thread t)))
+(set-key notmuch-show-mode-map "H" (notmuch-show-next-message t))
+(set-key notmuch-show-mode-map "t"
+         (unless (notmuch-show-previous-open-message)
+           (notmuch-show-previous-thread t)))
+(set-key notmuch-show-mode-map "T" (notmuch-show-previous-message))
 
-  (define-key notmuch-show-mode-map "f" 'notmuch-show-reply)
-  (define-key notmuch-show-mode-map "F" 'notmuch-show-reply-sender)
-  (define-key notmuch-search-mode-map "f" 'notmuch-search-reply-to-thread)
-  (define-key notmuch-search-mode-map "F" 'notmuch-search-reply-to-thread-sender)
+(define-key notmuch-search-mode-map "h" 'notmuch-search-next-thread)
+(define-key notmuch-search-mode-map "t" 'notmuch-search-previous-thread)
 
-  (define-key notmuch-show-mode-map "s" 'notmuch-search)
-  (define-key notmuch-show-mode-map "w" 'notmuch-show-save-attachments)
+(define-key notmuch-show-mode-map "\C-t" 'notmuch-show-view-raw-message)
+(define-key notmuch-show-mode-map "q"    'notmuch-kill-this-buffer)
 
-  (dolist (x '(("V"    t   "+mute" "-unread")
-               ("v"    t   "-unread")
-               ("b"    nil "+deleted" "-unread")
-               ("u"    nil "+unread")
-               ("\M-u" nil "-deleted" "+unread")
-               ("d"    nil "-unread")))
-    (let ((key  (car  x))
-          (all  (cadr x))
-          (tags (cddr x)))
-      (set-key notmuch-show-mode-map key
-               (if all
-                   (notmuch-show-tag-all tags)
-                 (notmuch-show-tag tags))
-               (if (or all (not (notmuch-show-next-open-message)))
-                   (notmuch-show-next-thread t)))
-      (set-key notmuch-search-mode-map key
-               (notmuch-search-tag tags)
-               (notmuch-search-next-thread))))
+(define-key notmuch-show-mode-map "f" 'notmuch-show-reply)
+(define-key notmuch-show-mode-map "F" 'notmuch-show-reply-sender)
+(define-key notmuch-search-mode-map "f" 'notmuch-search-reply-to-thread)
+(define-key notmuch-search-mode-map "F" 'notmuch-search-reply-to-thread-sender)
 
-  (let ((l (lambda () (when (fboundp 'turn-off-fci-mode)
-                        (turn-off-fci-mode)))))
-    (add-hook 'notmuch-hello-mode-hook l)
-    (add-hook 'notmuch-search-hook l)))
+(define-key notmuch-show-mode-map "s" 'notmuch-search)
+(define-key notmuch-show-mode-map "w" 'notmuch-show-save-attachments)
+
+(dolist (x '(("V"    t   "+mute" "-unread")
+             ("v"    t   "-unread")
+             ("b"    nil "+deleted" "-unread")
+             ("u"    nil "+unread")
+             ("\M-u" nil "-deleted" "+unread")
+             ("d"    nil "-unread")))
+  (let ((key  (car  x))
+        (all  (cadr x))
+        (tags (cddr x)))
+   (set-key notmuch-show-mode-map key
+            (if all
+                (notmuch-show-tag-all tags)
+              (notmuch-show-tag tags))
+            (if (or all (not (notmuch-show-next-open-message)))
+              (notmuch-show-next-thread t)))
+   (set-key notmuch-search-mode-map key
+            (notmuch-search-tag tags)
+            (notmuch-search-next-thread))))
+
+(add-lambda-hook '(notmuch-hello-mode-hook notmuch-search-hook)
+  (if (fboundp 'turn-off-fci-mode)
+      (turn-off-fci-mode)))
+
+(if (file-exists-p "/home/mpn/bin/libexec/run-sync-mail")
+    (add-lambda-hook '(notmuch-hello-mode-hook notmuch-search-hook)
+      (setq compile-command "/home/mpn/bin/libexec/run-sync-mail")))
 
 ;;}}}
