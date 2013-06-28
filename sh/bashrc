@@ -183,8 +183,8 @@ __command_rprompt() {
 		times="$times ${tz%%:*}\e[30;1m:\e[0;36;1m$(TZ=${tz#*:} date +%H:%M)\e[0m"
 		n=$(( $n - 10 ))
 	done
-	printf "%${n}s%s" '' >&2
-	printf "$times\\r" >&2
+	printf "%${n}s" '' >&2 2>/dev/null
+	printf "$times\\r" >&2 2>/dev/null
 }
 PROMPT_COMMANDS+=' ; __command_rprompt'
 
