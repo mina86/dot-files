@@ -174,7 +174,11 @@ Windows are matched in most recently focused first order."
 
 ;; Menus
 (define (mn-quit command)
-  (mn-run (concat "( sleep 2; exec " command " ) "))
+  (let ((fname (getenv "SAWFISH_QUIT_CMD_FILE")))
+    (if fname
+        (let ((fd (open-file fname 'write)))
+          (write fd (concat command "\n"))
+          (close-file fd))))
   (quit))
 
 (setq root-menu
@@ -182,10 +186,10 @@ Windows are matched in most recently focused first order."
        '(("_Customize"    customize)
          ("_Restart"      restart)
          ("_Quit"         ("Yes" quit))
-         ("Reboo_t"       ("Yes" (mn-quit "/sbin/reboot"))))
+         ("Reboo_t"       ("Yes" (mn-quit "reboot"))))
        (and (file-exists-p "/usr/local/sbin/reboot-w")
-            '(("_Windows" ("Yes" (mn-quit "/usr/local/sbin/reboot-w")))))
-       '(("_Power Off"    ("Yes" (mn-quit "/sbin/halt"))))))
+            '(("_Windows" ("Yes" (mn-quit "reboot-w")))))
+       '(("_Power Off"    ("Yes" (mn-quit "poweroff"))))))
 
 ;; Bindings
 (bind-keys root-window-keymap

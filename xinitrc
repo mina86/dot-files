@@ -45,8 +45,23 @@ has() {
 	fi
 ) &
 
+SAWFISH_QUIT_CMD_FILE=$(mktemp)
+trap 'rm -f -- "$SAWFISH_QUIT_CMD_FILE"' 0
+export SAWFISH_QUIT_CMD_FILE
+
 if has gpg-agent; then
-	exec gpg-agent --daemon sawfish
+	gpg-agent --daemon sawfish
 else
-	exec sawfish
+	sawfish
+fi
+
+if [ -s "$SAWFISH_QUIT_CMD_FILE" ] && read cmd <$SAWFISH_QUIT_CMD_FILE; then
+	rm -f -- "$SAWFISH_QUIT_CMD_FILE"
+	case "$cmd" in
+	poweroff|reboot)
+		exec /sbin/$cmd
+		;;
+	reboot-w)
+		exec /usr/local/sbin/reboot-w
+	esac
 fi
