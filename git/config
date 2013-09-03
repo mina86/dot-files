@@ -35,8 +35,8 @@
 	pop    = stash pop
 	mt     = mergetool
 	sw     = show
-	wc     = whatchanged
 	l      = log
+	ll     = log --stat
 	lg     = log
 	lp     = log -p
 	tip    = log -n1
