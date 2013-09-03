@@ -171,7 +171,8 @@ EOF
 		return 1
 	esac
 }
-alias cd=_cd
+alias cd="echo Did you mean to run d\?; :"
+alias d=_cd
 
 
 # No need to set it once again
