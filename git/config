@@ -35,7 +35,7 @@
 	pop    = stash pop
 	mt     = mergetool
 	sw     = show
-	l      = log
+	l      = log --pretty=format:'%C(yellow)%h%C(cyan)%d%Creset %s %C(white)- %an, %ar%Creset'
 	ll     = log --stat
 	lg     = log
 	lp     = log -p
