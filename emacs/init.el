@@ -780,6 +780,8 @@ modified beforehand."
  (set-key isearch-mode-map "\C-h"      isearch-del-char)
  (set-key isearch-mode-map [backspace] isearch-del-char)))
 
+(setq search-whitespace-regexp "[ \t\r]+")
+
 ;;}}}
 ;;{{{   Copy/Kill
 
