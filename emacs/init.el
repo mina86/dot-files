@@ -462,6 +462,11 @@ major modes from `mn-window-skip-modes' list, its name is on the
 (set-key [(control shift mouse-1)] ffap-at-mouse)
 (set-key "\C-x\C-f"      ffap)
 
+;; Make q close current buffer if it's read-only
+(set-key "q" :args (n) "p"
+         (if (and buffer-read-only (not (= n 0)))
+             (kill-buffer (current-buffer))
+           (self-insert-command n)))
 
 ;; Make l behave as it should in help-mode
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
