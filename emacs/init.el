@@ -610,6 +610,29 @@ If function given tries to `describe-function' otherwise uses
 (set-key [(shift f2)]   (find-file "~/.bashrc"))
 
 ;;}}}
+;;{{{     F3/F4 - keyboard macros
+
+(defun kmacro-end-or-call-possibly-on-region-lines (arg &optional no-repeat)
+  (interactive "P")
+  (cond
+   (defining-kbd-macro
+     (if kmacro-call-repeat-key
+         (kmacro-call-macro arg no-repeat t)
+       (kmacro-end-macro arg)))
+   ((and (eq this-command 'kmacro-view-macro)  ;; We are in repeat mode!
+         kmacro-view-last-item)
+    (kmacro-exec-ring-item (car kmacro-view-last-item) arg))
+   ((and arg (listp arg))
+    (kmacro-call-ring-2nd 1))
+   ((use-region-p)
+    (apply-macro-to-region-lines (region-beginning) (region-end)))
+   (t
+    (kmacro-call-macro arg no-repeat))))
+
+(set-key [(f4)] kmacro-end-or-call-possibly-on-region-lines)
+
+
+;;}}}
 ;;{{{     F5 - Mail
 
 (set-key [(f5)] notmuch)
