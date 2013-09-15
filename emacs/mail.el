@@ -190,8 +190,4 @@
   (if (fboundp 'turn-off-fci-mode)
       (turn-off-fci-mode)))
 
-(if (file-exists-p "/home/mpn/bin/libexec/run-sync-mail")
-    (add-lambda-hook '(notmuch-hello-mode-hook notmuch-search-hook)
-      (setq compile-command "/home/mpn/bin/libexec/run-sync-mail")))
-
 ;;}}}
