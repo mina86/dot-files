@@ -204,6 +204,7 @@ shopt -qu shift_verbose sourcepath xpg_echo
 
 shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit
 shopt -qs histverify hostcomplete nullglob promptvars huponexit globstar
+shopt -qs autocd
 
 # /tmp is in RAM, don't save history between reboots
 export HISTFILE="/tmp/.$(id -un)-history"
