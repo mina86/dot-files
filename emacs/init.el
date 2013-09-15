@@ -438,6 +438,8 @@ major modes from `mn-window-skip-modes' list, its name is on the
 (set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
 (set-key "\C-xP"         "\C-u-1\C-xO")
 
+(set-key "\C-x1"         delete-other-windows-vertically)
+
 (when (fboundp 'windmove-right)
   (set-key "\M-F"          windmove-right)
   (set-key "\M-B"          windmove-left)
