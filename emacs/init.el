@@ -473,6 +473,9 @@ major modes from `mn-window-skip-modes' list, its name is on the
 (defvar help-mode-map)  ; silence compiler warning
 (add-lambda-hook 'help-mode-hook (set-key help-mode-map "l" help-go-back))
 
+(set-default 'browse-url-browser-function 'browse-url-generic)
+(set-default 'browse-url-generic-program "opera")
+
 ;;}}}
 ;;{{{   Killing, yanking, X selection, etc
 
