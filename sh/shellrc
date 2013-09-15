@@ -175,6 +175,11 @@ alias d=_cd
 alias -- -='\cd -'
 cl() { cd "$@" && l; }
 
+# Git
+alias +='git add'
+alias +u='git add -u'
+alias +p='git add -p'
+
 
 # No need to set it once again
 if [ -n "$MINA86RC" ]; then
