@@ -52,7 +52,7 @@ md () {
 		echo usage: 'md dir [ dir ... ]' >&2
 		return 1
 	else
-		mkdir -p -- "$@" && cd "$1"
+		mkdir -p -- "$@" && \cd "$1"
 	fi
 }
 
@@ -172,6 +172,8 @@ EOF
 }
 alias cd="echo Did you mean to run d\?; :"
 alias d=_cd
+alias -- -='\cd -'
+cl() { cd "$@" && l; }
 
 
 # No need to set it once again
