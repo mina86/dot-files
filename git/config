@@ -60,9 +60,6 @@
 [url "ssh://mina86@git.code.sf.net/"]
 	pushInsteadOf = git://git.code.sf.net/
 
-[format]
-	thread = shallow
-
 [sendemail]
 	from = Michal Nazarewicz <mina86@mina86.com>
 	confirm = always
