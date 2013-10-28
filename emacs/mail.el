@@ -84,9 +84,6 @@
   (while (re-search-forward "^Subject: \\(\\([Oo][Dd][Pp]\\|[Rr][Ee]\\)\\(\\[[0-9]+\\]\\)?: \\)+" nil t)
     (replace-match "Subject: Re: ")))
 
-(eval-when-compile (require 'pgg))
-(eval-when-compile (require 'pgg-gpg))
-
 (autoload 'pgg-encrypt-region "pgg"
   "Encrypt the current region." t)
 (autoload 'pgg-encrypt-symmetric-region "pgg"
@@ -107,6 +104,7 @@
       pgg-gpg-program "gpg2"
 ;      pgg-gpg-use-agent nil
 ;      pgg-cache-passphrase nil
+      gnus-treat-x-pgp-sig t
       mm-verify-option 'known
       mm-decrypt-option 'known)
 
