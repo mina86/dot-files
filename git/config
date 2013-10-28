@@ -73,3 +73,6 @@
 
 [include]
 	path = ~/.gitconfig_local
+
+[credential]
+	helper = netrc
