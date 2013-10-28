@@ -18,11 +18,12 @@
 	b      = branch -v
 	br     = branch -v
 	ci     = commit
+	cm     = commit -m
 	amend  = commit --amend
 	fix    = "!f() { if [ $# -eq 0 ]; then git commit --amend -C HEAD; else git commit --fixup \"$@\"; fi; }; f"
 	wip    = commit -m wip
 	co     = checkout
-	df     = diff -p --stat
+	d      = diff -p --stat
 	ch     = diff -p --stat --cached
 	pick   = cherry-pick
 	rb     = rebase
@@ -30,12 +31,11 @@
 	cont   = rebase --continue
 	ct     = rebase --continue
 	s      = status -uno
-	st     = status -uno
 	sh     = stash
 	pop    = stash pop
 	mt     = mergetool
 	sw     = show
-	l      = log --pretty=format:'%C(yellow)%h%C(cyan)%d%Creset %s %C(white)- %an, %ar%Creset'
+	l      = log --pretty=format:'%C(yellow)%h%C(white) %an <%ae> %>|(80)%ai%Creset%n%C(bold)%w(0,4,4)%s%C(reset)%n%+b'
 	ll     = log --stat
 	lg     = log
 	lp     = log -p
