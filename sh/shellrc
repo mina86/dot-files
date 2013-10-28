@@ -137,15 +137,23 @@ _cd_P() {
 	\cd "$1"
 }
 
+_cd_do() {
+	if [ x"$1" != x- ] && [ -e "$1" ] && ! [ -d "$1" ]; then
+		set -- "$(dirname $1)"
+		echo "$1"
+	fi
+	\cd "$1"
+}
+
 _cd() {
 	case "$#:$1:$2" in
 	1:-h:)
 		cat <<EOF
 cd -P
     Resolve all symbolic links in \$PWD.
-cd [-P] [<dir>]
-    Move to <dir>, or home directory if <dir> is not given, or \$OPWD
-    if <dir> is "-".  With -P, resolves all symlinks.
+cd [-P] [<dir> | <file> | -]
+    Move to <dir>, directory containing <file>, \$OLDPWD if "-" given, or
+    home directory. With -P, resolves all symlinks.
 cd [-P] <from> <to>
     Replaces right-most occurrence of "/<from>/" with "/<to>/" and
     tries to change CWD to resulting path.  If it does not resolve to
@@ -160,9 +168,9 @@ EOF
 	0:*)		\cd ;;
 	1:-P:)		_cd_P ;;
 	1:.../*)	_cd_ddd "$PWD" "$1" ;;
-	1:*)		\cd      "$1" ;;
+	1:*)		_cd_do  "$1" ;;
 	2:-P:.../*)	_cd_ddd "$(pwd -P)" "$2" ;;
-	2:-P:*)		\cd      "$2" >/dev/null && _cd_P ;;
+	2:-P:*)		_cd_do  "$2" >/dev/null && _cd_P ;;
 	2:*)		_cd_sub "$PWD" "$1" "$2" ;;
 	3:-P:*)		_cd_sub "$(pwd -P)" "$2" "$3" ;;
 	*)
