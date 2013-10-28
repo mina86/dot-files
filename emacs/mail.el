@@ -14,7 +14,7 @@
  message-user-fqdn "mina86.com")
 
 (when (eval-when-compile (load "gnus-alias" t))
-  (let ((has-corp (string= "mpn-glaptop" (system-name)))
+  (let ((has-corp (string-match "^mpn-glaptop" (system-name)))
         (headers '(("X-PGP" . "50751FF4")
                    ("X-PGP-FP" . "AC1F 5F5C D418 88F8 CC84 5858 2060 4012 5075 1FF4")
                    ("X-Face" . "PbkBB1w#)bOqd`iCe\"Ds{e+!C7`pkC9a|f)Qo^BMQvy\\q5x3?vDQJeN(DS?|-^$uMti[3D*#^_Ts\"pU$jBQLq~Ud6iNwAw_r_o_4]|JO?]}P_}Nc&\"p#D(ZgUb4uCNPe7~a[DbPG0T~!&c.y$Ur,=N4RT>]dNpd;KFrfMCylc}gc??'U2j,!8%xdD")
