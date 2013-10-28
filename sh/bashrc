@@ -94,12 +94,10 @@ if which git >/dev/null 2>&1; then
 			return 0
 		fi
 
-		case "$__GIT_PROMPT_GITDIR" in [^/]*)
-			__GIT_PROMPT_GITDIR=$PWD/$__GIT_PROMPT_GITDIR
-		esac
+		__GIT_PROMPT_GITDIR=$(realpath $__GIT_PROMPT_GITDIR)
 		test "$dir" = "$__GIT_PROMPT_GITDIR" && return 0
 
-		local branch state E ps flags _flags
+		local branch state E ps
 		state=
 		dir=$__GIT_PROMPT_GITDIR
 		if   [ -d "$dir/rebase-apply" ] ; then
@@ -124,35 +122,23 @@ if which git >/dev/null 2>&1; then
 				branch="$(cut -c1-7 "$dir/HEAD")..."
 		fi
 		branch="${branch#refs/heads/}"
-		# Takes ages on big repositories
-# 		_flags=$(git status 2>/dev/null | sed -ne '
-# s/^# Untracked files:.*/u/p
-# s/^# Changes to be committed:.*/i/p
-# s/^# Changed but not updated:.*/m/p
-# s/^# [[:space:]]*unmerged:.*/c/p')
-# 		flags=
-# 		case "$_flags" in *'i'*) flags+='+'                    ; esac
-# 		case "$_flags" in *"c"*) flags+='!';; *"m"*) flags+='*'; esac
-# 		case "$_flags" in *'u'*) flags+='?'                    ; esac
 
-		case "$flags$state" in                 # branch
-		?*) __GIT_PROMPT="\[\e[1;32;44m\]$branch" ;;
-		*)  __GIT_PROMPT="\[\e[0;32;44m\]$branch"
-		esac
-		case "$state" in ?*)                   # (state)
+		case "$state" in
+		?*)                              # branch(state)
+			__GIT_PROMPT="\[\e[1;32;44m\]$branch"
 			__GIT_PROMPT+="\[\e[0;37;44m\]("
 			__GIT_PROMPT+="\[\e[0;32;44m\]$state"
 			__GIT_PROMPT+="\[\e[0;37;44m\])"
+			;;
+		*)                               # branch
+			__GIT_PROMPT="\[\e[0;32;44m\]$branch"
 		esac
-		# case "$flags" in ?*)                   # flags
-		# 	__GIT_PROMPT+="\[\e[1;31;44m\]$flags\[\e[0;37;44m\]"
-		# esac
 
 		echo -n "$__GIT_PROMPT "
 	}
 
 	g () {
-		local cmds='rebase|commit|branch|checkout|cherry-pick'
+		local cmds='rebase|commit|branch|checkout|cherry-pick|start'
 		cmds=$cmds"|''"$(git config --get-regexp 'alias\..*' | \
 			awk -F '[. ]' 'END { print cmds }
 				$3 ~ /'"$cmds"'/ { cmds = cmds "|" $2 }')
