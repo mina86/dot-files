@@ -188,6 +188,8 @@ alias +='git add'
 alias +u='git add -u'
 alias +p='git add -p'
 
+# Other
+alias @='for i in'
 
 # No need to set it once again
 if [ -n "$MINA86RC" ]; then
