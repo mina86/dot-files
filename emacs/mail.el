@@ -59,18 +59,23 @@
 ;;}}}
 ;;{{{ Message mode
 
-(setq message-directory          (expand-file-name "~/.mail/Mail"))
+(setq message-directory          (expand-file-name "~/.mail/Mail")
+      nndraft-directory          (expand-file-name "~/.mail/Drafts")
+      nnml-use-compressed-files  t
 
-(setq message-citation-line-function 'message-insert-formatted-citation-line
-      message-citation-line-format   "On %a, %b %d %Y, %N wrote:")
+      message-kill-buffer-on-exit t
 
-(add-hook 'message-mode-hook (lambda () (flyspell-mode 1)))
-(add-hook 'message-setup-hook 'mml-secure-sign-pgpmime)
+      message-citation-line-function 'message-insert-formatted-citation-line
+      message-citation-line-format   "On %a, %b %d %Y, %N wrote:"
 
-(eval-when-compile (require 'smtpmail))
-(setq send-mail-function    'message-smtpmail-send-it
+      message-generate-hashcash 'opportunistic
+
+      send-mail-function    'message-smtpmail-send-it
       smtpmail-smtp-server  "smtp.gmail.com"
       smtpmail-smtp-service 587)
+
+(add-lambda-hook 'message-mode-hook (flyspell-mode 1))
+(add-hook 'message-setup-hook 'mml-secure-sign-pgpmime)
 
 ;; Fix Subject in outgoing messages
 ;; http://www.emacswiki.org/cgi-bin/wiki/JorgenSchaefersGnusConfig
