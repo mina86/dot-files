@@ -33,12 +33,6 @@ has() {
 		xcompmgr &
 	fi
 
-	if [ -e ~/.synergy.conf ]; then
-		run synergys
-	else
-		run synergyc
-	fi
-
 	set -- ~/.gkrellm2/user-config_S-*-pikus
 	if [ $# -gt 0 ] && [ -e "$1" ]; then
 		gkrellm -s pikus.i &
