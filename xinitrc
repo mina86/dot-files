@@ -39,6 +39,10 @@ has() {
 		run synergyc
 	fi
 
+	set -- ~/.gkrellm2/user-config_S-*-pikus
+	if [ $# -gt 0 ] && [ -e "$1" ]; then
+		gkrellm -s pikus.i &
+	fi
 
 	if [ -e /etc/default/keyboard ]; then
 		. /etc/default/keyboard
