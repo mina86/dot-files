@@ -641,6 +641,18 @@ If function given tries to `describe-function' otherwise uses
 (set-key [(f5)] notmuch)
 
 ;;}}}
+;;{{{     F6 - notes
+
+(require 'remember)
+(when (fboundp 'remember-notes)
+  (setq initial-buffer-choice 'remember-notes
+        remember-notes-auto-save-visited-file-name t
+        remember-notes-buffer-name "*scratch*"))
+
+(set-key [(f6)] remember-notes)
+(set-key [(control f6)] remember)
+
+;;}}}
 ;;{{{     F7 - spell checking
 
 (require 'ispell)
@@ -1612,52 +1624,6 @@ returns that number."
 (add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
 
 (set-cursor-color (setq hcz-set-cursor-color-color "yellow"))
-
-;;}}}
-;;{{{   Notes in *scratch*
-
-;; Notes in *scratch*  v. 0.3
-;; Copyright (c) 2006 by Michal Nazarewicz (mina86@mina86.com)
-;; Released under GNU GPL
-
-(defconst scratch-file (concat user-emacs-directory "scratch")
-  "File where content of *scratch* buffer will be read from and saved to.")
-(defconst scratch-file-autosave (concat scratch-file ".autosave")
-  "File where to autosave content of *scratch* buffer.")
-
-(with-current-buffer (get-buffer-create "*scratch*")
-  (if (file-readable-p scratch-file)
-      (if (and (file-readable-p scratch-file-autosave)
-               (file-newer-than-file-p scratch-file-autosave scratch-file))
-;               (y-or-n-p "Recover scratch file? "))
-          (insert-file-contents scratch-file-autosave nil nil nil t)
-        (insert-file-contents scratch-file nil nil nil t)
-        (set-buffer-modified-p nil)))
-  (auto-save-mode 1)
-  (setq buffer-auto-save-file-name scratch-file-autosave)
-  (set (make-local-variable 'revert-buffer-function) 'scratch-revert)
-  (fundamental-mode))
-
-(defun scratch-revert (_ignore-auto _noconfirm)
-  (when (file-readable-p scratch-file)
-    (insert-file-contents scratch-file nil nil nil t)
-    (set-buffer-modified-p nil)))
-
-(defun kill-scratch-buffer ()
-  (not (when (string-equal (buffer-name (current-buffer)) "*scratch*")
-         (delete-region (point-min) (point-max))
-         (set-buffer-modified-p nil)
-         (next-buffer)
-         t)))
-
-(defun kill-emacs-scratch-save ()
-  (with-current-buffer (get-buffer-create "*scratch*")
-    (write-region nil nil scratch-file)
-    (unless (string-equal scratch-file buffer-auto-save-file-name)
-      (delete-auto-save-file-if-necessary t))))
-
-(add-hook 'kill-buffer-query-functions 'kill-scratch-buffer)
-(add-hook 'kill-emacs-hook 'kill-emacs-scratch-save)
 
 ;;}}}
 
