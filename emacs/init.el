@@ -968,6 +968,7 @@ modified beforehand."
 (setq blink-cursor-alist '((t      . box)  ;seriously, don't blink,
                            (box    . box)) ;blink-cursor-mode does not
       cursor-type 'box)                    ;work for me.
+(setq visible-bell nil)           ;no visual bell
 (setq-if-bound compilation-auto-jump-to-first-error t)
 (setq-if-bound line-move-visual nil) ;move by logical lines not screen lines
 
