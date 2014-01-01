@@ -581,6 +581,9 @@ three times - to the right, four times - centers."
 
 (set-key "\M-q"          my-fill)
 
+(when (fboundp 'fill-single-char-nobreak-p)
+  (add-hook 'fill-nobreak-predicate 'fill-single-char-nobreak-p))
+
 ;;}}}
 ;;{{{   Fkeys
 
@@ -1006,18 +1009,6 @@ rules so it is likely not to work."
 (setq scroll-step 1               ;scroll one line
       hscroll-step 1              ;scroll one column
       next-line-add-newlines nil) ;no new lines with down arrow key
-
-
-;; Do not break line after single character when filling
-(defun fill-single-char-nobreak-p ()
-  "Don't break line after a single character."
-  (save-excursion
-    (skip-chars-backward " \t")
-    (backward-char 2)
-    (looking-at "[[:space:]][a-zA-Z]")))
-
-(add-to-list 'fill-nobreak-predicate 'fill-single-char-nobreak-p)
-
 
 ;;}}}
 ;;{{{ Major Modes
