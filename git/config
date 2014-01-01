@@ -63,7 +63,7 @@
 [sendemail]
 	from = Michal Nazarewicz <mina86@mina86.com>
 	confirm = always
-	aliasesfile = /home/mpn/.gitaliases
+	aliasesfile = ~/.gitaliases
 	aliasfiletype = mutt
 	suppresscc = author
 	chainreplyto = no
