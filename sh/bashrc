@@ -186,10 +186,10 @@ fi
 
 shopt -qu cdable_vars checkhash dotglob execfail extglob interactive_comments
 shopt -qu interactive_comments lithist no_empty_cmd_completion nocaseglob
-shopt -qu shift_verbose sourcepath xpg_echo
+shopt -qu shift_verbose sourcepath xpg_echo nullglob
 
 shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit
-shopt -qs histverify hostcomplete nullglob promptvars huponexit globstar
+shopt -qs histverify hostcomplete promptvars huponexit globstar
 shopt -qs autocd
 
 # /tmp is in RAM, don't save history between reboots
