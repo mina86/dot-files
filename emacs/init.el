@@ -785,7 +785,7 @@ modified beforehand."
 ;;}}}
 
 ;;}}}
-;;{{{   ISearch mode
+;;{{{   ISearch mode ace-jump-mode
 
 (add-hook 'isearch-mode-hook (lambda ()
  (set-key isearch-mode-map [(f1)]      isearch-mode-help)
@@ -796,6 +796,13 @@ modified beforehand."
  (set-key isearch-mode-map [backspace] isearch-del-char)))
 
 (setq search-whitespace-regexp "[ \t\r]+")
+
+(autoload 'ace-jump-mode "ace-jump-mode" "Emacs quick move minor mode" t)
+(set-key "\M-s" ace-jump-mode)
+(setq ace-jump-mode-scope 'window
+      ace-jump-mode-case-fold nil
+      ace-jump-mode-move-keys
+      (string-to-list "htnsueoagccrlp.,;mwvzkjq'difybx/-\\@#)(+}]{![*=&$"))
 
 ;;}}}
 ;;{{{   Copy/Kill
