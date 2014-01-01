@@ -23,6 +23,10 @@ has() {
 		fi
 	}
 
+	if [ -f ~/.xscreen-config ]; then
+		. ~/.xscreen-config
+	fi
+
 	xset -b -c r rate 250 50 s off +dpms
 
 	if has xcompmgr; then
