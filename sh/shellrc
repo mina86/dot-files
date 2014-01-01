@@ -71,6 +71,8 @@ l () {
 alias rmd=rmdir
 which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
 alias make='nice make'
+alias ncal='ncal -3M'
+alias cal='ncal -3MC'
 
 # tinyapps stuff
 if ! which xrun >/dev/null 2>&1; then
