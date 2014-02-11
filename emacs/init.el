@@ -69,58 +69,82 @@ certain feature, and thus variable, will be present."
   `(when (boundp (quote ,name))
      (setq ,name ,value)))
 
-(defun mn--current-local-map ()
+(defun current-local-map-create-maybe ()
   "Return current local map creating one if not set yet."
-  (let ((map (current-local-map)))
-    (unless map
-      (use-local-map (setq map (make-sparse-keymap))))
-    map))
+  (or (current-local-map)
+      (let ((map (make-sparse-keymap)))
+        (use-local-map map)
+        map)))
 
-(defmacro set-key (key &rest body)
-  "(set-key [KEYMAP] KEY BODY...)
+(defmacro set-key (keymap key &rest def)
+  "(set-key [KEYMAP] KEY . DEF)
 
-KEYMAP can be either :local or a symbol.  :local will use local
-keymap (and create it if necessary).  A symbol must be a variable
-name holding the keymap to modify.  If omitted, global keymap is
-used.
+In KEYMAP, define key sequence KEY as DEF.
 
-KEY may be anything other than a symbol describing the key.
-The following won't work:
-	(let ((key \"a\")) (set-key key self-insert-command)).
+KEYMAP can be :global (to mean global keymap, the
+default), :local (to mean the local keymap) or an unquoted
+symbol (to mean a keymap in given variable).
 
-If BODY is just a single value which is not a list it will
-be quoted and passed as argument to `define-key' so in the
-simplest case it's just an unquoted name of the function:
-	(set-key \"a\" self-insert-command)
-Using a variable holding a symbol won't work:
-	(let ((callback 'self-insert-command))
-	   (set-key \"a\" callback))
+KEY is anything `define-key' accepts as a key except that if KEYMAP was not
+given, KEY cannot be an unquoted symbol, i.e.:
+    (let ((key \"a\"))
+      (set-key         key self-insert-command)  ; will *not* work
+      (set-key :global key self-insert-command)) ; will work
 
-Alternatively, BODY is a body of a lambda that is to be bound to
-the key.  The body can be preceded by \":args (ARGS)
-INTERACTIVE\" where ARGS is the list of lambda's arguments and
-INTERACTIVE is argument of the `interactive' command."
-  (let ((keymap '(current-global-map)))
-    (cond
-     ((eq :local key)
-      (setq keymap '(mn--current-local-map)
-            key    (car body)
-            body   (cdr body)))
-     ((symbolp key)
-      (setq keymap key
-            key    (car body)
-            body   (cdr body))))
+If DEF is a single unquoted symbol it will be quoted, otherwise if it is
+a single non-cons value it will not be quoted, otherwise it will be processed
+as a lambda (see below).  Thus the following do what one might expect:
+    (set-key \"a\" self-insert-command)
+        ;; same as (global-set-key \"a\" 'self-insert-command)
+    (set-key \"\\C-h\" [(backspace)])
+        ;; same as (global-set-key \"\\C-h\" [(backspace)])
+    (set-key \"\\C-d\" ())
+        ;; same as (global-set-key \"\\C-h\" ())
+    (set-key \"\\C-B\" (goto-char (- (point) 2)))
+        ;; same as (global-set-key \"\\C-B\"
+        ;;           (lambda () (interactive) (goto-char (- (point) 2))))
+However, the following will not work:
+    (let ((callback 'self-insert-command))
+      (set-key \"a\" callback))
+        ;; same as (global-set-key \"a\" 'callback)
 
-    (list 'define-key keymap key
-          (if (and (null (cdr body)) (not (listp (car body))))
-              `(quote ,(car body))
-            (let (args (int (list 'interactive)))
-              (when (eq :args (car body))
-                (setq body (cdr body))
-                (setq args (car body)
-                      int  (list 'interactive (cadr body))
-                      body (cddr body)))
-              `(function (lambda ,args ,int ,@body)))))))
+In the last case, DEF is of the following form:
+    ([:args ARGS INTERACTIVE] . BODY)
+and it results in the following lambda:
+    (lambda ARGS (interactive INTERACTIVE) . BODY)
+or if :args is not given (at which point DEF == BODY):
+    (lambda () (interactive) . BODY)
+For example:
+    (set-key \"\\C-B\" (goto-char (- (point) 2)))
+        ;; same as (global-set-key \"\\C-B\"
+        ;;           (lambda () (interactive) (goto-char (- (point) 2))))
+    (set-key \"\\C-B\" :args (n) \"P\" (goto-char (- (point) (* 2 n))))
+        ;; same as (global-set-key \"\\C-B\"
+        ;;           (lambda (n) (interactive \"P\")
+        ;;             (goto-char (- (point) (* 2 n)))))
+
+This macro is not designed to be a complete replacement for `define-key',
+`global-set-key' and `local-set-key', since it is not capable of dealing with
+some forms of DEFs that those functions accept, but instead it is meant as
+a helper to use in user configuration file to save on typing especially when
+lambdas are used."
+  (setq keymap (cond ((eq :local keymap)  '(current-local-map-create-maybe))
+                     ((eq :global keymap) '(current-global-map))
+                     ((symbolp keymap) keymap)
+                     (t
+                      (setq def (cons key def) key keymap) ; shift args
+                      '(current-global-map))))
+  (unless def
+    (error "DEF argument missing"))
+  (list
+   'define-key keymap key
+   (cond ((or (cdr def) (consp (car def)))
+          (let ((args        (if (eq :args (car def)) (cadr def)))
+                (interactive (if (eq :args (car def)) (list (caddr def))))
+                (body        (if (eq :args (car def)) (cdddr def) def)))
+            `(function (lambda ,args (interactive . ,interactive) ,@body))))
+         ((symbolp (car def)) (list 'quote (car def)))
+         ((car def)))))
 
 (defmacro add-lambda-hook (hook &rest body)
   "Add a lambda to a hook.
