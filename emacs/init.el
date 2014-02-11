@@ -483,7 +483,6 @@ major modes from `mn-window-skip-modes' list, its name is on the
 
 (set-key "\C-cr"         revert-buffer)         ; Reload buffer
 (set-key "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
-(set-key [(control ";")] comment-dwim)          ; C-; comments
 
 ;; Jump
 (require 'ffap)
