@@ -3,9 +3,10 @@
 ;; Copyright 2006-2013 by Michal Nazarewicz (mina86@mina86.com)
 ;;
 
-;;{{{ Identify
+(eval-when-compile (setq load-path (cons user-emacs-directory load-path)))
+(require 'init)
 
-(eval-when-compile (require 'message))
+;;{{{ Identify
 
 (setq
  user-full-name "Michal Nazarewicz"
