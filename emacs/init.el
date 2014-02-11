@@ -506,6 +506,14 @@ major modes from `mn-window-skip-modes' list, its name is on the
 (set-default 'browse-url-browser-function 'browse-url-generic)
 (set-default 'browse-url-generic-program "opera")
 
+
+;; Minibuffer
+
+(set-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
+         (delete-minibuffer-contents))
+(set-key minibuffer-local-map "\C-p" previous-history-element)
+(set-key minibuffer-local-map "\C-n" next-history-element)
+
 ;;}}}
 ;;{{{   Killing, yanking, X selection, etc
 
@@ -986,8 +994,6 @@ modified beforehand."
 (require 'icomplete)
 (icomplete-mode 1)                ;nicer completion in minibuffer
 (setq icomplete-prospects-height 2) ; don't spam my minibuffer
-(set-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
-  (delete-minibuffer-contents))
 (setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
 (setq frame-title-format "Emacs") ;frame title format
 (setq history-delete-duplicates t)
