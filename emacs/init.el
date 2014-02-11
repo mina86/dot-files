@@ -38,10 +38,8 @@ use `use-region-p'."
     (setq user-emacs-directory (expand-file-name "~/.emacs.d")))
 
 ;; Add  ~/.emacs.d/elisp  to load path
-(when (eval-when-compile
-        (file-directory-p (concat user-emacs-directory "elisp")))
-  (setq load-path (cons (concat user-emacs-directory "elisp") load-path))
-  (eval-when-compile
+(when (file-directory-p (concat user-emacs-directory "elisp"))
+  (eval-and-compile
     (setq load-path (cons (concat user-emacs-directory "elisp") load-path))))
 
 ;; notmuch
