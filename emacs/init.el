@@ -753,9 +753,10 @@ If GLOBAL is non-nil, or with a prefix argument set global dictionary."
 
 (defun mn-turn-flyspell-on ()
   "Turn `flyspell-mode' or `flyspell-prog-mode' depending on major mode."
-  (cond ((memq major-mode '(c-mode c++-mode php-mode python-mode perl-mode
-                            cperl-mode emacs-lisp-mode lisp-mode scheme-mode
-                            diff-mode))
+  (cond ((string-prefix-p " *" (buffer-name)) nil)
+        ((minibufferp) nil)
+        ((or (derived-mode-p 'prog-mode)
+             (eq major-mode 'diff-mode))
          (flyspell-prog-mode))
         ((memq major-mode '(notmuch-hello-mode notmuch-search-mode
                             notmuch-show-mode)))
