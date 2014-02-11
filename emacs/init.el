@@ -787,11 +787,6 @@ set and cadr is a list is a list of alternative enviroment variables.
 Each list is a list of two element lists which car is a enviroment
 variables name and cadr is value.")
 
-(autoload 'recompile "compile"
-  "Re-compile the program including the current buffer.
-If this is run in a Compilation mode buffer, re-use the arguments from the
-original use.  Otherwise, recompile using `compile-command'.
-If the optional argument `edit-command' is non-nil, the command can be edited." t)
 
 (defun mn-compile (&optional alt recompile touch)
   "Compile current file.
