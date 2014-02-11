@@ -1,9 +1,11 @@
-;;                                -*- mode: emacs-lisp; lexical-binding: t -*-
-;; .emacs  -- Emacs configuration file
+;; init.el  -- Emacs configuration file             -*- lexical-binding: t -*-
+
 ;; Copyright 2004-2012 by Michal Nazarewicz (mina86@mina86.com)
 ;; Some parts of the code may be © by their respective authors.
-;;
-;;{{{ Compatibility with old Emacses
+
+;;; Code:
+
+;;{{{ Compatibility with old Emacsen
 
 (unless (boundp 'user-emacs-directory)
   (defvar user-emacs-directory (expand-file-name "~/.emacs.d/")
@@ -616,6 +618,10 @@ If function given tries to `describe-function' otherwise uses
 ;;{{{     F3/F4 - keyboard macros
 
 (defun kmacro-end-or-call-possibly-on-region-lines (arg &optional no-repeat)
+  "End keyboard macro or call it.
+End defining a keyboard macro if one is being defined and if not call
+last keyboard macro ARG times or on region if `use-region-p'.
+Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
   (interactive "P")
   (cond
    (defining-kbd-macro
@@ -710,6 +716,7 @@ If GLOBAL is non-nil, or with a prefix argument set global dictionary."
   flyspell-mode mn-turn-flyspell-on)
 
 (defun mn-turn-flyspell-on ()
+  "Turn `flyspell-mode' or `flyspell-prog-mode' depending on major mode."
   (cond ((memq major-mode '(c-mode c++-mode php-mode python-mode perl-mode
                             cperl-mode emacs-lisp-mode lisp-mode scheme-mode
                             diff-mode))
@@ -1387,6 +1394,15 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
       (mn-xml-configure-bindings nxml-mode-map))))
 
 (defun replace-string-pairs (list)
+  "Replace strings pairs from LIST.
+
+LIST is a list of (pattern . replacement) cons specifying that all
+occurrences of pattern in portion of the buffer are to be replaced by
+replacement.
+
+If `use-region-p' returns non-nil, function operates on region.
+Otherwise, function operates on portion of the buffer from `point' to
+`point-max'."
   (let* ((mark  (use-region-p))
          (start (if mark (region-beginning) (point)))
          (end   (if mark (region-end) (point-max))))
@@ -1640,6 +1656,8 @@ returns that number."
   (server-start))
 
 ;;}}}
+
+(provide 'init)
 
 ;; Local
 (load (concat user-emacs-directory "local.el") t)
