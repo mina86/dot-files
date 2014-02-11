@@ -478,20 +478,19 @@ major modes from `mn-window-skip-modes' list, its name is on the
   (set-key "\M-P"          windmove-up)
   (set-key "\M-N"          windmove-down))
 
-; don't ask which buffer to kill
-(set-key "\C-xk" kill-this-buffer)
-
-(set-key "\C-cr"         revert-buffer)         ; Reload buffer
-(set-key "\C-x\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
+(set-key "\C-xk"         kill-this-buffer)  ; don't ask which buffer to kill
+(set-key "\C-cr"         revert-buffer)     ; Reload buffer
+(set-key "\C-x\C-b"      (switch-to-buffer (other-buffer))) ; C-x C-b switch
 
 ;; Jump
+
 (require 'ffap)
 (defun my-jump () "Jump to the thing at point." (interactive)
   (let ((thing (ffap-guesser))) (if thing (ffap thing)) t))
 
-(set-key [(control return)] my-jump)
+(set-key [(control return)]        my-jump)
 (set-key [(control shift mouse-1)] ffap-at-mouse)
-(set-key "\C-x\C-f"      ffap)
+(set-key "\C-x\C-f"                ffap)
 
 ;; Make q close current buffer if it's read-only
 (set-key "q" :args (n) "p"
