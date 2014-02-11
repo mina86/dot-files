@@ -409,7 +409,8 @@ perform stripping and behaves as plain `save-buffer'."
 
 (set-key "\C-h"          [(backspace)])
 (set-key [(backspace)]   delete-backward-char)
-(set-key [(delete)]      delete-char)
+(set-key [(delete)]      delete-forward-char)
+(set-key "\C-d"          [(delete)])
 
 
 (defvar mn-window-skip-modes '(compilation-mode)
