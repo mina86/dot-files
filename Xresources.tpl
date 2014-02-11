@@ -99,7 +99,6 @@ URxvt.color14:         #00FFFF
 URxvt.color15:         #FFFFFF
 
 ! Terminal in urxvt
-URxvt.perl-lib: {{HOME}}/.urxvt
 Term.perl-ext-common:  matcher,tabbedex,searchable-scrollback<M-s>,selection-pastebin,google-osc
 URxvt.backgroundPixmap: {{HOME}}/.urxvt/80-char.png;0x0+0+0:tile
 URxvt.tabbed.new-button: false
