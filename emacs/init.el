@@ -48,8 +48,15 @@ use `use-region-p'."
 ;; Packages repositories
 (eval-when-compile (require 'package))
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("marmalade" . "http://marmalade-repo.org/packages/")
                          ("melpa" . "http://melpa.milkbox.net/packages/")))
+
+;; *Anyone* can edit Wiki pages so avoid Wiki packages
+(unless (fboundp 'package--ac-desc-summary)
+  (defalias 'package--ac-desc-summary 'package-desc-doc))
+(defadvice package--add-to-archive-contents
+  (around package-filter-wiki-packages (package archive) activate compile)
+  (unless (string-suffix-p "[wiki]" (package--ac-desc-summary (cdr package)))
+    ad-do-it))
 
 ;;}}}
 ;;{{{ Utilities
