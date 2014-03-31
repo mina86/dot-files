@@ -256,6 +256,7 @@ sawfish-lisp/*.jl  ~/.sawfish/lisp/@
 statuses           ~/.irssi/
 xinitrc            ~/.
 bin/*              ~/
+bin/libexec/*      ~/
 sh/*               ~/.@
 userjs/*.js        ~/.opera/
 userjs/*.css       ~/.opera/usercss/@

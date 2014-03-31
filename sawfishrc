@@ -223,6 +223,8 @@ Windows are matched in most recently focused first order."
    (?'  .                "m prev")
    (?j  .                "m toggle")
    (?k  .                "m next")
+   (?x  .  ,(if (file-exists-p "/home/mpn/bin/libexec/cycle-volume.sh")
+                "sh /home/mpn/bin/libexec/cycle-volume.sh"))
 
    (?i  .                ,(if (file-exists-p "/home/mpn/bin/libexec/getotp")
                               "/home/mpn/bin/libexec/getotp"))))
