@@ -206,10 +206,12 @@ Windows are matched in most recently focused first order."
      (bind-keys
       global-keymap
       (concat "W-" (car spec))
-      (lambda ()
-        (if (listp (cdr spec))
-            (display-window (apply mn-run-unless (cdr spec)))
-          (mn-run (cdr spec)))))))
+      (let ((spec (cdr spec)))
+        (if (listp spec)
+            (lambda ()
+              (display-window (apply mn-run-unless spec)))
+          (lambda ()
+            (mn-run spec)))))))
 
  (let ((libexec (concat (getenv "HOME") "/bin/libexec/"))
        (sh-maybe (lambda (fname)
