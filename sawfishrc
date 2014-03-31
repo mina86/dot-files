@@ -219,8 +219,7 @@ Windows are matched in most recently focused first order."
    (?o  "Geeqie"         "geeqie")
 
    (?l  .                "xlocker")
-   (?"  .                "m rewind" ;"; Make source highlighting happy
-     )
+   (?\" .                "m rewind")
    (?'  .                "m prev")
    (?j  .                "m toggle")
    (?k  .                "m next")
