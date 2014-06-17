@@ -5,37 +5,7 @@
 
 ;;; Code:
 
-;;{{{ Compatibility with old Emacsen
-
-(unless (boundp 'user-emacs-directory)
-  (defvar user-emacs-directory (expand-file-name "~/.emacs.d/")
-    "Directory beneath which additional per-user Emacs-specific files are placed.
-Various programs in Emacs store information in this directory.
-Note that this should end with a directory separator."))
-
-(unless (fboundp 'use-region-p)
-  (defun use-region-p ()
-    "Return t if certain commands should apply to the region.
-Certain commands normally apply to text near point,
-but in Transient Mark mode when the mark is active they apply
-to the region instead.  Such commands should use this subroutine to
-test whether to do that."
-    (and (region-active-p) (> (region-end) (region-beginning)))))
-
-(unless (fboundp 'region-active-p)
-  (defun region-active-p ()
-    "Return t if Transient Mark mode is enabled and the mark is active.
-This is NOT the best function to use to test whether a command should
-operate on the region instead of the usual behavior -- for that,
-use `use-region-p'."
-    (and transient-mark-mode mark-active)))
-
-;;}}}
 ;;{{{ System dependend data and directories
-
-;; Make sure user-emacs-directory is defined
-(if (string-equal user-emacs-directory "")
-    (setq user-emacs-directory (expand-file-name "~/.emacs.d")))
 
 ;; Add  ~/.emacs.d/elisp  to load path
 (when (file-directory-p (concat user-emacs-directory "elisp"))
