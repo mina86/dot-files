@@ -1,5 +1,5 @@
 ## .xinitrc  -- X init script
-## Copyright 2008-2011 by Michal Nazarewicz (mina86@mina86.com)
+## Copyright 2008-2014 by Michal Nazarewicz (mina86@mina86.com)
 
 cd ~
 

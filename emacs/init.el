@@ -1,6 +1,6 @@
 ;; init.el  -- Emacs configuration file             -*- lexical-binding: t -*-
 
-;; Copyright 2004-2012 by Michal Nazarewicz (mina86@mina86.com)
+;; Copyright 2004-2014 by Michal Nazarewicz (mina86@mina86.com)
 ;; Some parts of the code may be © by their respective authors.
 
 ;;; Code:
