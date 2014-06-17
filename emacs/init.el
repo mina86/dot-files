@@ -43,7 +43,8 @@ use `use-region-p'."
     (setq load-path (cons (concat user-emacs-directory "elisp") load-path))))
 
 ;; notmuch
-(autoload 'notmuch (concat user-emacs-directory "mail.el") "notmuch mail" t)
+(when (file-exists-p (concat user-emacs-directory "mail.el"))
+  (autoload 'notmuch (concat user-emacs-directory "mail.el") "notmuch mail" t))
 
 ;; Packages repositories
 (eval-when-compile (require 'package))
