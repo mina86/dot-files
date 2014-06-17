@@ -603,7 +603,10 @@ If function given tries to `describe-function' otherwise uses
 ;;}}}
 ;;{{{     F2 - find configuration files
 
-(set-key [(f2)]         (find-file user-init-file))
+(set-key [(f2)]         (find-file
+                         (if (string-match "\\.elc$" user-init-file)
+                             (substring user-init-file 0 -1)
+                           user-init-file)))
 (set-key [(control f2)] (find-file (concat user-emacs-directory "/mail.el")))
 (set-key [(meta f2)]    (find-file custom-file))
 (set-key [(shift f2)]   (find-file "~/.bashrc"))
