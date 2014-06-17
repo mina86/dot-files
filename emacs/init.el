@@ -103,8 +103,8 @@ lambdas are used."
    'define-key keymap key
    (cond ((or (cdr def) (consp (car def)))
           (let ((args        (if (eq :args (car def)) (cadr def)))
-                (interactive (if (eq :args (car def)) (list (caddr def))))
-                (body        (if (eq :args (car def)) (cdddr def) def)))
+                (interactive (if (eq :args (car def)) (list (car (cddr def)))))
+                (body        (if (eq :args (car def)) (cdr (cddr def)) def)))
             `(function (lambda ,args (interactive . ,interactive) ,@body))))
          ((symbolp (car def)) (list 'quote (car def)))
          ((car def)))))
