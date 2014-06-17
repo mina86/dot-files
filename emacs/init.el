@@ -32,14 +32,6 @@
 ;;}}}
 ;;{{{ Utilities
 
-(defmacro setq-if-bound (name value)
-  "Set value of variable NAME to VALUE if its bound.
-This may be especially useful when dealing with code that needs
-to run on variety of systems and its not always know whether
-certain feature, and thus variable, will be present."
-  `(when (boundp (quote ,name))
-     (setq ,name ,value)))
-
 (defun current-local-map-create-maybe ()
   "Return current local map creating one if not set yet."
   (or (current-local-map)
@@ -336,8 +328,8 @@ three times - back to where it was at the beginning."
 ;;}}}
 ;;{{{   Pager/Scrolling
 
-(setq-if-bound scroll-error-top-bottom t)
-(setq-if-bound scroll-preserve-screen-position t)
+(setq scroll-error-top-bottom t)
+(setq scroll-preserve-screen-position t)
 
 ;; Makes paging functions work the way god intended
 ;; http://www.docs.uu.se/~mic/emacs.html
@@ -834,8 +826,7 @@ modified beforehand."
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (when (file-exists-p custom-file)
   (load-file custom-file))
-(setq-if-bound auto-byte-compile-files-list
-               (cons custom-file auto-byte-compile-files-list))
+(push custom-file auto-byte-compile-files-list)
 
 ;; Other
 (show-paren-mode t)               ;show matching parenthesis.
@@ -979,8 +970,9 @@ modified beforehand."
                            (box    . box)) ;blink-cursor-mode does not
       cursor-type 'box)                    ;work for me.
 (setq visible-bell nil)           ;no visual bell
-(setq-if-bound compilation-auto-jump-to-first-error t)
-(setq-if-bound line-move-visual nil) ;move by logical lines not screen lines
+(eval-when-compile (require 'compile))
+(setq compilation-auto-jump-to-first-error t)
+(setq line-move-visual nil) ;move by logical lines not screen lines
 
 ;; Saving etc
 (when (fboundp recentf-mode)
@@ -1534,7 +1526,7 @@ returns that number."
 (add-lambda-hook 'text-mode-hook
   (auto-fill-mode t)
   (set-tab 8)
-  (setq-if-bound word-wrap t))
+  (setq word-wrap t))
 
 ;; Assembler mode
 (add-lambda-hook 'asm-mode-hook
