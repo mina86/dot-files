@@ -653,7 +653,6 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
         remember-notes-buffer-name "*scratch*"))
 
 (set-key [(f6)] remember-notes)
-(set-key [(control f6)] remember)
 
 ;;}}}
 ;;{{{     F7 - spell checking
@@ -1531,14 +1530,43 @@ returns that number."
   (set-tab 8)
   (setq word-wrap t))
 
+;; Org mode
+(eval-when-compile (require 'org))
+(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+(eval-after-load "org"
+  (lambda ()
+    (setq org-insert-mode-line-in-empty-file t
+          org-hide-leading-stars t
+          org-startup-indented t
+          org-src-fontify-natively t
+          org-catch-invisible-edits 'smart
+          org-agenda-start-with-follow-mode t
+          org-agenda-window-setup 'current-window
+          org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
+          org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
+
+    (set-key org-mode-map "\M-p" org-backward-element)
+    (set-key org-mode-map "\M-n" org-forward-element)
+    (define-key org-mode-map "\C-a" (lookup-key global-map "\C-a"))
+    (define-key org-mode-map "\C-e" (lookup-key global-map "\C-e"))
+
+    (add-hook 'org-agenda-mode-hook (lambda () (hl-line-mode 1)))))
+
+(set-key [(control f6)]
+         (if (equal (buffer-name) org-agenda-buffer-name)
+             (message "You're already in the agenda view!")
+           (let ((buffer (get-buffer org-agenda-buffer-name)))
+             (if buffer
+                 (let ((window (get-buffer-window buffer)))
+                   (if window
+                       (select-window window)
+                     (switch-to-buffer buffer)))
+               (org-agenda nil "t")))))
+
 ;; Assembler mode
 (add-lambda-hook 'asm-mode-hook
   (set-tab 8 16)
   (setq comment-column 40))
-
-;; Org mode
-(eval-when-compile (require 'org))
-(setq org-insert-mode-line-in-empty-file t)
 
 ;; Lisp/Scheme mode
 ;; No tabs! and if opening file with tabs, assume 8-char wide
