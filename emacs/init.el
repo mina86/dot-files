@@ -1213,17 +1213,15 @@ the open brace was real open brace or part of comment/string."
   (add-lambda-hook 'c-common-mode-hook
     (when buffer-file-name
       (let ((fn (file-name-nondirectory buffer-file-name)))
-        (set (make-local-variable 'compile-command)
-             (concat "make -k "
-                     (substring
-                      fn 0 (string-match "\\.[^\\.]*$" fn 1)))))))
-
-  (when (and (load "google-c-style" t)
-             (boundp 'google-c-style))
-    (c-add-style "google" google-c-style)
-    (add-lambda-hook 'c-mode-hook
-      (and buffer-file-name
-           (string-match-p "/google3/" buffer-file-name)
+        (setq-local compile-command
+                    (concat "make -k "
+                            (substring
+                             fn 0 (string-match "\\.[^\\.]*$" fn 1)))))
+      (and (string-match-p "/google3/" buffer-file-name)
+           (or (assoc "google" c-style-alist)
+               (when (and (load "google-c-style" t) (boundp 'google-c-style))
+                 (c-add-style "google" google-c-style)
+                 t))
            (c-set-style "google")))))
 
 ;;}}}
