@@ -1041,6 +1041,11 @@ rules so it is likely not to work."
      (c-comment-only-line-offset . 0)  ; XXX no idea what it does
      (c-label-minimum-indentation . 1) ; no min. indention for labels
 
+     ;; Use block-comments
+     (comment-begin . "/* ")
+     (comment-end . " */")
+     (comment-style . 'multi-line)
+
      (c-cleanup-list                 ; Clean ups
       brace-else-brace                 ; "} else {" in one line
       brace-elseif-brace               ; "} else if (...) {" in one line
