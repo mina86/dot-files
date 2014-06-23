@@ -1045,22 +1045,21 @@ rules so it is likely not to work."
       brace-else-brace                 ; "} else {" in one line
       brace-elseif-brace               ; "} else if (...) {" in one line
       brace-catch-brace                ; "} catch (...) {" in one line
-      defun-close-semi                 ; "};" together
-      )
+      defun-close-semi)                ; "};" together
 
      (c-offsets-alist                ; Indention levels:
-      ; Don't indent inside namespaces, extern, etc
+      ;; Don't indent inside namespaces, extern, etc
       (incomposition          . 0)
       (inextern-lang          . 0)
       (inmodule               . 0)
       (innamespace            . 0)
 
-      ; Preprocessor macros
+      ;; Preprocessor macros
       (cpp-define-intro       c-lineup-cpp-define +)
       (cpp-macro              . [ 0 ])
       (cpp-macro-cont         . +)
 
-      ; Brace after newline newer indents
+      ;; Brace after newline newer indents
       (block-open             . 0)
       (brace-entry-open       . 0)
       (brace-list-open        . 0)
@@ -1074,7 +1073,7 @@ rules so it is likely not to work."
       (statement-case-open    . 0)
       (substatement-open      . 0)
 
-      ; Obviously, do not indent closing brace
+      ;; Obviously, do not indent closing brace
       (arglist-close          . 0)
       (block-close            . 0)
       (brace-list-close       . 0)
@@ -1086,18 +1085,18 @@ rules so it is likely not to work."
       (module-close           . 0)
       (namespace-close        . 0)
 
-      ; Obviously, indent next line after opening brace and single statements
+      ;; Obviously, indent next line after opening brace and single statements
       (defun-block-intro      . +)
       (statement-block-intro  . +)
       (substatement           . +)
 
-      ; Handle nicely multi line argument lists
+      ;; Handle nicely multi line argument lists
       (arglist-close c-lineup-arglist 0)
       (arglist-cont          c-lineup-gcc-asm-reg +)
       (arglist-cont-nonempty c-lineup-gcc-asm-reg c-lineup-arglist +)
       (arglist-intro          . +)
 
-      ; Misc
+      ;; Misc
       (brace-list-intro       . +)     ; Indent elements in brace-lists
       (brace-list-entry       . 0)
       (c      . c-lineup-C-comments)   ; Indent comments nicely
@@ -1127,29 +1126,28 @@ rules so it is likely not to work."
       (topmost-intro          . 0)     ; Topmost stay topmost
       (topmost-intro-cont     c-lineup-topmost-intro-cont 0)
 
-      ; Other stuff I don't really care about
-      ; I keep it here for the sake of having all symbols specified.
+      ;; Other stuff I don't really care about
+      ;; I keep it here for the sake of having all symbols specified.
       (inlambda               . c-lineup-inexpr-block)
       (knr-argdecl            . 0)
       (knr-argdecl-intro      . +)
       (lambda-intro-cont      . +)
       (objc-method-args-cont  . c-lineup-ObjC-method-args)
       (objc-method-call-cont
-       ;c-lineup-ObjC-method-call-colons
+       ;;c-lineup-ObjC-method-call-colons
        c-lineup-ObjC-method-call +)
-      (objc-method-intro      . [0])
-      )
+      (objc-method-intro      . [0]))
 
-     ; I don't care about anything that is below -- not using any
-     ; automagick -- but for the sake of having everything set I'll keep
-     ; it here.
+     ;; I don't care about anything that is below -- not using any
+     ;; automagick -- but for the sake of having everything set I'll keep
+     ;; it here.
 
      (c-hanging-braces-alist         ; Auto new lines around braces
-      ; In most cases new line after open brace and both before and
-      ; after close brace.  The "before" is however ommited
-      ; from *-close symbols because when editing normally we will
-      ; be on the new line already -- if we're not, user probably
-      ; knows better.
+      ;; In most cases new line after open brace and both before and
+      ;; after close brace.  The "before" is however ommited
+      ;; from *-close symbols because when editing normally we will
+      ;; be on the new line already -- if we're not, user probably
+      ;; knows better.
       (defun-open             after)
       (defun-close            after)
       (class-open             after)
@@ -1165,19 +1163,19 @@ rules so it is likely not to work."
       (composition-open       after)
       (composition-close      after)
 
-      ; No new line after closing brace if it matches do { or if (...) {
+      ;; No new line after closing brace if it matches do { or if (...) {
       (block-open             after)
       (substatement-open      after)
       (block-close            . c-snug-do-while)
 
-      ; With brace-lists however, do nothing automatically -- user knows
-      ; better
+      ;; With brace-lists however, do nothing automatically -- user knows
+      ;; better
       (brace-list-open        )
       (brace-list-close       )
       (brace-list-intro       )
       (brace-entry-open       )
 
-      ; Others
+      ;; Others
       (statement-cont         )
       (statement-case-open    after)
       (inexpr-class-open      )
@@ -1186,20 +1184,18 @@ rules so it is likely not to work."
       )
 
      (c-hanging-colons-alist
-      ; Add new line after labels
+      ;; Add new line after labels
       (case-label             after)
       (label                  after)
       (access-label           after)
-      ; But nothing else
+      ;; But nothing else
       (member-init-intro      )
       (inher-intro            )
 
       (c-hanging-semi&comma-criteria
        (mn-c-semi&comma-no-newlines-if-open-brace
         c-semi&comma-no-newlines-before-nonblanks
-        c-semi&comma-inside-parenlist))
-      )))
-
+        c-semi&comma-inside-parenlist)))))
 
   (defun mn-c-semi&comma-no-newlines-if-open-brace ()
     "Prevents newline after semicolon if there is an open brace
