@@ -59,7 +59,7 @@ abstracts = {
   ##
 
   # the basic styling of how to print message, $0 = nick mode, $1 = nick
-  msgnick = "<%K$0%w$1->%w %|";
+  msgnick = "%K$0%w$1->%w %|";
 
   # message from you is printed. "msgownnick" specifies the styling of the
   # nick ($0 part in msgnick) and "ownmsgnick" specifies the styling of the
@@ -143,7 +143,8 @@ abstracts = {
   whois = " $[-8]0 %c$1-%n";
 
   # notices
-  ownnotice = " --> %y-%w$1%y-%w ";
+  noticenick = "%K$0%w$1-]%w %|";
+  ownnotice = "] ";
   notice = "%C-%w$*%C-%w ";
   pubnotice_channel = "%K:%m$*";
   pvtnotice_host = "%K(%m$*%K)";
@@ -237,4 +238,11 @@ abstracts = {
   sb_act_hilight = "%M$*";
   # hilight with specified color, $0 = color, $1 = text
   sb_act_hilight_color = "$0$1-%n";
+};
+formats = {
+  "fe-common/core" = { pubmsg = "{pubmsgnick $2 {pubnick \00313$0}}$1"; };
+  "fe-common/irc" = {
+    notice_public = "{noticenick {pubnick $0}}$2";
+    notice_private = "{noticenick {pubnick $0}}$2";
+  };
 };
