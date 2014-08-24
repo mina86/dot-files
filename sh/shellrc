@@ -160,6 +160,14 @@ alias +p='git add -p'
 # Other
 alias @='for i in'
 
+,() {
+	if [ $# -eq 0 ]; then
+		paste -sd,
+	else
+		printf "%s\n" "$@" | paste -sd,
+	fi
+}
+
 # No need to set it once again
 if [ -n "$MINA86RC" ]; then
 	return
