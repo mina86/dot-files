@@ -16,6 +16,9 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 
+(define sawfish-quit-cmd-file (getenv "SAWFISH_QUIT_CMD_FILE"))
+(if sawfish-quit-cmd-file (unsetenv "SAWFISH_QUIT_CMD_FILE"))
+
 ;;{{{ What machine are we running
 
 (defun screen-size ()
@@ -174,11 +177,10 @@ Windows are matched in most recently focused first order."
 
 ;; Menus
 (define (mn-quit command)
-  (let ((fname (getenv "SAWFISH_QUIT_CMD_FILE")))
-    (if fname
-        (let ((fd (open-file fname 'write)))
-          (write fd (concat command "\n"))
-          (close-file fd))))
+  (if sawfish-quit-cmd-file
+      (let ((fd (open-file sawfish-quit-cmd-file 'write)))
+        (write fd (concat command "\n"))
+        (close-file fd)))
   (quit))
 
 (setq root-menu
