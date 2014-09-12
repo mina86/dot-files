@@ -487,7 +487,7 @@ major modes from `mn-window-skip-modes' list, its name is on the
 ;;{{{   Just one space
 
 (substitute-key-definition 'just-one-space
-                           (lambda () (interactive) (cycle-spacing -1 t))
+                           (lambda () (interactive) (cycle-spacing -1))
                            (current-global-map))
 
 ;;}}}
