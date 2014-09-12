@@ -110,92 +110,47 @@ if [ -e ~/bin/flags-do ]; then
 fi
 
 # Powerful cd
-_cd_sub() {
-	set -- "$@" "$1"
-	while :; do
-		if [ x"$4" = x"${4#*/"$2"/}" ]; then
-			echo "cd: $2 not found in $1 or resulting path does not point to a directory" >&2
-			return 1
-		fi
-
-		set -- "$1" "$2" "$3" "${4%/"$2"/*}" "${4##*/"$2"/}/$5"
-		if [ -d "$4/$3/$5" ]; then
-			\cd "$4/$3/$5"
-			return $?
-		fi
-
-		set -- "$1" "$2" "$3" "$4" "$2/$5"
-	done
-}
-
-_cd_ddd() {
-	set -- "${1%/}" "${2#.../}"
-	while :; do
-		if [ -z "$1" ]; then
-			echo "cd: .../$2: could not find path" >&2
-			return 1
-		fi
-
-		set -- "${1%/*}" "$2"
-		if [ -d "$1/$2" ]; then
-			echo "$1/$2"
-			\cd "$1/$2"
-			return $?
-		fi
-	done
-}
-
-_cd_P() {
-	set -- "$(pwd -P)"
-	echo "$1"
-	\cd "$1"
-}
-
 _cd_do() {
-	if [ x"$1" != x- ] && [ -e "$1" ] && ! [ -d "$1" ]; then
-		set -- "$(dirname $1)"
-		echo "$1"
+	if [ x"$2" != x- ] && [ -e "$2" ] && ! [ -d "$2" ]; then
+		set -- "$1" "$(dirname $2)"
 	fi
-	\cd "$1"
+	builtin cd "$@"
 }
 
-_cd() {
-	case "$#:$1:$2" in
-	1:-h:)
+cd() {
+	case "$#:$1" in
+	1:-h)
 		cat <<EOF
+cd
+    Move to home directory.
 cd -P
     Resolve all symbolic links in \$PWD.
-cd [-P] [<dir> | <file> | -]
-    Move to <dir>, directory containing <file>, \$OLDPWD if "-" given, or
-    home directory. With -P, resolves all symlinks.
-cd [-P] <from> <to>
-    Replaces right-most occurrence of "/<from>/" with "/<to>/" and
-    tries to change CWD to resulting path.  If it does not resolve to
-    a directory, tries the next occurrence of "/<from>/" until there
-    aren't any more left.  With -P looks at CWD with symlinks resolved.
-cd [-P] .../<dir>
-    Goes to parent directories until ./<dir> is a valid directory and
-    then changes to it.  With -P looks at CWD with symlinks resolved.
+cd [-P] (<dir> | <file> | -)
+    Move to <dir>, dirname(<file>), or \$OLDPWD; -P resolves all symlinks.
+cd [-P] (<dir> | <file> | -) <command> [<args> ...]
+    Run <command> in the directory and then come back.
 EOF
 		;;
-
-	0:*)		\cd ;;
-	1:-P:)		_cd_P ;;
-	1:.../*)	_cd_ddd "$PWD" "$1" ;;
-	1:*)		_cd_do  "$1" ;;
-	2:-P:.../*)	_cd_ddd "$(pwd -P)" "$2" ;;
-	2:-P:*)		_cd_do  "$2" >/dev/null && _cd_P ;;
-	2:*)		_cd_sub "$PWD" "$1" "$2" ;;
-	3:-P:*)		_cd_sub "$(pwd -P)" "$2" "$3" ;;
+	0:)
+		builtin cd
+		;;
+	1:-P)
+		builtin cd -P "${PWD}"
+		;;
+	1:*)
+		_cd_do "-L" "$1"
+		;;
+	2:-P)
+		_cd_do "-P" "$2"
+		;;
 	*)
-		echo "cd: too many arguments" >&2
-		return 1
+		if [ x"$1" != x-P ]; then
+			set -- -L "$@"
+		fi
+		( _cd_do "$1" "$2" && shift 2 && "$@" )
 	esac
 }
-alias cd="echo Did you mean to run d\?; :"
-alias d=_cd
-alias -- -='\cd -'
-cl() { cd "$@" && l; }
+alias -- -='builtin cd -'
 
 # Git
 alias +='git add'
