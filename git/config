@@ -17,8 +17,7 @@
 	a      = am -3
 	b      = branch -v
 	br     = branch -v
-	ci     = commit
-	cm     = commit -m
+	ci     = "!f() { if [ $# -eq 0 ]; then git commit; else git commit -m \"$@\"; fi; }; f"
 	amend  = commit --amend
 	fix    = "!f() { if [ $# -eq 0 ]; then git commit --amend -C HEAD; else git commit --fixup \"$@\"; fi; }; f"
 	wip    = commit -m wip
