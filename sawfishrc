@@ -215,10 +215,12 @@ Windows are matched in most recently focused first order."
           (lambda ()
             (mn-run spec)))))))
 
- (let ((libexec (concat (getenv "HOME") "/bin/libexec/"))
-       (sh-maybe (lambda (dir fname)
-                   (let ((fname (concat dir fname)))
-                     (if (file-exists-p fname) (concat "sh " fname))))))
+ (let* ((home (getenv "HOME"))
+        (libexec (concat home "/bin/libexec/"))
+        (sh-maybe (lambda (dir fname #!optional args)
+                    (let ((fname (concat dir fname)))
+                      (if (file-exists-p fname)
+                          (concat "/bin/sh " fname (or args "")))))))
    `(("W-$" "/Term$"         ,mn-term-command t)
      ("W-;" "^Emacs/emacs$"  "e")
      ("W-," "^Opera(Next)?/opera$"  "opera")
@@ -239,7 +241,8 @@ Windows are matched in most recently focused first order."
      ("W-x"                 . ,(sh-maybe libexec "cycle-volume.sh"))
      ("W-r"                 . ,(sh-maybe libexec "dmenu_run"))
      ("W-i"                 . ,(sh-maybe libexec "getotp.sh"))
-     ("XF86Display"         . ,(sh-maybe (getenv "HOME") "/.xscreen-config")))))
+     ("C-W-i"               . ,(sh-maybe libexec "getotp.sh" " --last"))
+     ("XF86Display"         . ,(sh-maybe home "/.xscreen-config")))))
 
 
 ;; Window manipulations
