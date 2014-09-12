@@ -63,17 +63,14 @@ as a lambda (see below).  Thus the following do what one might expect:
         ;; same as (global-set-key \"\\C-h\" [(backspace)])
     (set-key \"\\C-d\" ())
         ;; same as (global-set-key \"\\C-h\" ())
-    (set-key \"\\C-B\" (goto-char (- (point) 2)))
-        ;; same as (global-set-key \"\\C-B\"
-        ;;           (lambda () (interactive) (goto-char (- (point) 2))))
 However, the following will not work:
     (let ((callback 'self-insert-command))
       (set-key \"a\" callback))
         ;; same as (global-set-key \"a\" 'callback)
 
-In the last case, DEF is of the following form:
+If DEF is a cons value, it's format is:
     ([:args ARGS INTERACTIVE] . BODY)
-and it results in the following lambda:
+and results in the following lambda:
     (lambda ARGS (interactive INTERACTIVE) . BODY)
 or if :args is not given (at which point DEF == BODY):
     (lambda () (interactive) . BODY)
@@ -87,7 +84,7 @@ For example:
         ;;             (goto-char (- (point) (* 2 n)))))
 
 This macro is not designed to be a complete replacement for `define-key',
-`global-set-key' and `local-set-key', since it is not capable of dealing with
+`global-set-key' or `local-set-key', since it is not capable of dealing with
 some forms of DEFs that those functions accept, but instead it is meant as
 a helper to use in user configuration file to save on typing especially when
 lambdas are used."
