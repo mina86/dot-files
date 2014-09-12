@@ -45,6 +45,10 @@ has() {
 			setxkbmap "$XKBLAYOUT" "$XKBVARIANT" "$XKBOPTIONS"
 		fi
 	fi
+
+	if [ -x ~/bin/redshift ] && [ -e ~/.config/redshift.conf ]; then
+		~/bin/redshift &
+	fi
 ) &
 
 SAWFISH_QUIT_CMD_FILE=$(mktemp)
