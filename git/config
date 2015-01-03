@@ -15,7 +15,7 @@
 	help = cyan
 [alias]
 	a      = am -3
-	b      = branch -v
+	b      = branch
 	br     = branch -v
 	ci     = "!f() { if [ $# -eq 0 ]; then git commit; else git commit -m \"$@\"; fi; }; f"
 	amend  = commit --amend
