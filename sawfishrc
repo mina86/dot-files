@@ -266,10 +266,10 @@ Windows are matched in most recently focused first order."
            "C-W-h" 'shrink-window-left
            "C-W-n" 'shrink-window-right
            ;; Move till it overlaps with one less window
-           "C-W-C"   'yank-window-up
-           "C-W-T"   'yank-window-down
-           "C-W-H"   'yank-window-left
-           "C-W-N"   'yank-window-right)
+           "C-W-C" 'yank-window-up
+           "C-W-T" 'yank-window-down
+           "C-W-H" 'yank-window-left
+           "C-W-N" 'yank-window-right)
 
 
 ;; Run some applications
