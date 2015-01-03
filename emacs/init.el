@@ -1,6 +1,6 @@
 ;; init.el  -- Emacs configuration file             -*- lexical-binding: t -*-
 
-;; Copyright 2004-2014 by Michal Nazarewicz (mina86@mina86.com)
+;; Copyright 2004-2015 by Michal Nazarewicz (mina86@mina86.com)
 ;; Some parts of the code may be © by their respective authors.
 
 ;;; Code:
@@ -465,7 +465,7 @@ major modes from `mn-window-skip-modes' list, its name is on the
 ;; Minibuffer
 
 (set-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
-         (delete-minibuffer-contents))
+         delete-minibuffer-contents)
 (set-key minibuffer-local-map "\C-p" previous-history-element)
 (set-key minibuffer-local-map "\C-n" next-history-element)
 
