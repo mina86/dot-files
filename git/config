@@ -64,7 +64,7 @@
 [sendemail]
 	from = Michal Nazarewicz <mina86@mina86.com>
 	confirm = always
-	aliasesfile = ~/.gitaliases
+	aliasesfile = ~/.config/git/aliases
 	aliasfiletype = mutt
 	suppresscc = author
 	chainreplyto = no
@@ -73,7 +73,7 @@
 	spellingdictionary = en_GB
 
 [include]
-	path = ~/.gitconfig_local
+	path = ~/.config/git/local
 
 [credential]
 	helper = netrc
