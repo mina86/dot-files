@@ -830,24 +830,6 @@ modified beforehand."
 ;; Other
 (show-paren-mode t)               ;show matching parenthesis.
 
-(defface my-tab-face
-  '((((class color) (min-colors 216)) (:background "#666"))
-    (t (:background "yellow")))
-  "Face used to show TAB characters."
-  :group 'whitespace)
-
-(defface my-big-indent-face
-  '((((class color) (min-colors 216)) (:background "#966"))
-    (t (:background "red")))
-  "Face used to show a sequence of 4-5 tabs at the beginning of a line."
-  :group 'whitespace)
-
-(defface my-huge-indent-face
-  '((((class color) (min-colors 216)) (:background "#C66"))
-    (t (:background "magenta")))
-  "Face used to show a sequence of 6 or more tabs at the beginning of a line."
-  :group 'whitespace)
-
 (defface my-fixme-face
   '((t :background "red" :foreground "white" :weight bold))
   "Face use to show FIXME and XXX markers in the text."
@@ -858,17 +840,23 @@ modified beforehand."
   "Face used to show TODO markers in the text."
   :group 'whitespace)
 
-;; Show blanks and FIXME
+;; Show TODO and FIXME
 ;; http://www.emacswiki.org/cgi-bin/wiki/EightyColumnRule
 (add-lambda-hook 'font-lock-mode-hook
   (unless (eq 'diff-mode major-mode)
     (font-lock-add-keywords nil
-     '(("\t+" 0 'my-tab-face t)
-       ("^\t\\{4,5\\}" 0 'my-big-indent-face t)
-       ("^\t\\{6,\\}" 0 'my-huge-indent-face t)
-       ("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
+     '(("\\<\\(TODO:?\\)\\>" 1 'my-todo-face t)
        ("\\<\\(FIXME:?\\|XXX\\)\\>" 1 'my-fixme-face t)))))
 
+;; 'lines-tail would be great but it does not really work with tabs ≠ 8
+;; characters.
+(setq whitespace-style '(face
+                         space-before-tab::tab
+                         tab-mark
+                         tabs
+                         big-indent
+                         trailing))
+(global-whitespace-mode)
 
 ;;}}}
 ;;{{{ Misc small config
