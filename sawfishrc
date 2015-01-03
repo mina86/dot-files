@@ -247,6 +247,12 @@ Windows are matched in most recently focused first order."
      ("XF86MonBrightnessUp"   . "xbacklight + 25")
      ("XF86MonBrightnessDown" . "xbacklight - 25"))))
 
+; Having Super-Tab bound seems to overwrite existing W-Tab binding.
+; cabinet-switch is nice and all, but having it under W-Tab is not what I want.
+; Unbind Super-Tab to get cycle-windows back.
+(unbind-keys global-keymap "Super-Tab")
+; Also unbind C-Tab since this is used for switching tabs in a browser.
+(unbind-keys global-keymap "C-Tab")
 
 ;; Window manipulations
 (bind-keys window-keymap
