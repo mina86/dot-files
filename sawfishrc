@@ -1,6 +1,6 @@
 ;;
 ;; .sawfish/rc -- Sawfish window manager configuration file
-;; Copyright 2008-2014 by Michal Nazarewicz
+;; Copyright 2008-2015 by Michal Nazarewicz
 ;;
 ;; This program is free software: you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -239,10 +239,13 @@ Windows are matched in most recently focused first order."
      ("XF86AudioNext"       . "m next")
      ("XF86AudioStop"       . "m stop")
      ("W-x"                 . ,(sh-maybe libexec "cycle-volume.sh"))
+     ("XF86AudioMute"       . ,(sh-maybe libexec "toggle-mute.sh"))
      ("W-r"                 . ,(sh-maybe libexec "dmenu_run"))
      ("W-i"                 . ,(sh-maybe libexec "getotp.sh"))
      ("C-W-i"               . ,(sh-maybe libexec "getotp.sh" " --last"))
-     ("XF86Display"         . ,(sh-maybe home "/.xscreen-config")))))
+     ("XF86Display"         . ,(sh-maybe home "/.xscreen-config"))
+     ("XF86MonBrightnessUp"   . "xbacklight + 25")
+     ("XF86MonBrightnessDown" . "xbacklight - 25"))))
 
 
 ;; Window manipulations
