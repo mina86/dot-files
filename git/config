@@ -77,3 +77,11 @@
 
 [credential]
 	helper = netrc
+
+[diff "lisp"]
+	xfuncname = "^(\\(.*)$"
+[diff "texinfo"]
+	xfuncname = "^@node[ \t][ \t]*\\([^,][^,]*\\)"
+[diff "image"]
+	binary = true
+	textconv = identify

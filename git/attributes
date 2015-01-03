@@ -1,0 +1,20 @@
+*.[ch]		diff=cpp
+*.[ch]pp	diff=cpp
+*.cc		diff=cpp
+*.el		diff=lisp
+*.java		diff=java
+*.php		diff=php
+*.pl		diff=perl
+*.py		diff=py
+*.py		diff=python
+
+*.html		diff=html
+*.xhtml		diff=html
+*.tex		diff=tex
+*.texi*		diff=texinfo
+
+*.jpg		diff=image
+*.jpeg		diff=image
+*.png		diff=image
+*.gif		diff=image
+*.bmp		diff=image
