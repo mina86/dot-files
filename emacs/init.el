@@ -1629,6 +1629,10 @@ returns that number."
 (autoload 'htmlize-buffer "htmlize" "Convert buffer to HTML" t)
 (autoload 'htmlize-region "htmlize" "Convert region to HTML" t)
 
+;; Tildify
+(defvar tildify-pattern)
+(setq tildify-pattern "\\<[a-zA-Z]\\([ \t\n]+\\)")
+
 ;;{{{   Folding
 
 (when (eval-when-compile (load "folding" t))
