@@ -884,6 +884,18 @@ modified beforehand."
                             (background-mode . dark)
                             (wait-for-wm . nil)))
 
+;; For some reason, Emacs uses latin-2 version of the font and when it
+;; encounters Unicode characters it changes font for those characters only.
+;; This makes for very ugly rendering.  Force Unicode font in all frames.
+(add-hook 'after-make-frame-functions
+          (lambda (frame)
+            (set-frame-font
+             "-adobe-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1"
+             nil (list frame))))
+(set-face-attribute
+ 'default t :font "-adobe-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1")
+
+
 ;; Modeline
 (setq line-number-mode t          ;show line number in modeline
       column-number-mode t)       ;show column number in modeline
