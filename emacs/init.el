@@ -646,9 +646,12 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
 
 (require 'remember)
 (when (fboundp 'remember-notes)
-  (setq initial-buffer-choice 'remember-notes
-        remember-notes-auto-save-visited-file-name t
-        remember-notes-buffer-name "*scratch*"))
+  (setq remember-notes-auto-save-visited-file-name t
+        remember-notes-buffer-name "*scratch*")
+  (setq initial-buffer-choice
+        (lambda ()
+          (kill-buffer remember-notes-buffer-name)
+          (remember-notes))))
 
 (set-key [(f6)] remember-notes)
 
