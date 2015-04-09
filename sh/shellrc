@@ -31,7 +31,7 @@ fi
 [ -n "$HOME" ] || HOME="$(eval echo ~"$USER")"
 
 # Default prompt (most likely will be overwritten in shell specific rc files)
-if [ X"$UID" = X0 ]; then PS1='# '; else export PS1='$ '; fi
+if [ X"$UID" = X0 ]; then PS1='# '; else PS1='$ '; fi
 if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then PS1="[$(hostname)]$PS1"; fi
 export PS1
 
@@ -172,7 +172,8 @@ alias @='for i in'
 if [ -n "$MINA86RC" ]; then
 	return
 fi
-export MINA86RC=done
+MINA86RC=done
+export MINA86RC
 
 # PATH
 if ! echo ":$PATH:" | grep -Fe ":$HOME/bin:" -e ':~/bin:' >/dev/null 2>&1; then
@@ -190,22 +191,30 @@ s/::*$//')"
 export PATH
 
 # Editor
-[ -z "$EDITOR" ] && which nano >/dev/null 2>&1 && export EDITOR=nano VISUAL=nano
+if [ -z "$EDITOR" ] && which nano >/dev/null 2>&1; then
+	EDITOR=nano
+	VISUAL=nano
+	export EDITOR VISUAL
+fi
 
 # less
 if [ -n "$LESS" ] || which less >/dev/null 2>&1; then
-	export PAGER=less LESS=-MS
+	PAGER=less
+	LESS=-MS
+	export PAGER LESS
 	[ -x ~/bin/lesspipe ] && eval $(~/bin/lesspipe --install-lesspipe)
 fi
 
 # Colours in less
-export LESS_TERMCAP_md=$'\E[36m'    # begin bold
-export LESS_TERMCAP_mb=$'\E[31m'    # begin blinking
-export LESS_TERMCAP_us=$'\E[33m'    # begin underline
-export LESS_TERMCAP_so=$'\E[38;43m' # begin standout-mode - info box
-export LESS_TERMCAP_se=$'\E[0m'     # end standout-mode
-export LESS_TERMCAP_ue=$'\E[0m'     # end underline
-export LESS_TERMCAP_me=$'\E[0m'     # end mode
+LESS_TERMCAP_md=$'\E[36m'    # begin bold
+LESS_TERMCAP_mb=$'\E[31m'    # begin blinking
+LESS_TERMCAP_us=$'\E[33m'    # begin underline
+LESS_TERMCAP_so=$'\E[38;43m' # begin standout-mode - info box
+LESS_TERMCAP_se=$'\E[0m'     # end standout-mode
+LESS_TERMCAP_ue=$'\E[0m'     # end underline
+LESS_TERMCAP_me=$'\E[0m'     # end mode
+export LESS_TERMCAP_md LESS_TERMCAP_mb LESS_TERMCAP_us LESS_TERMCAP_so
+export LESS_TERMCAP_se LESS_TERMCAP_ue LESS_TERMCAP_me
 
 # LS options and colors
 if [ -z "$LS_COLORS" ] && ls --color / >/dev/null 2>&1; then
@@ -222,25 +231,35 @@ LS_OPTIONS="-FT0 --color=auto"
 export LS_OPTIONS
 
 # Various
-export GZIP="-9n"
-export FIGNORE=".o:~:.bak" CC=gcc CXX=g++
-export LC_COLLATE=C LC_MESSAGES=en_GB.UTF-8
+GZIP=-9n
+FIGNORE=".o:~:.bak"
+CC=gcc
+CXX=g++
+LC_COLLATE=C
+LANG=en_GB.UTF-8
+LC_MESSAGES=en_GB.UTF-8
+export GZIP FIGNORE CC CXX LANG LC_COLLATE LC_MESSAGES
+unset MAILCHECK MAIL
 case "X$HOST" in Xerwin|Xtuptus)
-	unset MAILCHECK MAIL
 	if [ x"`uname -m`" = xx86_64 ]; then
-		export ARCH=x86_64
+		ARCH=x86_64
 	else
-		export ARCH=i686
+		ARCH=i686
 	fi
+	export ARCH
 	flags init
 esac
 
 if which ccache >/dev/null 2>&1; then
-	export CCACHE_COMPRESS=1 CCACHE_LOGFILE=/tmp/ccache.log
-	export CCACHE_SLOPPINESS=file_macro,time_macros CCACHE_TEMPDIR=/tmp
+	CCACHE_COMPRESS=1
+	CCACHE_LOGFILE=/tmp/ccache.log
+	CCACHE_SLOPPINESS=file_macro,time_macros
+	CCACHE_TEMPDIR=/tmp
 	if which distcc >/dev/null 2>&1; then
-		export CCACHE_PREFIX=distcc
+		CCACHE_PREFIX=distcc
+		export CCACHE_PREFIX
 	fi
+	export CCACHE_COMPRESS CCACHE_LOGFILE CCACHE_SLOPPINESS CCACHE_TEMPDIR
 fi
 
 ## Some local stuff
