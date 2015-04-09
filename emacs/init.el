@@ -860,7 +860,8 @@ modified beforehand."
                          tab-mark
                          tabs
                          big-indent
-                         trailing))
+                         trailing)
+      whitespace-big-indent-regexp "^\\(\t\\{4,\\}\\)")
 (global-whitespace-mode)
 
 ;;}}}
