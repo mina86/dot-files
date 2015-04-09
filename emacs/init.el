@@ -294,13 +294,11 @@ counter will wrap around."
 (defvar my-home-end--point 0)
 (defun my-home ()
    "Go to beginning of line, indent or buffer.
-When called once move point to beginning of line, twice - indent,
-three times - beginning of the buffer, four times - back to where it
-was at the beginning."
+When called once move point to beginning of line, twice - beginning of
+the buffer, thrice - back to where it was at the beginning."
    (interactive)
    (seq-times-do nil (setq my-home-end--point (point))
      (beginning-of-line)
-     (back-to-indentation)
      (goto-char (point-min))
      (goto-char my-home-end--point)))
 
