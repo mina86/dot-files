@@ -824,6 +824,7 @@ modified beforehand."
 ;; Font lock
 (require 'font-lock)
 (global-font-lock-mode t)
+(setq font-lock-global-modes '(not notmuch-search-mode notmuch-hello-mode))
 
 ;; Let customize keep config there
 (setq custom-file (concat user-emacs-directory "custom.el"))
