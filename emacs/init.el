@@ -802,7 +802,7 @@ modified beforehand."
 (setq ace-jump-mode-scope 'window
       ace-jump-mode-case-fold nil
       ace-jump-mode-move-keys
-      (string-to-list "htnsueoagccrlp.,;mwvzkjq'difybx/-\\@#)(+}]{![*=&$"))
+      (string-to-list "htnsueoagcrlp.,;mwvzkjq'difybx/-\\@#)(+}]{![*=&$"))
 
 ;;}}}
 ;;{{{   Copy/Kill
