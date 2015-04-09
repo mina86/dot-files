@@ -959,9 +959,7 @@ modified beforehand."
       inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
                                   ; many files               (EMACS 21.4+)
 (setq sentence-end-base "[.?!…][]\"'”)}]*" ; "…" also ends a sentence
-      sentence-end-double-space 1 ;sentance end with double space
       paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
-      paragraph-separate "$"
       require-final-newline t)    ;always end file with NL
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
 (set-default 'indicate-empty-lines t) ;show empty lines at the end of file
