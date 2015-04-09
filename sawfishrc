@@ -171,7 +171,7 @@ Windows are matched in most recently focused first order."
 (require 'sawfish.wm.menus)
 (require 'sawfish.wm.customize)
 
-(define mn-term-command    "term -N Term")
+(setq xterm-program    "term -N Term")
 (define mn-mpdshow-command "term -N MPD -mesg -g 80x1 -e mpd-show")
 (define mn-irssi-command   "term -N IRC -mesg -g 80x10 -e irssi")
 
@@ -195,7 +195,7 @@ Windows are matched in most recently focused first order."
 
 ;; Bindings
 (bind-keys root-window-keymap
-           "Button1-Click2"  (lambda () (mn-run mn-term-command))
+           "Button1-Click2"  (lambda () (mn-run xterm-program))
            "Button3-Click"    popup-root-menu)
 
 (bind-keys window-keymap
@@ -221,7 +221,7 @@ Windows are matched in most recently focused first order."
                     (let ((fname (concat dir fname)))
                       (if (file-exists-p fname)
                           (concat "/bin/sh " fname (or args "")))))))
-   `(("W-$" "/Term$"         ,mn-term-command t)
+   `(("W-$" "/Term$"         ,xterm-program t)
      ("W-;" "^Emacs/emacs$"  "e")
      ("W-," "^Opera(Next)?/opera$"  "opera")
      ("W-." "/IRC$"          ,mn-irssi-command)
