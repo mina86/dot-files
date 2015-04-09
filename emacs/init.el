@@ -1554,6 +1554,7 @@ returns that number."
     (add-hook 'org-agenda-mode-hook (lambda () (hl-line-mode 1)))))
 
 (set-key [(control f6)]
+         (require 'org-agenda)
          (if (equal (buffer-name) org-agenda-buffer-name)
              (message "You're already in the agenda view!")
            (let ((buffer (get-buffer org-agenda-buffer-name)))
