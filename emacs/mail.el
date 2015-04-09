@@ -146,6 +146,16 @@
         ("linux"    . "tag:unread and     tag:linux and not tag:goog and not tag:me")
         ("rest"     . "tag:unread and not tag:linux and not tag:goog and not tag:me")))
 
+(add-hook 'notmuch-hello-refresh-hook
+          (lambda ()
+            (if (and (eq (point) (point-min))
+                     (search-forward "Saved searches:" nil t))
+                (progn
+                  (forward-line)
+                  (widget-forward 1))
+              (if (eq (widget-type (widget-at)) 'editable-field)
+                  (beginning-of-line)))))
+
 ;(define-key notmuch-hello-mode-map [tab] 'widget-forward)
 
 (set-key notmuch-show-mode-map "h"
