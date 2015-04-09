@@ -12,10 +12,6 @@
   (eval-and-compile
     (setq load-path (cons (concat user-emacs-directory "elisp") load-path))))
 
-;; notmuch
-(when (file-exists-p (concat user-emacs-directory "mail.el"))
-  (autoload 'notmuch (concat user-emacs-directory "mail.el") "notmuch mail" t))
-
 ;; Packages repositories
 (eval-when-compile (require 'package))
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -639,7 +635,11 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
 ;;}}}
 ;;{{{     F5 - Mail
 
-(set-key [(f5)] notmuch)
+(when (file-exists-p (concat user-emacs-directory "mail.el"))
+  (set-key [(f5)]
+           (load (concat user-emacs-directory "mail.el"))
+           (set-key [(f5)] notmuch)
+           (notmuch)))
 
 ;;}}}
 ;;{{{     F6 - notes
