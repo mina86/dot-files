@@ -1571,9 +1571,12 @@ returns that number."
   (setq comment-column 40))
 
 ;; Lisp/Scheme mode
-;; No tabs! and if opening file with tabs, assume 8-char wide
 (add-lambda-hook '(emacs-lisp-mode-hook lisp-mode-hook scheme-mode-hook)
-  (setq indent-tabs-mode nil) (set-tab 8))
+  ;; No tabs! and if opening file with tabs, assume 8-char wide
+  (set-tab 8)
+  (setq indent-tabs-mode nil)
+  ;; Show ^L as a line
+  (if (fboundp 'form-feed-mode) (form-feed-mode)))
 
 ;; Sawfish mode
 (autoload 'sawfish-mode "sawfish" "Mode for editing Sawfish config files")
