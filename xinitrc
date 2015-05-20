@@ -25,11 +25,6 @@ has() {
 		xcompmgr &
 	fi
 
-	set -- ~/.gkrellm2/user-config_S-*-pikus
-	if [ $# -gt 0 ] && [ -e "$1" ]; then
-		gkrellm -s pikus.i &
-	fi
-
 	if [ -x ~/bin/libexec/xinit-kbd ]; then
 		~/bin/libexec/xinit-kbd
 	fi
