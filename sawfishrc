@@ -239,12 +239,16 @@ Windows are matched in most recently focused first order."
      ("XF86AudioNext"       . "m next")
      ("XF86AudioStop"       . "m stop")
      ("XF86AudioMute"       . ,(sh-maybe libexec "toggle-mute.sh"))
-     ("W-r"                 . ,(sh-maybe libexec "dmenu_run"))
+     ;; ("W-r"                 . ,(sh-maybe libexec "dmenu_run"))
      ("W-i"                 . ,(sh-maybe libexec "getotp.sh"))
      ("C-W-i"               . ,(sh-maybe libexec "getotp.sh" " --last"))
      ("XF86Display"         . ,(sh-maybe home "/.xscreen-config"))
      ("XF86MonBrightnessUp"   . "xbacklight + 25")
      ("XF86MonBrightnessDown" . "xbacklight - 25"))))
+
+(require 'sawfish.wm.ext.run-application)
+(setq run-application:y-position 'top)
+(bind-keys global-keymap "W-r" 'run-application)
 
 (let ((map (make-keymap)))
   (bind-keys map
