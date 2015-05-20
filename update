@@ -255,7 +255,6 @@ git/*              ~/.config/git/@
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
 sawfishrc          ~/.sawfish/rc
-sawfish-lisp/*.jl  ~/.sawfish/lisp/@
 statuses           ~/.irssi/
 xinitrc            ~/.
 bin/*              ~/
