@@ -922,7 +922,11 @@ modified beforehand."
                      (wide (and (= min 1) (= max (1+ (buffer-size))))))
                 (concat
                  (if wide "(" "[")
-                 (if column-number-mode "%2c, " "")
+                 (if column-number-mode
+                     (if (> (current-column) 80)
+                         (concat (propertize "%02c" 'face 'error) ", ")
+                       "%02c, ")
+                   "")
                  (if line-number-mode "%2l/" "")
                  (number-to-string (1+ (count-lines min max)))
                  (if wide ")" "]"))))
