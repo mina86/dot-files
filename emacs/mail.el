@@ -144,7 +144,13 @@
         ("me+linux" . "tag:unread and     tag:linux and                      tag:me")
         ("goog"     . "tag:unread and not tag:linux and     tag:goog and not tag:me")
         ("linux"    . "tag:unread and     tag:linux and not tag:goog and not tag:me")
-        ("rest"     . "tag:unread and not tag:linux and not tag:goog and not tag:me")))
+        ("rest"     . "tag:unread and not tag:linux and not tag:goog and not tag:me"))
+
+      notmuch-tag-formats
+      '(("unread" (propertize tag 'face '(:foreground "red")))
+        ("flagged" (notmuch-tag-format-image-data tag (notmuch-tag-star-icon))))
+      notmuch-search-line-faces
+      '(("unread" :weight bold)))
 
 (add-hook 'notmuch-hello-refresh-hook
           (lambda ()
