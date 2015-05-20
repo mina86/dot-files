@@ -997,12 +997,9 @@ modified beforehand."
 
 
 ;; Indention
-(defun set-tab (tab &optional stop-list)
-  "Adjust `tab-width', `tab-stop-list' and indent level in current buffer.
-`tab-width' is set to absolute value of TAB, while `tab-stop-list' to
-STOP-LIST (if given and not-nil) or a list of all positive from
-smallest to largest which are multiplications of TAB and are lower or
-equal 120.
+(defun set-tab (tab)
+  "Adjust `tab-width' indent level in current buffer.
+`tab-width' is set to absolute value of TAB.
 
 If called interactively user will be prompted for desired width.  With
 prefix argument, `indent-tabs-mode' will also be set to t.
@@ -1016,17 +1013,14 @@ rules so it is likely not to work."
   (interactive "nTab-width: ")
   (let ((negative (< tab 0)))
     (setq tab-width (abs tab))
-    (set (make-local-variable 'tab-stop-list)
-         (or stop-list (number-sequence tab 120 tab-width)))
-    (mapc
      (lambda (var)
        (when (boundp var)
          (set (make-local-variable var) tab-width)))
      '(c-basic-offset perl-indent-level cperl-indent-level  js-indent-level
-       sh-basic-offset sh-indentation))
-    (cond
-     (negative (setq indent-tabs-mode nil))
-     (prefix-arg (setq indent-tabs-mode t)))))
+       sh-basic-offset sh-indentation)
+     (cond
+      (negative (setq indent-tabs-mode nil))
+      (prefix-arg (setq indent-tabs-mode t)))))
 
 (setq indent-tabs-mode t)         ;indent using tabs
 (set-tab 8)                       ;tab width and stop list
@@ -1220,7 +1214,6 @@ the open brace was real open brace or part of comment/string."
     (when (let ((p (point))) (save-excursion (forward-line 0)
                                              (search-forward "{" p t)))
       'stop))
-
 
   (eval-when-compile (require 'cc-mode))
   (setq c-default-style '((awk-mode . "awk")
@@ -1576,7 +1569,7 @@ returns that number."
 
 ;; Assembler mode
 (add-lambda-hook 'asm-mode-hook
-  (set-tab 8 16)
+  (set-tab 8)
   (setq comment-column 40))
 
 ;; Lisp/Scheme mode
