@@ -357,10 +357,6 @@ perform stripping and behaves as plain `save-buffer'."
 ;;}}}
 ;;{{{   Misc
 
-(set-key "\C-x\C-c" :args (arg) "P"
-         (when (yes-or-no-p "Do you really want to quit? ")
-           (save-buffers-kill-emacs arg))) ; Never kill by mistake
-
 (when (fboundp 'save-buffers-kill-terminal)
   (set-key "\C-x\C-c"      save-buffers-kill-emacs)
   (set-key "\C-xc"         save-buffers-kill-terminal))
