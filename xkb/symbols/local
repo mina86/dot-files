@@ -1,0 +1,12 @@
+partial alphanumeric_keys
+xkb_symbols "dvp" {
+    include "pl(dvp)"
+
+    name[Group1] = "Polish (mina86's Dvorak)";
+
+    // Swap “ and ‘ as well as ” and ’ to match UK quotes order.
+    //             Unmodified    Shift           AltGr            Shift+AltGr
+    key <AB01> { [ apostrophe,   quotedbl,       rightsinglequotemark, dead_acute ] };
+    key <AB04> { [ k,            K,              leftsinglequotemark, leftdoublequotemark ] };
+    key <AB06> { [ b,            B,              rightsinglequotemark, rightdoublequotemark ] };
+};

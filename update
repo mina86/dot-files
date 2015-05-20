@@ -226,6 +226,11 @@ handle() {
 	fi
 }
 
+if [ $DIRECTION = to ]; then
+	mkdir -p ~/bin/libexec ~/.config/git ~/.config/xkb/keymapa \
+	      ~/.config/xkb/symbols
+fi
+
 while read FILE DEST; do
 	case $FILE in
 	*'*'*)
@@ -262,4 +267,7 @@ opera/*.css        ~/.opera/usercss/@
 opera/keyboard.ini ~/.opera/keyboard/@
 opera/menu.ini     ~/.opera/menu/@
 opera/toolbar.ini  ~/.opera/toolbar/@
+xkb/keymapa/*      ~/.config/
+xkb/symbols/*      ~/.config/
+xkb/xinit-xkb      ~/bin/libexec/@
 EOF

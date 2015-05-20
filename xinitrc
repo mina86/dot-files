@@ -1,5 +1,5 @@
 ## .xinitrc  -- X init script
-## Copyright 2008-2014 by Michal Nazarewicz (mina86@mina86.com)
+## Copyright 2008-2015 by Michal Nazarewicz (mina86@mina86.com)
 
 cd ~
 
@@ -17,17 +17,9 @@ has() {
 
 	cd /
 
-	run() {
-		if has "$1"; then
-			"$@"
-		fi
-	}
-
 	if [ -f ~/.xscreen-config ]; then
 		. ~/.xscreen-config
 	fi
-
-	xset -b -c r rate 250 50 s off +dpms
 
 	if has xcompmgr; then
 		xcompmgr &
@@ -38,12 +30,8 @@ has() {
 		gkrellm -s pikus.i &
 	fi
 
-	if [ -e /etc/default/keyboard ]; then
-		. /etc/default/keyboard
-		if [ -n "$XKBLAYOUT$XKBVARIANT$XKBOPTIONS" ]; then
-			# xdotool works better if layout is set by setxkbmap
-			setxkbmap "$XKBLAYOUT" "$XKBVARIANT" "$XKBOPTIONS"
-		fi
+	if [ -x ~/bin/libexec/xinit-kbd ]; then
+		~/bin/libexec/xinit-kbd
 	fi
 
 	if [ -x ~/bin/redshift ] && [ -e ~/.config/redshift.conf ]; then
