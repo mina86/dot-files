@@ -238,7 +238,6 @@ Windows are matched in most recently focused first order."
      ("W-k"                 . "m next")
      ("XF86AudioNext"       . "m next")
      ("XF86AudioStop"       . "m stop")
-     ("W-x"                 . ,(sh-maybe libexec "cycle-volume.sh"))
      ("XF86AudioMute"       . ,(sh-maybe libexec "toggle-mute.sh"))
      ("W-r"                 . ,(sh-maybe libexec "dmenu_run"))
      ("W-i"                 . ,(sh-maybe libexec "getotp.sh"))
@@ -246,6 +245,20 @@ Windows are matched in most recently focused first order."
      ("XF86Display"         . ,(sh-maybe home "/.xscreen-config"))
      ("XF86MonBrightnessUp"   . "xbacklight + 25")
      ("XF86MonBrightnessDown" . "xbacklight - 25"))))
+
+(let ((map (make-keymap)))
+  (bind-keys map
+             "'"   (lambda () (mn-run "amixer set Master  25%"))
+             "W-'" (lambda () (mn-run "amixer set Master  30%"))
+             "q"   (lambda () (mn-run "amixer set Master  35%"))
+             "W-q" (lambda () (mn-run "amixer set Master  40%"))
+             "j"   (lambda () (mn-run "amixer set Master  50%"))
+             "W-j" (lambda () (mn-run "amixer set Master  60%"))
+             "k"   (lambda () (mn-run "amixer set Master  65%"))
+             "W-k" (lambda () (mn-run "amixer set Master  70%"))
+             "x"   (lambda () (mn-run "amixer set Master  75%"))
+             "W-x" (lambda () (mn-run "amixer set Master  80%")))
+  (bind-keys global-keymap "W-x" map))
 
 ; Having Super-Tab bound seems to overwrite existing W-Tab binding.
 ; cabinet-switch is nice and all, but having it under W-Tab is not what I want.
