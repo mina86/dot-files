@@ -983,6 +983,9 @@ modified beforehand."
 (setq compilation-auto-jump-to-first-error t)
 (setq line-move-visual nil) ;move by logical lines not screen lines
 
+(when (fboundp 'describe-char-eldoc)
+  (setq-default eldoc-documentation-function #'describe-char-eldoc))
+
 ;; Saving etc
 (when (fboundp recentf-mode)
   (recentf-mode -1))           ;no recent files
