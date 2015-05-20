@@ -12,6 +12,9 @@
   (eval-and-compile
     (setq load-path (cons (concat user-emacs-directory "elisp") load-path))))
 
+;; Must come before configurations of installed packages.
+(package-initialize)
+
 ;; Packages repositories
 (eval-when-compile (require 'package))
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
