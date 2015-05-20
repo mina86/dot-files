@@ -1661,23 +1661,22 @@ returns that number."
 ;;{{{   Different cursor color depending on mode
 
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
-(defvar hcz-set-cursor-color-color "")
-(defvar hcz-set-cursor-color-buffer "")
+(defvar hcz-set-cursor-color--last nil)
 (defun hcz-set-cursor-color-according-to-mode ()
   "Change cursor color according to some minor modes."
   ;; set-cursor-color is somewhat costly, so we only call it when needed:
-  (let ((color (cond (buffer-read-only "blue")
+  (let ((name (buffer-name))
+        (color (cond (buffer-read-only "blue")
                      (overwrite-mode "red")
-                     (t "yellow"))))
-    (unless (and
-             (string= color hcz-set-cursor-color-color)
-             (string= (buffer-name) hcz-set-cursor-color-buffer))
-      (set-cursor-color (setq hcz-set-cursor-color-color color))
-      (setq hcz-set-cursor-color-buffer (buffer-name)))))
+                     ("yellow"))))
+    (unless (and hcz-set-cursor-color--last
+                 (string= (car hcz-set-cursor-color--last) color)
+                 (string= (cdr hcz-set-cursor-color--last) name))
+      (set-cursor-color color)
+      (setq hcz-set-cursor-color--last (cons color name)))))
 
 (add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
-
-(set-cursor-color (setq hcz-set-cursor-color-color "yellow"))
+(set-cursor-color "yellow")
 
 ;;}}}
 
