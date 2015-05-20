@@ -31,7 +31,7 @@
 ;;}}}
 ;;{{{ Utilities
 
-(defun current-local-map-create-maybe ()
+(defun set-key--current-local-map ()
   "Return current local map creating one if not set yet."
   (or (current-local-map)
       (let ((map (make-sparse-keymap)))
@@ -43,9 +43,8 @@
 
 In KEYMAP, define key sequence KEY as DEF.
 
-KEYMAP can be :global (to mean global keymap, the
-default), :local (to mean the local keymap) or an unquoted
-symbol (to mean a keymap in given variable).
+KEYMAP can be :global (to mean global keymap, the default), :local (to mean
+the local keymap) or an unquoted symbol (to mean a keymap in given variable).
 
 KEY is anything `define-key' accepts as a key except that if KEYMAP was not
 given, KEY cannot be an unquoted symbol, i.e.:
@@ -87,7 +86,7 @@ This macro is not designed to be a complete replacement for `define-key',
 some forms of DEFs that those functions accept, but instead it is meant as
 a helper to use in user configuration file to save on typing especially when
 lambdas are used."
-  (setq keymap (cond ((eq :local keymap)  '(current-local-map-create-maybe))
+  (setq keymap (cond ((eq :local keymap)  '(set-key--current-local-map))
                      ((eq :global keymap) '(current-global-map))
                      ((symbolp keymap) keymap)
                      (t
