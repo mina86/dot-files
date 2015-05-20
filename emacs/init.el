@@ -313,7 +313,6 @@ three times - back to where it was at the beginning."
   (seq-times-do nil (setq my-home-end--point (point))
     (if (bound-and-true-p folding-mode)
         (folding-end-of-line) (end-of-line))
-    (forward-paragraph)
     (goto-char (point-max))
     (goto-char my-home-end--point)))
 
