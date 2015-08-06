@@ -300,17 +300,17 @@ prioritising windows as follows:
 
 If no suitable windows is found and Opera is not running, start Opera.
 "
-  (let (no-opera wnds)
+  (let (found-opera wnds)
     (map-windows
      (lambda (wnd)
        (let (pri (cls (get-x-text-property wnd 'WM_CLASS)))
          (when (> (length cls) 1)
            (setq cls (format nil "%s/%s" (aref cls 1) (aref cls 0)))
-           (cond ((string-match "^Opera(Next)?/opera$"          cls)
-                  (setq pri 0 no-opera))
-                 ((string-match "^Firefox/Navigator$"           cls)
+           (cond ((string-match "^Opera(Next)?/opera$"        cls)
+                  (setq pri 0 found-opera t))
+                 ((string-equal "Firefox/Navigator"           cls)
                   (setq pri 1))
-                 ((string-match "^Google-chrome/Google-chrome$" cls)
+                 ((string-equal "Google-chrome/Google-chrome" cls)
                   (setq pri 2)))
            (when (and pri (not (memq (input-focus) (transient-group wnd))))
              (when (window-outside-viewport-p wnd)
@@ -320,10 +320,10 @@ If no suitable windows is found and Opera is not running, start Opera.
              (setq wnds (cons (cons pri wnd) wnds)))))
        t))
 
-    (cond (wnds
-           (let ((wnd (cdar (sort wnds (lambda (x y) (< (car x) (car y)))))))
-             (display-window (or (last (transient-children wnd t)) wnd))))
-          (no-opera (mn-run "opera")))))
+    (if wnds
+        (let ((wnd (cdar (sort wnds (lambda (x y) (< (car x) (car y)))))))
+          (mn-display-window (or (last (transient-children wnd t)) wnd)))
+      (unless found-opera (mn-run "opera")))))
 
 (bind-keys global-keymap "W-," mn-get-browser)
 
