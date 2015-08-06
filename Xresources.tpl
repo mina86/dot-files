@@ -119,3 +119,4 @@ MPD.saveLines: 0
 emacs.menuBar: off
 emacs.toolBar: off
 emacs.verticalScrollBars: off
+emacs.font: -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
