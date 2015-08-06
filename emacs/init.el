@@ -1228,6 +1228,17 @@ the open brace was real open brace or part of comment/string."
                  t))
            (c-set-style "google")))))
 
+;; https://github.com/nelhage/elisp/blob/master/dot-emacs
+(defun smells-like-c++ ()
+  (and (string-match "\\.h\\'" (buffer-name))
+       (save-excursion
+         (goto-char (point-min))
+         (save-match-data
+           (re-search-forward "\\<\\(class\\|template\\|using\\)\\>"
+                              (min (point-max) (+ (point-min) 4096)) t)))))
+
+(add-to-list 'magic-mode-alist '(smells-like-c++ . c++-mode))
+
 ;;}}}
 ;;{{{   HTML/XML & comapny Mode
 
