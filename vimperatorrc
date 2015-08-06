@@ -1,0 +1,28 @@
+" Programmer Dvorak rocks
+set hintchars=htnsdgfcrlmwvzb-/@
+
+" use ~/bin/e
+set editor=e
+
+" don’t focus input fields or textboexs on load
+set nofocuscontent
+
+noremap d :open
+noremap D :tabopen
+noremap m :back<CR>
+noremap w :forward<CR>
+noremap M :jump<CR>
+noremap <C-g> :stop<CR>
+noremap s :saveas
+noremap H gg
+noremap T G
+noremap h 2j
+noremap t 2k
+noremap * zz
+noremap <C-x><C-b> :buffers<CR>
+noremap g :tn<CR>
+noremap c :tp<CR>
+noremap G <C-^>
+noremap b :bd<CR>
+noremap q :bd<CR>
+noremap z :undo<CR>

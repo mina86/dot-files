@@ -266,6 +266,7 @@ opera/*.css        ~/.opera/usercss/@
 opera/keyboard.ini ~/.opera/keyboard/@
 opera/menu.ini     ~/.opera/menu/@
 opera/toolbar.ini  ~/.opera/toolbar/@
+vimperatorrc       ~/.vimperator/rc
 xkb/keymapa/*      ~/.config/
 xkb/symbols/*      ~/.config/
 xkb/xinit-xkb      ~/bin/libexec/@
