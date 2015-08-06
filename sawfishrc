@@ -264,8 +264,7 @@ happened."
                     (let ((fname (concat dir fname)))
                       (if (file-exists-p fname)
                           (concat "/bin/sh " fname (or args "")))))))
-   `(("W-$" "/Term$"         ,xterm-program t)
-     ("W-;" "^Emacs/emacs$"  "e")
+   `(("W-;" "^Emacs/emacs$"  "e")
      ("W-." "/IRC$"          ,mn-irssi-command)
      ("W-a" "GIMP"           "gimp")
      ("W-o" "Geeqie"         "geeqie")
@@ -326,6 +325,30 @@ If no suitable windows is found and Opera is not running, start Opera.
       (unless found-opera (mn-run "opera")))))
 
 (bind-keys global-keymap "W-," mn-get-browser)
+
+
+(define (mn-get-term)
+  "Selects terminal window in current view-port or starts a terminal.
+
+Also wraps mouse to the centre of the window if not already above it."
+  (let ((terms (delete-if-not
+                (lambda (wnd)
+                  (let ((cls (get-x-text-property wnd 'WM_CLASS)))
+                    (and cls (string-equal "Term" (aref cls 0)))))
+                (window-order current-workspace t))))
+    (if (null terms)
+        ;; No terminal windows, start a new one.
+
+        (mn-run xterm-program)
+      ;; If there are at least two terminal windows and the first one has
+      ;; input focus, display the second one.  Otherwise, display the first
+      ;; one.
+      (let ((wnd (if (and (cdr terms) (eq (car terms) (input-focus)))
+                     (cadr terms) (car terms))))
+        (mn-display-window wnd t)))))
+
+(bind-keys global-keymap "W-$" mn-get-term)
+
 
 (require 'sawfish.wm.ext.run-application)
 (setq run-application:y-position 'top)
