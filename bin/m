@@ -46,16 +46,6 @@ mpd_ctl() {
 		printf %s:\\n "$DIR"
 		ls -- "$DIR"
 		;;
-	tag)
-		mpd_file
-		if ! [ -f "$FILE" ]; then
-			printf '%s: file does not exists\n' "$MP3_DIR/$FILE"
-			exit 2
-		fi
-		chmod 755 -- "$FILE"
-		echo "$FILE"
-		_mpc next
-		;;
 	show)
 		_mpc
 		;;
