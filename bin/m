@@ -49,6 +49,9 @@ mpd_ctl() {
 	show)
 		_mpc
 		;;
+	pause-maybe)
+		mpc pause-if-playing
+		;;
 	*)
 		echo "unknown or unsupported action: $1" >&2
 		return 1
@@ -92,6 +95,13 @@ spotify_ctl() {
 	is-playing)
 		spotify_query | grep -wq Playing
 		;;
+	pause-maybe)
+		if spotify_query | grep -wq Playing; then
+			spotify_cmd Pause
+		else
+			return 1
+		fi
+		;;
 	*)
 		echo "unknown or unsupported action: $1" >&2
 		return 1
@@ -126,16 +136,4 @@ if [ -e ~/bin/libexec/"music-$player-$1" ]; then
 	exit $?
 fi
 
-case $1 in
-pause-maybe)
-	if ${player}_ctl is-playing; then
-		${player}_ctl pause
-		exit 0
-	else
-		exit 1
-	fi
-	;;
-*)
-	${player}_ctl "$@"
-	exit $?
-esac
+${player}_ctl "$@"

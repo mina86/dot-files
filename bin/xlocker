@@ -4,7 +4,7 @@ playing_file=$(umask 077; mktemp)
 trap 'rm -f -- "$playing_file"' 0
 
 (
-	if m if spotify pause-maybe; then
+	if m pause-maybe; then
 		ln -sf ~/bin/m "$playing_file"
 	fi
 
