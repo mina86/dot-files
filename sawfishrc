@@ -65,6 +65,49 @@ Windows are matched in most recently focused first order."
     (mn-run command)
     ()))
 
+(define (mn-warp-cursor-to-window-maybe wnd)
+  "Warps cursor to centre of the window unless it’s already under cursor."
+  (unless (eq wnd (query-pointer-window))
+    (let* ((pos (window-position wnd))
+           (lft (car pos))
+           (top (cdr pos))
+           (dim (window-dimensions wnd))
+           (rht (min (+ lft (car dim))))
+           (btm (min (+ top (cdr dim)))))
+      (setq lft (max lft 0) top (max top 0))
+      (warp-cursor (+ lft (quotient (- rht lft) 2))
+                   (+ top (quotient (- btm top) 2))))
+    (allow-events 'sync-both)))
+
+(define (mn-display-window wnd #!optional warp)
+  "Displays and activates WND window.
+
+Does what `display-window' does but fixes window not being
+focused when viewport is changed and mouse is over another
+window.
+
+It also provides optional WARP argument.  If true, cursor will be
+warped to the window even if no workspace or viewport change
+happened."
+  (when wnd
+    (when (window-iconified-p wnd)
+      (uniconify-window wnd))
+    (unless (window-in-workspace-p wnd current-workspace)
+      (setq warp t)
+      (print (cons 'changing-workspace warp))
+      (select-workspace
+       (nearest-workspace-with-window wnd current-workspace) t))
+    (when (window-outside-viewport-p wnd)
+      (setq warp t)
+      (print (cons 'changing-vp warp))
+      (move-viewport-to-window wnd))
+    (when (window-get wnd 'shaded)
+      (unshade-window w))
+    (when warp
+      (print (cons 'warping-maybe wnd))
+      (mn-warp-cursor-to-window-maybe wnd))
+    (activate-window wnd)))
+
 ;;}}}
 ;;{{{ Misc
 
@@ -211,7 +254,7 @@ Windows are matched in most recently focused first order."
       (let ((spec (cdr spec)))
         (if (listp spec)
             (lambda ()
-              (display-window (apply mn-run-unless spec)))
+              (mn-display-window (apply mn-run-unless spec)))
           (lambda ()
             (mn-run spec)))))))
 
