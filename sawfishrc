@@ -223,7 +223,6 @@ Windows are matched in most recently focused first order."
                           (concat "/bin/sh " fname (or args "")))))))
    `(("W-$" "/Term$"         ,xterm-program t)
      ("W-;" "^Emacs/emacs$"  "e")
-     ("W-," "^Opera(Next)?/opera$"  "opera")
      ("W-." "/IRC$"          ,mn-irssi-command)
      ("W-a" "GIMP"           "gimp")
      ("W-o" "Geeqie"         "geeqie")
@@ -245,6 +244,45 @@ Windows are matched in most recently focused first order."
      ("XF86Display"         . ,(sh-maybe home "/.xscreen-config"))
      ("XF86MonBrightnessUp"   . "xbacklight + 25")
      ("XF86MonBrightnessDown" . "xbacklight - 25"))))
+
+(define (mn-get-browser)
+  "Selects Opera, Firefox or Chrome window.
+
+Switch to a web browser which currently doesn’t hold input focus
+prioritising windows as follows:
+
+* non-iconified windows are preferred over iconified windows,
+* windows on visible on current view-port are preferred over other windows and
+* Opera is preferred over Firefox which is preferred over Chrome.
+
+If no suitable windows is found and Opera is not running, start Opera.
+"
+  (let (no-opera wnds)
+    (map-windows
+     (lambda (wnd)
+       (let (pri (cls (get-x-text-property wnd 'WM_CLASS)))
+         (when (> (length cls) 1)
+           (setq cls (format nil "%s/%s" (aref cls 1) (aref cls 0)))
+           (cond ((string-match "^Opera(Next)?/opera$"          cls)
+                  (setq pri 0 no-opera))
+                 ((string-match "^Firefox/Navigator$"           cls)
+                  (setq pri 1))
+                 ((string-match "^Google-chrome/Google-chrome$" cls)
+                  (setq pri 2)))
+           (when (and pri (not (memq (input-focus) (transient-group wnd))))
+             (when (window-outside-viewport-p wnd)
+               (setq pri (+ pri 10)))
+             (when (window-iconified-p wnd)
+               (setq pri (+ pri 100)))
+             (setq wnds (cons (cons pri wnd) wnds)))))
+       t))
+
+    (cond (wnds
+           (let ((wnd (cdar (sort wnds (lambda (x y) (< (car x) (car y)))))))
+             (display-window (or (last (transient-children wnd t)) wnd))))
+          (no-opera (mn-run "opera")))))
+
+(bind-keys global-keymap "W-," mn-get-browser)
 
 (require 'sawfish.wm.ext.run-application)
 (setq run-application:y-position 'top)
