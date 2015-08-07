@@ -1,28 +1,79 @@
-" Programmer Dvorak rocks
+" Programmer Dvorak rocks "
 set hintchars=htnsdgfcrlmwvzb-/@
+hi Hint letter-spacing: 0.1em; background: #B9FF00; border: 0px solid #000; color: #000; font-size: 1em; font-weight: bold; line-height: 1em; margin: 0px; padding: 1px; text-transform: lowercase;
 
-" use ~/bin/e
-set editor=e
+" Bit ironic, using Emacs from Vimperator ;) "
+set editor=emacsclient
 
-" don’t focus input fields or textboexs on load
-set nofocuscontent
+" don’t focus input fields or textboexs on load "
+set focuscontent
 
-noremap d :open
-noremap D :tabopen
+" Moar history "
+set history=10000
+
+" show destination of a link under cursor; this doesn’t work for some reason "
+set showstatuslinks=2
+
+" Clear all mappings in case this file is sourced multiple times "
+mapc
+
+" C-g is for aborting "
+cmap <C-g> <ESC>
+imap <C-g> <ESC>
+noremap <C-g> <ESC>
+
+" C-h *is* backspace "
+imap <C-h> <BS>
+cmap <C-h> <BS>
+
+" M-x is how you get command prompt, everyone knows that. ;) "
+noremap <A-x> :
+inoremap <A-x> <ESC>:
+
+" Opening tabs and URLs.  I’ve tried using the following long map to have "
+" a tabopen prompt with the current URL selected (so I can just start typing "
+" to overwrite it) but for some reason the selection disappears immediately. "
+" noremap d T<Home><Right><Right><Right><Right><Right><Right><Right><Right><S-End> "
+noremap d :open<Space>
+noremap D :tabopen<Space>
+noremap <C-t> :tabopen<Space>
+
+" History "
 noremap m :back<CR>
 noremap w :forward<CR>
 noremap M :jump<CR>
-noremap <C-g> :stop<CR>
-noremap s :saveas
-noremap H gg
-noremap T G
-noremap h 2j
-noremap t 2k
-noremap * zz
-noremap <C-x><C-b> :buffers<CR>
+
+noremap s :saveas<Space>
+
+" Scrolling "
+noremap H G
+noremap T gg
+noremap h 3j
+noremap t 3k
+noremap <C-v> <C-f>
+noremap <C-S-v> <C-b>
+
+" Zoom "
+noremap + zI
+noremap "-" zO
+noremap * zZ
+
+" Tabs.  Unfortunately binding g and z doesn’t work. "
 noremap g :tn<CR>
 noremap c :tp<CR>
-noremap G <C-^>
+noremap <C-x><C-b> :buffers<CR>
 noremap b :bd<CR>
 noremap q :bd<CR>
+noremap G <C-^>
 noremap z :undo<CR>
+
+" Searching. "
+noremap <C-f> /
+
+" C-c clears input "
+cnoremap <C-c> <Home><S-End><BS>
+inoremap <C-c> <Home><S-End><BS>
+
+" Command prompt history "
+cnoremap <C-p> <Up>
+cnoremap <C-n> <Down>
