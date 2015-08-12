@@ -74,10 +74,15 @@ Windows are matched in most recently focused first order."
            (dim (window-dimensions wnd))
            (rht (min (+ lft (car dim))))
            (btm (min (+ top (cdr dim)))))
-      (setq lft (max lft 0) top (max top 0))
-      (warp-cursor (+ lft (quotient (- rht lft) 2))
-                   (+ top (quotient (- btm top) 2))))
-    (allow-events 'sync-both)))
+      (when (let ((pos (query-pointer)))
+              ;; If WND is (or used to be) covered, `query-pointer-window'
+              ;; returns window above it.  Check cursor position.
+              (or (< (car pos) lft) (> (car pos) rht)
+                  (< (cdr pos) top) (> (cdr pos) btm)))
+        (setq lft (max lft 0) top (max top 0))
+        (warp-cursor (+ lft (quotient (- rht lft) 2))
+                     (+ top (quotient (- btm top) 2)))
+        (allow-events 'sync-both)))))
 
 (define (mn-display-window wnd #!optional warp)
   "Displays and activates WND window.
