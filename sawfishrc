@@ -94,17 +94,14 @@ happened."
       (uniconify-window wnd))
     (unless (window-in-workspace-p wnd current-workspace)
       (setq warp t)
-      (print (cons 'changing-workspace warp))
       (select-workspace
        (nearest-workspace-with-window wnd current-workspace) t))
     (when (window-outside-viewport-p wnd)
       (setq warp t)
-      (print (cons 'changing-vp warp))
       (move-viewport-to-window wnd))
     (when (window-get wnd 'shaded)
       (unshade-window w))
     (when warp
-      (print (cons 'warping-maybe wnd))
       (mn-warp-cursor-to-window-maybe wnd))
     (activate-window wnd)))
 
