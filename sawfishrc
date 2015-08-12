@@ -80,6 +80,8 @@ Windows are matched in most recently focused first order."
               (or (< (car pos) lft) (> (car pos) rht)
                   (< (cdr pos) top) (> (cdr pos) btm)))
         (setq lft (max lft 0) top (max top 0))
+        (let ((dim (screen-dimensions)))
+          (setq rht (min rht (car dim)) btm (min btm (cdr dim))))
         (warp-cursor (+ lft (quotient (- rht lft) 2))
                      (+ top (quotient (- btm top) 2)))
         (allow-events 'sync-both)))))
