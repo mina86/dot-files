@@ -111,9 +111,9 @@ if which git >/dev/null 2>&1; then
 		state=
 		dir=$__GIT_PROMPT_GITDIR
 		if   [ -d "$dir/rebase-apply" ] ; then
-			if   [ -f "$dir/rebase-apply/rebasing" ]; then state="rb"
-			elif [ -f "$dir/rebase-apply/applying" ]; then state="am"
-			else                                           state="am/rb"
+			if   [ -f "$dir/rebase-apply/rebasing" ]; then state=rb
+			elif [ -f "$dir/rebase-apply/applying" ]; then state=am
+			else                                        state=am/rb
 			fi
 			branch="$(git symbolic-ref HEAD 2>/dev/null)"
 		elif [ -f "$dir/rebase-merge/interactive" ]; then
