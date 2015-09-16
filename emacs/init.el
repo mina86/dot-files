@@ -1575,6 +1575,7 @@ returns that number."
           org-catch-invisible-edits 'smart
           org-agenda-start-with-follow-mode t
           org-agenda-window-setup 'current-window
+          org-agenda-restore-windows-after-quit t
           org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
           org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
 
