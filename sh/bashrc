@@ -202,12 +202,12 @@ if type complete >/dev/null 2>/dev/null; then
 fi
 
 shopt -qu cdable_vars checkhash dotglob execfail extglob interactive_comments
-shopt -qu interactive_comments lithist no_empty_cmd_completion nocaseglob
-shopt -qu shift_verbose sourcepath xpg_echo nullglob progcomp
+shopt -qu lithist nocaseglob shift_verbose sourcepath xpg_echo nullglob progcomp
+shopt -qu hostcomplete
 
 shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit
-shopt -qs histverify hostcomplete promptvars huponexit globstar failglob
-shopt -qs autocd
+shopt -qs histverify promptvars huponexit globstar failglob autocd
+shopt -qs no_empty_cmd_completion
 
 # /tmp is in RAM, don't save history between reboots
 export HISTFILE="/tmp/.$(id -un)-history"
