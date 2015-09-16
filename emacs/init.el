@@ -796,6 +796,7 @@ modified beforehand."
 
 (autoload 'ace-jump-mode "ace-jump-mode" "Emacs quick move minor mode" t)
 (set-key "\M-s" ace-jump-mode)
+(set-key [insert] ace-jump-mode)
 (setq ace-jump-mode-scope 'window
       ace-jump-mode-case-fold nil
       ace-jump-mode-move-keys
