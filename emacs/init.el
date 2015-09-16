@@ -948,7 +948,10 @@ modified beforehand."
     (global-num3-mode t))
   ;; Dim buffers which are not (current-buffer)
   (when (fboundp 'auto-dim-other-buffers-mode)
-    (auto-dim-other-buffers-mode t)))
+    (auto-dim-other-buffers-mode t))
+
+  (when (fboundp 'shackle-mode)
+    (shackle-mode)))
 
 ;; Other
 (require 'icomplete)
