@@ -26,6 +26,7 @@ done
 
 # Start emacs if not running
 if which emacs >/dev/null 2>/dev/null &&
-   ! [ -e /tmp/emacs$UID/server ]; then
+   ! [ -e /tmp/emacs$UID/server ] &&
+   [ xmpn != x"$(hostname -a)" ]; then
 	emacs --daemon
 fi
