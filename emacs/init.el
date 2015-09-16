@@ -950,6 +950,25 @@ modified beforehand."
   (when (fboundp 'auto-dim-other-buffers-mode)
     (auto-dim-other-buffers-mode t))
 
+  ;; Enable jinja2-mode for HTML files that look like Jinja2 templates
+  (when (fboundp 'jinja2-mode)
+    (defun smells-like-jinja2 ()
+      (and (string-match "\\.html\\'" (buffer-name))
+           (save-excursion
+             (goto-char (point-min))
+             (save-match-data
+               (re-search-forward
+                (eval-when-compile
+                  (concat
+                   "{%-?\s-*"
+                   (regexp-opt '("if" "for" "block" "filter" "with" "raw"
+                                 "macro" "autoescape" "trans" "call" "else"
+                                 "elif" "extends" "include")
+                               'words)
+                   ".*?%}"))
+                (min (point-max) (+ 4096 (point-min))) t)))))
+    (add-to-list 'magic-mode-alist '(smells-like-jinja2 . jinja2-mode)))
+
   (when (fboundp 'shackle-mode)
     (shackle-mode)))
 
