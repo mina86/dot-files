@@ -1031,11 +1031,12 @@ rules so it is likely not to work."
   (interactive "nTab-width: ")
   (let ((negative (< tab 0)))
     (setq tab-width (abs tab))
+    (mapc
      (lambda (var)
        (when (boundp var)
          (set (make-local-variable var) tab-width)))
      '(c-basic-offset perl-indent-level cperl-indent-level  js-indent-level
-       sh-basic-offset sh-indentation)
+       sh-basic-offset sh-indentation python-indent-offset))
      (cond
       (negative (setq indent-tabs-mode nil))
       (prefix-arg (setq indent-tabs-mode t)))))
