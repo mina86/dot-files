@@ -1,5 +1,7 @@
 " Programmer Dvorak rocks "
-set hintchars=htnsdgfcrlmwvzb-/@
+" For some reason, hints don’t work that great with ‘z’ as possible hint char "
+"set hintchars=htnsdgfcrlmwvzb-/@"
+set hintchars=htnsdgfcrlmwvb-/@
 hi Hint letter-spacing: 0.1em; background: #B9FF00; border: 0px solid #000; color: #000; font-size: 1em; font-weight: bold; line-height: 1em; margin: 0px; padding: 1px; text-transform: lowercase;
 
 " Bit ironic, using Emacs from Vimperator ;) "
@@ -30,13 +32,14 @@ cmap <C-h> <BS>
 noremap <A-x> :
 inoremap <A-x> <ESC>:
 
-" Opening tabs and URLs.  I’ve tried using the following long map to have "
-" a tabopen prompt with the current URL selected (so I can just start typing "
-" to overwrite it) but for some reason the selection disappears immediately. "
-" noremap d T<Home><Right><Right><Right><Right><Right><Right><Right><Right><S-End> "
-noremap d :open<Space>
-noremap D :tabopen<Space>
-noremap <C-t> :tabopen<Space>
+" Opening tabs and URLs. "
+" Those two don’t work reliably unfortunately.  "
+" Seehttps://github.com/vimperator/vimperator-labs/issues/259 "
+"noremap d O<Home><Right><Right><Right><Right><Right><S-End>"
+"noremap D T<Home><Right><Right><Right><Right><Right><Right><Right><Right><S-End>"
+noremap d o
+noremap D t
+map <C-t> D
 
 " History "
 noremap m :back<CR>
