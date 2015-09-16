@@ -34,4 +34,12 @@ Control-l: redraw-current-line
 
 $if Bash
     Space: magic-space
+
+    # I’m using a prompt on the right side (showing time).  Issue is that it
+    # does not disappear when accepting a line.  This is not a major problem but
+    # it makes copying and pasting a bit trickery.  Add redrawing a line prior
+    # to accepting it so the right prompt is cleared.
+    "\e\C-j": accept-line
+    "\C-j": "\C-l\e\C-j"
+    "\C-m": "\C-l\e\C-j"
 $endif
