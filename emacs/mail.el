@@ -14,6 +14,31 @@
  message-from-style 'angels
  message-user-fqdn "mina86.com")
 
+(defun mn-email-to-dresscode-pl ()
+  "Returns whether email message is being sent to dresscode-pl@google.com."
+  (save-restriction
+    (message-narrow-to-headers)
+    (cl-some (lambda (hdr-name)
+               (let ((val (message-fetch-field hdr-name)))
+                 (and val (string-match "dresscode-pl@google.com" val))))
+             '("to" "cc" "bcc"))))
+
+(defun mn-email-to-non-google ()
+  "Returns whether email message is being sent to some non-@google.com address."
+  (save-restriction
+    (message-narrow-to-headers)
+    (catch 'break
+      (mapc (lambda (hdr-name)
+              (let ((val (message-fetch-field hdr-name)))
+                (when val
+                  (set-match-data (list 0 0))
+                  (while (string-match "@[-A-Za-z0-9.]+" val (match-end 0))
+                    (unless (string= "@google.com"
+                                     (downcase (match-string 0 val)))
+                      (throw 'break t))))))
+            '("to" "cc" "bcc"))
+      nil)))
+
 (when (eval-when-compile (load "gnus-alias" t))
   (let ((has-corp (string-match "^mpn-glaptop" (system-name)))
         (headers '(("X-PGP" . "50751FF4")
@@ -23,38 +48,26 @@
         (signature (expand-file-name "~/.mail/signature.txt")))
 
     (setq gnus-alias-identity-alist
-        (cons `("priv" nil
-                ,(concat user-full-name " <" user-mail-address ">")
-                "http://mina86.com/"
-                ,headers
-                "\n"
-                ,signature)
-              (and has-corp `(("corp" nil
-                               ,(concat user-full-name " <mpn@google.com>")
-                               "Google Inc"
-                               ,headers
-                               "\n"
-                               ,signature))))
+        (list (list "priv" nil
+                    (concat user-full-name " <" user-mail-address ">")
+                    "http://mina86.com/" headers "\n" signature)
+              (list "dc" nil
+                    (concat user-full-name " <" user-mail-address ">")
+                    "Google Inc"
+                    (cons (cons "Bcc" "coding-challenge-2015@googlegroups.com")
+                          headers) "\n" signature)))
+    (when has-corp
+      (push (list "corp" nil
+                  (concat user-full-name " <mpn@google.com>")
+                  "Google Inc" headers "\n" signature)
+            gnus-alias-identity-alist))
 
-        gnus-alias-identity-rules
-        (when has-corp
-          `(("non-google-address"
-             ,(lambda ()
-                (save-restriction
-                  (message-narrow-to-headers)
-                  (catch 'break
-                    (let ((val (mapconcat 'message-fetch-field
-                                          '("to" "cc" "bcc") " ")))
-                      (set-match-data (list 0 0))
-                      (while (string-match "@[-A-Za-z0-9.]+" val (match-end 0))
-                        (unless (string= "@google.com"
-                                         (downcase (match-string 0 val)))
-                          (throw 'break t)))))))
-             "priv")))
+    (setq gnus-alias-identity-rules
+          (cons '("dresscode-pl" mn-email-to-dresscode-pl "dc")
+                (when has-corp
+                  '(("non-google-address" mn-email-to-non-google "priv"))))))
 
-        gnus-alias-default-identity
-        (if has-corp "corp" "priv")))
-
+  (setq gnus-alias-default-identity (caar gnus-alias-identity-alist))
   (add-hook 'message-setup-hook 'gnus-alias-determine-identity))
 
 ;;}}}
