@@ -251,6 +251,7 @@ while read FILE DEST; do
 done 3<&1 <<EOF
 Xresources.tpl     ~/.
 emacs/*            ~/.emacs.d/@
+mail/*             ~/.mail/@
 git/*              ~/.config/git/@
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
