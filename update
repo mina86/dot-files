@@ -253,6 +253,7 @@ Xresources.tpl     ~/.
 emacs/*            ~/.emacs.d/@
 mail/*             ~/.mail/@
 git/*              ~/.config/git/@
+gtkrc-2.0          ~/.
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
 sawfishrc          ~/.sawfish/rc
