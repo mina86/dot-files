@@ -357,64 +357,6 @@ perform stripping and behaves as plain `save-buffer'."
 (set-key [(delete)]      delete-forward-char)
 (set-key "\C-d"          [(delete)])
 
-
-(defvar mn-window-skip-modes '(compilation-mode)
-  "List of major modes `mn-window-skip-p' treats as uninteresting.")
-
-(defvar mn-window-skip-names '("*Compile-Log*" "*Backtrace*" "*compilation*")
-  "List of buffer names `mn-window-skip-p' treats as uninteresting.
-This comes as an addition to `mn-window-skip-regexp'.")
-
-(defvar mn-window-skip-regexp nil
-  "A regexp matching buffer names `mn-window-skip-p' treats as uninteresting.
-This comes as an addition to `mn-window-skip-names'.")
-
-(defun mn-window-skip-p (window)
-  "Check whether WINDOW is uninteresting to `mn-other-window'."
-  (catch 'done
-    ; catch is ugly, I know, but it saves on some indention
-    (let ((b (window-buffer window)) n)
-      (unless b
-        (throw 'done nil))
-      (when (memq (with-current-buffer b major-mode) mn-window-skip-modes)
-        (throw 'done t))
-      (unless (or mn-window-skip-names mn-window-skip-regexp)
-        (throw 'done nil))
-      (unless (setq n (buffer-name b))
-        (throw 'done nil))
-      (when (member n mn-window-skip-names)
-        (throw 'done t))
-      (when (and mn-window-skip-regexp (string-match mn-window-skip-regexp n))
-        (throw 'done t))
-      nil)))
-
-(defun mn-other-window (count &optional all-frames)
-  "Select another interesting window in cyclic ordering of windows.
-COUNT and ALL-FRAMES has the same meaning as in `other-window' function.
-
-Window is not interesting id buffer it contains has one of the
-major modes from `mn-window-skip-modes' list, its name is on the
-`mn-window-skip-names' list or matches `mn-window-skip-regexp'."
-  (interactive "p")
-  (let ((func (cond ((> count 0) 'next-window)
-                    ((< count 0) (setq count (- count)) 'previous-window))))
-    (when func
-      (catch 'loop
-        (let* ((wnd (selected-window))
-               (w   wnd))
-          (while (> count 0)
-            (setq w (funcall func w nil all-frames))
-            (when (eq wnd w)
-              (throw (quote loop) w))
-            (unless (mn-window-skip-p w)
-              (setq count (1- count))))
-          (select-window w))))))
-
-(substitute-key-definition 'other-window 'mn-other-window (current-global-map))
-(set-key "\C-xO"         other-window)
-(set-key "\C-xp"         "\C-u-1\C-xo")          ; C-x p  prev win
-(set-key "\C-xP"         "\C-u-1\C-xO")
-
 (set-key "\C-x1"         delete-other-windows-vertically)
 
 (when (fboundp 'windmove-right)
