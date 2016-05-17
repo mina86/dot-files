@@ -37,10 +37,10 @@ __PS1+='{{}}'
 __PS1+='\[\e[1;32;44m\]'
 
 if declare -f tpwd >/dev/null 2>&1; then
-	__PS1+='$(tpwd -n 30 {)'
+	__PS1+='$(e=$?; tpwd -n 30 {; exit $e)'
 elif which tpwd >/dev/null 2>&1; then
 	eval "$(tpwd --bash)"
-	__PS1+='$(tpwd -n 30 {)'
+	__PS1+='$(e=$?; tpwd -n 30 {; exit $e)'
 else
 	__PS1+='\w'
 fi
