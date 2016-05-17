@@ -15,18 +15,9 @@
 ;; Must come before configurations of installed packages.
 (package-initialize)
 
-;; Packages repositories
 (eval-when-compile (require 'package))
-(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("melpa" . "http://melpa.milkbox.net/packages/")))
-
-;; *Anyone* can edit Wiki pages so avoid Wiki packages
-(unless (fboundp 'package--ac-desc-summary)
-  (defalias 'package--ac-desc-summary 'package-desc-doc))
-(defadvice package--add-to-archive-contents
-  (around package-filter-wiki-packages (package archive) activate compile)
-  (unless (string-suffix-p "[wiki]" (package--ac-desc-summary (cdr package)))
-    ad-do-it))
+(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                         ("melpa" . "https://melpa.milkbox.net/packages/")))
 
 ;;}}}
 ;;{{{ Utilities
