@@ -106,9 +106,14 @@ IRC.saveLines: 0
 MPD.title:     Music Player Daemon
 MPD.saveLines: 0
 
-
 ! Emacs
 emacs.menuBar: off
 emacs.toolBar: off
 emacs.verticalScrollBars: off
 emacs.font: -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
+emacs.leftFringe: 6
+emacs.rightFringe: 6
+emacs.cursorBlink: 0
+emacs.fullscreen: fullheight
+emacs.internalBorder: 0
+emacs.borderWidth: 0
