@@ -1,5 +1,5 @@
 ## .bashrc                                              -*- shell-script -*-
-## Copyright 2004-2014 by Michal Nazarewicz (mina86@mina86.com)
+## Copyright 2004-2013 by Michal Nazarewicz (mina86@mina86.com)
 
 # Not interactive?
 [ X"${-#*i}" != X"$-" ] || return
@@ -192,7 +192,6 @@ __command_rprompt() {
 PROMPT_COMMANDS+=' ; __command_rprompt'
 
 
-
 ##
 ## Shell optons and parameters
 ##
@@ -202,8 +201,8 @@ if type complete >/dev/null 2>/dev/null; then
 fi
 
 shopt -qu cdable_vars checkhash dotglob execfail extglob interactive_comments
-shopt -qu lithist nocaseglob shift_verbose sourcepath xpg_echo nullglob progcomp
-shopt -qu hostcomplete
+shopt -qu interactive_comments lithist nocaseglob shift_verbose sourcepath
+shopt -qu xpg_echo nullglob progcomp hostcomplete
 
 shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit
 shopt -qs histverify promptvars huponexit globstar failglob autocd
