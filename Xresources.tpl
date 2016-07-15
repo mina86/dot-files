@@ -56,19 +56,11 @@ XTerm*color15:         #FFFFFF
 ! All kinds of urxvt
 URxvt.scrollBar:       false
 URxvt.saveLines:       65535
-URxvt.metaSendsEscape: true
 URxvt.hold:            false
 URxvt.cursorBlink:     false
-URxvt.sameName:        true
-URxvt.waitForMap:      false
-URxvt.deleteIsDEL:     false
-URxvt.multiScroll:     true
 URxvt.visualBell:      false
 URxvt.internalBorder:  0
 URxvt.externalBorder:  0
-
-URxvt.locale:          true
-URxvt.utf8:            3
 
 URxvt.font:            -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
 URxvt.italicFont:      -*-courier-medium-u-normal-*-10-*-*-*-*-*-iso10646-1
