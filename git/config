@@ -87,3 +87,6 @@
 [diff "image"]
 	binary = true
 	textconv = identify
+[pack]
+	window = 50
+	depth = 250
