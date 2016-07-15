@@ -95,7 +95,6 @@ Term.perl-ext-common:  matcher,tabbedex,searchable-scrollback<M-s>
 URxvt.backgroundPixmap: {{HOME}}/.urxvt/80-char.png;0x0+0+0:tile
 URxvt.tabbed.new-button: false
 URxvt.tabbed.autohide: ignore-named
-URxvt.tabbed.tabbar-timeouts: 0:▁:3:▂:6:▃:9:▄:12:▅:15:▆:18:▇:21:█
 URxvt.tabbed.bell-timeout: 0
 
 ! Irssi in urxvt
