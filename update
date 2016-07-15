@@ -271,5 +271,5 @@ opera/toolbar.ini  ~/.opera/toolbar/@
 vimperatorrc       ~/.vimperator/rc
 xkb/keymapa/*      ~/.config/
 xkb/symbols/*      ~/.config/
-xkb/xinit-xkb      ~/bin/libexec/@
+xkb/xinit-kbd      ~/bin/libexec/@
 EOF
