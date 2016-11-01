@@ -63,9 +63,9 @@ URxvt.internalBorder:  0
 URxvt.externalBorder:  0
 
 URxvt.font:            -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
-URxvt.italicFont:      -*-courier-medium-u-normal-*-10-*-*-*-*-*-iso10646-1
-URxvt.boldfont:        -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
-URxvt.bolditalicFont:  -*-courier-medium-u-normal-*-10-*-*-*-*-*-iso10646-1
+URxvt.italicFont:      -*-courier-medium-o-normal-*-10-*-*-*-*-*-iso10646-1
+URxvt.boldfont:        -*-courier-bold-r-normal-*-10-*-*-*-*-*-iso10646-1
+URxvt.bolditalicFont:  -*-courier-bold-o-normal-*-10-*-*-*-*-*-iso10646-1
 
 URxvt.intensityStyles: true
 
