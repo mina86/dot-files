@@ -263,12 +263,6 @@ bin/*              ~/
 bin/libexec/*      ~/
 sh/*               ~/.@
 dir-colors         ~/.dir_colors
-userjs/*.js        ~/.opera/
-userjs/*.css       ~/.opera/usercss/@
-opera/*.css        ~/.opera/usercss/@
-opera/keyboard.ini ~/.opera/keyboard/@
-opera/menu.ini     ~/.opera/menu/@
-opera/toolbar.ini  ~/.opera/toolbar/@
 vimperatorrc       ~/.vimperator/rc
 xkb/keymapa/*      ~/.config/
 xkb/symbols/*      ~/.config/
