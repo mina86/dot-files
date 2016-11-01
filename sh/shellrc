@@ -168,6 +168,10 @@ alias @='for i in'
 	fi
 }
 
+alias py=python
+alias pl=perl
+
+
 # No need to set it once again
 if [ -n "$MINA86RC" ]; then
 	return
