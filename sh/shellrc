@@ -235,14 +235,13 @@ LS_OPTIONS="-FT0 --color=auto"
 export LS_OPTIONS
 
 # Various
-GZIP=-9n
 FIGNORE=".o:~:.bak"
 CC=gcc
 CXX=g++
 LC_COLLATE=C
 LANG=en_GB.UTF-8
 LC_MESSAGES=en_GB.UTF-8
-export GZIP FIGNORE CC CXX LANG LC_COLLATE LC_MESSAGES
+export FIGNORE CC CXX LANG LC_COLLATE LC_MESSAGES
 unset MAILCHECK MAIL
 case "X$HOST" in Xerwin|Xtuptus)
 	if [ x"`uname -m`" = xx86_64 ]; then
