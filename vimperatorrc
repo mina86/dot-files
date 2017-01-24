@@ -1,3 +1,7 @@
+" Firefox preferences "
+" Do not focus links with TAB "
+set! accessibility.tabfocus=3
+
 " Programmer Dvorak rocks "
 " For some reason, hints don’t work that great with ‘z’ as possible hint char "
 "set hintchars=htnsdgfcrlmwvzb-/@"
