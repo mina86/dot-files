@@ -545,6 +545,8 @@ three times - to the right, four times - centers."
 (when (fboundp 'fill-single-char-nobreak-p)
   (add-hook 'fill-nobreak-predicate 'fill-single-char-nobreak-p))
 
+(add-hook 'prog-mode-hook (lambda () (setq fill-column 80)))
+
 ;;}}}
 ;;{{{   Fkeys
 
