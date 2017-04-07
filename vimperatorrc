@@ -8,6 +8,9 @@ set! accessibility.tabfocus=3
 set hintchars=htnsdgfcrlmwvb-/@
 hi Hint letter-spacing: 0.1em; background: #B9FF00; border: 0px solid #000; color: #000; font-size: 1em; font-weight: bold; line-height: 1em; margin: 0px; padding: 1px; text-transform: lowercase;
 
+" Use / as default search "
+set ds=/
+
 " Bit ironic, using Emacs from Vimperator ;) "
 set editor=emacsclient
 
