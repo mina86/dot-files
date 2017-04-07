@@ -947,7 +947,11 @@ modified beforehand."
     (add-to-list 'magic-mode-alist '(smells-like-jinja2 . jinja2-mode)))
 
   (when (fboundp 'shackle-mode)
-    (shackle-mode)))
+    (shackle-mode))
+
+  (when (load "multiple-cursors" t t)
+    (set-key "\M-." mc/mark-next-like-this)
+    (set-key "\M-," mc/unmark-next-like-this)))
 
 ;; Other
 (require 'icomplete)
