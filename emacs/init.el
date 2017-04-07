@@ -602,6 +602,7 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
    (t
     (kmacro-call-macro arg no-repeat))))
 
+(set-key [(f3)] kmacro-start-macro-or-insert-counter)
 (set-key [(f4)] kmacro-end-or-call-possibly-on-region-lines)
 
 
