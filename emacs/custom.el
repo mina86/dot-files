@@ -9,7 +9,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "black" :foreground "gray" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 80 :width normal :foundry "adobe" :family "courier"))))
+ '(default ((t (:inherit nil :stipple nil :background "black" :foreground "gray" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 75 :width normal :foundry "adobe" :family "courier"))))
  '(auto-dim-other-buffers-face ((t :background "#112222")))
  '(completions-common-part ((t (:inherit default :foreground "yellow"))))
  '(completions-first-difference ((t (:inherit default :foreground "cyan" :weight bold))))
@@ -36,7 +36,7 @@
  '(diff-removed-face ((t (:foreground "red" :weight bold))) t)
  '(erc-action-face ((t (:foreground "magenta" :slant italic))))
  '(font-lock-builtin-face ((t (:foreground "#99F"))))
- '(font-lock-comment-face ((t (:foreground "green" :slant italic))))
+ '(font-lock-comment-face ((t (:foreground "#0c0" :slant italic))))
  '(font-lock-constant-face ((t (:foreground "aquamarine"))))
  '(font-lock-doc-face ((t (:inherit font-lock-comment-face :foreground "#CF0"))))
  '(font-lock-function-name-face ((t (:foreground "lightskyblue"))))
@@ -68,7 +68,7 @@
  '(num3-face-even ((t (:foreground "#CFF" :underline nil :weight normal))))
  '(secondary-selection ((((type x-toolkit)) (:foreground nil :background "SkyBlue4")) (t (:foreground nil :background nil :inverse-video t))))
  '(tooltip ((t (:inherit variable-pitch :background "lightyellow" :foreground "black"))))
- '(whitespace-big-indent ((t (:foreground "firebrick"))))
+ '(whitespace-big-indent ((t (:inherit whitespace-tab :foreground "firebrick"))))
  '(whitespace-tab ((t (:background "grey22" :foreground "grey22"))))
  '(widget-button ((t (:foreground "#0FF" :underline "#099" :weight bold))))
  '(widget-button-face ((t (:background "blue" :foreground "cyan" :weight bold))) t)
