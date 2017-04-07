@@ -1,0 +1,6 @@
+#!/bin/sh
+[ -n "$XDG_VTNR" ] && set -- "vt${XDG_VTNR?}" "$@"
+[ -n "$XDG_SEAT" ] && set -- -seat "${XDG_SEAT?}" "$@"
+set -- /usr/bin/X -nolisten tcp -core -novtswitch "$@"
+echo + "$@" >&2
+exec "$@"

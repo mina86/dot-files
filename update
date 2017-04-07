@@ -249,22 +249,23 @@ while read FILE DEST; do
 		handle "$@"
 	esac
 done 3<&1 <<EOF
-Xresources.tpl     ~/.
 emacs/*            ~/.emacs.d/@
 mail/*             ~/.mail/@
 git/*              ~/.config/git/@
-gtkrc-2.0          ~/.
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
 sawfishrc          ~/.sawfish/rc
 statuses           ~/.irssi/
-xinitrc            ~/.
 bin/*              ~/
 bin/libexec/*      ~/
 sh/*               ~/.@
 dir-colors         ~/.dir_colors
 vimperatorrc       ~/.vimperator/rc
-xkb/keymapa/*      ~/.config/
-xkb/symbols/*      ~/.config/
-xkb/xinit-kbd      ~/bin/libexec/@
+x/Xresources.tpl   ~/.@
+x/gtkrc-2.0        ~/.@
+x/xinitrc          ~/.@
+x/xserverrc        ~/.@
+x/local.keymap     ~/.config/xkb/keymap/local
+x/local.symbols    ~/.config/xkb/symbols/local
+x/xinit-kbd        ~/bin/libexec/@
 EOF
