@@ -434,9 +434,22 @@ perform stripping and behaves as plain `save-buffer'."
       kill-do-not-save-duplicates t)
 (delete-selection-mode 1)         ;deleting region by typing or del (like Win)
 
+(set-key esc-map "Y" (yank-pop -1))     ;move back in kill ring
+
 (set-key [(shift insert)]
   (let ((mouse-yank-at-point nil))
     (mouse-yank-primary nil)))
+
+;; Use browse-kill-ring
+(add-lambda-hook 'after-init-hook
+  (when (load "browse-kill-ring" t)
+    (setq browse-kill-ring-display-duplicates nil
+          browse-kill-ring-highlight-current-entry t
+          browse-kill-ring-highlight-inserted-item t
+          browse-kill-ring-separator "——————————")
+    ;;       browse-kill-ring-separator "\x0C")  ; form feed
+    ;; (add-hook 'browse-kill-ring-hook 'form-feed-mode))
+    (browse-kill-ring-default-keybindings)))
 
 ;;}}}
 ;;{{{   Just one space
