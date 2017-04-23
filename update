@@ -268,4 +268,5 @@ x/xserverrc        ~/.@
 x/local.keymap     ~/.config/xkb/keymap/local
 x/local.symbols    ~/.config/xkb/symbols/local
 x/xinit-kbd        ~/bin/libexec/@
+x/80-char.png      ~/.urxvt/@
 EOF
