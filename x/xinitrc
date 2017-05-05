@@ -6,32 +6,36 @@ cd ~
 exec >>/tmp/sawfish-log 2>&1
 
 has() {
-	which "$1" >/dev/null 2>&1
+	case $1 in
+	*/*)
+		test -x "$1"
+		;;
+	*)
+		which "$1" >/dev/null 2>&1
+	esac
 }
 
+run() {
+	has "$1" && "$@"
+}
+
+for dir in /usr/X11R6/lib/X11/xinit/ .; do
+	[ -f "$dir/.Xresources" ]  && xrdb -merge "$dir/.Xresources"
+	[ -f "$dir/.Xmodmap" ]     && xmodmap     "$dir/.Xmodmap"
+done
+
+if [ -f ~/.xscreen-config ]; then
+	. ~/.xscreen-config
+fi
+
+if [ -x ~/bin/libexec/xinit-kbd ]; then
+	~/bin/libexec/xinit-kbd
+fi
+
 (
-	for DIR in /usr/X11R6/lib/X11/xinit/ .; do
-		[ -f "$DIR/.Xresources" ]  && xrdb -merge "$DIR/.Xresources"
-		[ -f "$DIR/.Xmodmap" ]     && xmodmap     "$DIR/.Xmodmap"
-	done
-
 	cd /
-
-	if [ -f ~/.xscreen-config ]; then
-		. ~/.xscreen-config
-	fi
-
-	if has xcompmgr; then
-		xcompmgr &
-	fi
-
-	if [ -x ~/bin/libexec/xinit-kbd ]; then
-		~/bin/libexec/xinit-kbd
-	fi
-
-	if [ -x ~/bin/redshift ] && [ -e ~/.config/redshift.conf ]; then
-		~/bin/redshift &
-	fi
+	run xcompmgr &
+	[ -e ~/.config/redshift.conf ] && run redshift
 ) &
 
 SAWFISH_QUIT_CMD_FILE=$(mktemp)
