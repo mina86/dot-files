@@ -42,7 +42,9 @@ SAWFISH_QUIT_CMD_FILE=$(mktemp)
 trap 'rm -f -- "$SAWFISH_QUIT_CMD_FILE"' 0
 export SAWFISH_QUIT_CMD_FILE
 
-if has gpg-agent; then
+if has ssh-agent; then
+	ssh-agent sawfish
+elif has gpg-agent; then
 	gpg-agent --daemon sawfish
 else
 	sawfish
