@@ -2,21 +2,10 @@
 
 if [ $# -eq 0 ]; then
 	if [ -n "$DISPLAY" ]; then
-		emacsclient -a '' -c -n
+		exec emacsclient -a '' -c -n
 	else
-		emacsclient -a ''
+		exec emacsclient -a ''
 	fi
-	exit $?
-fi
-
-preopen=
-case "$1" in --preopen-cmd=*)
-	preopen="${1#*=}"
-	shift
-esac
-
-if [ -n "$preopen" ]; then
-	$preopen "$@"
 fi
 
 if emacsclient -n "$@" 2>/dev/null; then
