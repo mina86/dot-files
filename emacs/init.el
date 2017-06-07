@@ -414,7 +414,7 @@ perform stripping and behaves as plain `save-buffer'."
            (self-insert-command n)))
 
 (set-default 'browse-url-browser-function 'browse-url-generic)
-(set-default 'browse-url-generic-program "opera")
+(set-default 'browse-url-generic-program "ff")
 
 
 ;; Minibuffer
