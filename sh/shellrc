@@ -118,6 +118,9 @@ _cd_do() {
 }
 
 cd() {
+	if [ "$1" == -- ]; then
+		shift
+	fi
 	case "$#:$1" in
 	1:-h)
 		cat <<EOF
