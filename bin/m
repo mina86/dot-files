@@ -115,7 +115,7 @@ spotify_ctl() {
 
 ## Audacious
 audacious_query() {
-	test "$(audtool --current-song)" != "No song playing."
+	_=$(audtool --current-song) && test "$_" != "No song playing."
 }
 
 audacious_ctl() {
