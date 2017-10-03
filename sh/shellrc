@@ -74,13 +74,12 @@ alias make='nice make'
 
 if [ -x /usr/bin/ncal ]; then
 	ncal() {
-		if [ $# -eq 0 ]; then
-			set -- -3
-		fi
+		[ $# -gt 0 ] || set -- -B1 -A2
 		/usr/bin/ncal -M "$@"
 	}
 	cal() {
-		ncal -C "$@"
+		[ $# -gt 0 ] || set -- -3
+		/usr/bin/ncal -Mb "$@"
 	}
 elif cal -m >/dev/null 2>&1; then
 	alias cal='cal -3m'
