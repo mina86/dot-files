@@ -4,9 +4,28 @@ xkb_symbols "dvp" {
 
     name[Group1] = "Polish (mina86's Dvorak)";
 
+    // AltGr+<digit> → superscript
+    key <AE07> { [ asterisk,     0, U2070 ] };
+    key <AE05> { [ parenleft,    1, U00B9 ] };
+    key <AE08> { [ parenright,   2, U00B2 ] };
+    key <AE04> { [ braceright,   3, U00B3 ] };
+    key <AE09> { [ plus,         4, U2074 ] };
+    key <AE03> { [ braceleft,    5, U2075 ] };
+    key <AE10> { [ bracketright, 6, U2076 ] };
+    key <AE02> { [ bracketleft,  7, U2077 ] };
+    key <AE11> { [ exclam,       8, U2078 ] };
+    key <AE06> { [ equal,        9, U2079 ] };
+
+    // Add ellipsis to AltGr+Shift+Comma.  xkeyboard-config has it
+    // unused, Debian uses it for “ which I already have at ‘k’.
+    key <AD02> { [ comma,           less,           guillemotleft,   U2026      ] };
+
     // Swap “ and ‘ as well as ” and ’ to match UK quotes order.
     //             Unmodified    Shift           AltGr            Shift+AltGr
     key <AB01> { [ apostrophe,   quotedbl,       rightsinglequotemark, dead_acute ] };
     key <AB04> { [ k,            K,              leftsinglequotemark, leftdoublequotemark ] };
     key <AB06> { [ b,            B,              rightsinglequotemark, rightdoublequotemark ] };
+
+    // Micro under AltGr+m
+    key <AB07> { [ m, M, U00B5 ] };
 };
