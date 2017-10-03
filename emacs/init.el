@@ -5,6 +5,11 @@
 
 ;;; Code:
 
+  ;; Mitigate Bug#28350 (security) in Emacs 25.2 and earlier.
+  (eval-after-load "enriched"
+    '(defun enriched-decode-display-prop (start end &optional param)
+       (list start end)))
+
 ;;{{{ System dependend data and directories
 
 ;; Add  ~/.emacs.d/elisp  to load path
