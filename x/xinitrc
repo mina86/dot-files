@@ -96,7 +96,7 @@ exec_quit_cmd() {
 }
 
 init_x() {
-	[ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
+	[ -f ~/.config/Xresources ] && xrdb -merge ~/.config/Xresources
 	init_screen
 	exec_background_tasks &
 

@@ -261,7 +261,7 @@ bin/libexec/*      ~/
 sh/*               ~/.@
 dir-colors         ~/.dir_colors
 vimperatorrc       ~/.vimperator/rc
-x/Xresources.tpl   ~/.@
+x/Xresources.tpl   ~/.config/@
 x/gtkrc-2.0        ~/.@
 x/xinitrc          ~/.@
 x/xserverrc        ~/.@
