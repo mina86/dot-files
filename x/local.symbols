@@ -5,16 +5,17 @@ xkb_symbols "dvp" {
     name[Group1] = "Polish (mina86's Dvorak)";
 
     // AltGr+<digit> → superscript
-    key <AE07> { [ asterisk,     0, U2070 ] };
-    key <AE05> { [ parenleft,    1, U00B9 ] };
-    key <AE08> { [ parenright,   2, U00B2 ] };
-    key <AE04> { [ braceright,   3, U00B3 ] };
-    key <AE09> { [ plus,         4, U2074 ] };
-    key <AE03> { [ braceleft,    5, U2075 ] };
-    key <AE10> { [ bracketright, 6, U2076 ] };
-    key <AE02> { [ bracketleft,  7, U2077 ] };
-    key <AE11> { [ exclam,       8, U2078 ] };
-    key <AE06> { [ equal,        9, U2079 ] };
+    // AltGr+<shift>+<digit> → roman numeral
+    key <AE07> { [ asterisk,     0, U2070, U2179 ] };
+    key <AE05> { [ parenleft,    1, U00B9, U2170 ] };
+    key <AE08> { [ parenright,   2, U00B2, U2171 ] };
+    key <AE04> { [ braceright,   3, U00B3, U2172 ] };
+    key <AE09> { [ plus,         4, U2074, U2173 ] };
+    key <AE03> { [ braceleft,    5, U2075, U2174 ] };
+    key <AE10> { [ bracketright, 6, U2076, U2175 ] };
+    key <AE02> { [ bracketleft,  7, U2077, U2176 ] };
+    key <AE11> { [ exclam,       8, U2078, U2177 ] };
+    key <AE06> { [ equal,        9, U2079, U2178 ] };
 
     // Add ellipsis to AltGr+Shift+Comma.  xkeyboard-config has it
     // unused, Debian uses it for “ which I already have at ‘k’.
