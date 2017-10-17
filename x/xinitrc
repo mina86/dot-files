@@ -1,59 +1,129 @@
+#!/bin/sh
 ## .xinitrc  -- X init script
-## Copyright 2008-2015 by Michal Nazarewicz (mina86@mina86.com)
+## Copyright 2008-2017 by Michal Nazarewicz <mina86@mina86.com>
 
-cd ~
-
-exec >>/tmp/sawfish-log 2>&1
+set -u
 
 has() {
-	case $1 in
-	*/*)
-		test -x "$1"
-		;;
-	*)
-		which "$1" >/dev/null 2>&1
-	esac
+	which "$1" >/dev/null 2>&1
 }
 
-run() {
-	has "$1" && "$@"
+exec_xset() {
+	exec xset -b -c r rate 250 50 s off +dpms
 }
 
-test -f ~/.Xresources && xrdb -merge ~/.Xresources
+init_screen() {
+	if [ -e ~/bin/libexec/xscreen-config.pl ]; then
+		tmp=$(mktemp)
+		if perl -w ~/bin/libexec/xscreen-config.pl "$@" >$tmp; then
+			sh -x -- "$tmp"
+		fi
+		rm -f -- "$tmp"
+	fi
+	unset tmp
+	test -x ~/bin/set-bg && ~/bin/set-bg
+}
 
-if [ -f ~/.xscreen-config ]; then
-	. ~/.xscreen-config
-fi
+init_kbd() {
+	layout=pl,pl
+	variant=dvp,
+	options=ctrl:nocaps,grp:shifts_toggle,grp_led:scroll,nbsp:level3n,compose:lctrl-altgr,compose:rctrl-algtgr
 
-if [ -x ~/bin/libexec/xinit-kbd ]; then
-	~/bin/libexec/xinit-kbd
-fi
+	dir=$HOME/.config/xkb
+	if [ -e "$dir/symbols/local" ]; then
+		layout=local,pl
+		setxkbmap -I"$dir" -print >$dir/keymap/local \
+		          "$layout" "$variant" "$options"
+		xkbcomp -w0 -I"$dir" "$dir/keymap/local" $DISPLAY
+	else
+		setxkbmap "$layout" "$variant" "$options"
+	fi
 
-(
+	unset dir layout variant options
+}
+
+start_gkrellm() {
+	test -f ~/.gkrellm2/user-config && gkrellm &
+	for file in ~/.gkrellm2/user-config_S-*; do
+		test -f "$file" && gkrellm -s "${file##*/user-config_S-}" &
+	done
+	unset file
+}
+
+exec_background_tasks() {
+	spawn() {
+		has "$1" && exec "$@" &
+	}
+
 	cd /
-	run xcompmgr &
-	[ -e ~/.config/redshift.conf ] && run redshift
-) &
+	init_kbd
+	spawn xsettingsd
+	spawn xcompmgr
+	test -e ~/.config/redshift.conf && spawn redshift
+	has gkrellm && start_gkrellm
+	exec_xset
+}
 
-SAWFISH_QUIT_CMD_FILE=$(mktemp)
-trap 'rm -f -- "$SAWFISH_QUIT_CMD_FILE"' 0
-export SAWFISH_QUIT_CMD_FILE
+start_wm() {
+	cd ~
+	if ! has sawfish; then
+		echo '!!!'
+		echo '!!! Sawfish not found; running xterm instead.'
+		echo '!!!'
+		xterm
+	# elif ssh-add -l >/dev/null 2>&1; then
+	#	sawfish
+	elif has ssh-agent; then
+		ssh-agent sawfish
+	elif has gpg-agent; then
+		gpg-agent --daemon sawfish
+	else
+		sawfish
+	fi
+}
 
-if has ssh-agent; then
-	ssh-agent sawfish
-elif has gpg-agent; then
-	gpg-agent --daemon sawfish
-else
-	sawfish
-fi
+exec_quit_cmd() {
+	if test -s "$1" && read cmd <$1; then
+		case "$cmd" in
+		poweroff|reboot)
+			exec /sbin/$cmd
+			;;
+		reboot-w)
+			exec /usr/local/sbin/reboot-w
+		esac
+	fi
+	exit 0
+}
 
-if [ -s "$SAWFISH_QUIT_CMD_FILE" ] && read cmd <$SAWFISH_QUIT_CMD_FILE; then
-	rm -f -- "$SAWFISH_QUIT_CMD_FILE"
-	case "$cmd" in
-	poweroff|reboot)
-		exec /sbin/$cmd
-		;;
-	reboot-w)
-		exec /usr/local/sbin/reboot-w
-	esac
-fi
+init_x() {
+	[ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
+	init_screen
+	exec_background_tasks &
+
+	tmp=$(mktemp)
+	trap 'rm -f -- "$tmp"' 0
+	SAWFISH_QUIT_CMD_FILE=$tmp start_wm
+	exec_quit_cmd "$tmp"
+	unset tmp
+}
+
+case ${1-} in
+scr|screen)
+	shift
+	init_screen "$@"
+	exec_xset
+	;;
+kbd|key)
+	shift
+	init_kbd "$@"
+	exec_xset
+	;;
+'')
+	init_x "$@" >>/tmp/x-${USER-anonymous}-${DISPLAY-no-display}.log 2>&1
+	;;
+*)
+	echo "xinit: unrecognised subcommand: $1" >&2
+	echo 'usage: xinit (screen | kbd)' >&2
+	exit 1
+esac
+}
