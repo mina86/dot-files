@@ -19,10 +19,7 @@ run() {
 	has "$1" && "$@"
 }
 
-for dir in /usr/X11R6/lib/X11/xinit/ .; do
-	[ -f "$dir/.Xresources" ]  && xrdb -merge "$dir/.Xresources"
-	[ -f "$dir/.Xmodmap" ]     && xmodmap     "$dir/.Xmodmap"
-done
+test -f ~/.Xresources && xrdb -merge ~/.Xresources
 
 if [ -f ~/.xscreen-config ]; then
 	. ~/.xscreen-config
