@@ -36,14 +36,14 @@ unset __sp
 __PS1+='{{}}'
 __PS1+='\[\e[1;32;44m\]'
 
-if declare -f tpwd >/dev/null 2>&1; then
-	__PS1+='$(e=$?; tpwd -n 30 {; exit $e)'
-elif which tpwd >/dev/null 2>&1; then
-	eval "$(tpwd --bash)"
-	__PS1+='$(e=$?; tpwd -n 30 {; exit $e)'
+if which tpwd; then
+	__ellipsis=…
+	test xUTF-8 = x"$(locale charmap)" || __ellipsis={
+	__PS1+="\$(e=\$?; tpwd -n 30 $__ellipsis 1; exit \$e)"
+	unset __ellipsis
 else
 	__PS1+='\w'
-fi
+fi >/dev/null 2>&1
 
 __PS1+='\[\e[0;37;44m\]'
 if [ x"$TERM" = xscreen ]; then
