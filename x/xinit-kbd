@@ -2,21 +2,16 @@
 
 xset -b -c r rate 250 50 s off +dpms
 
-if [ -e /etc/default/keyboard ]; then
-	. /etc/default/keyboard
-fi
+layout=pl,pl
+variant=dvp,
+options=ctrl:nocaps,grp:shifts_toggle,grp_led:scroll,nbsp:level3n,compose:lctrl-altgr,compose:rctrl-algtgr
 
-XKBLAYOUT=${XKBLAYOUT-pl,pl}
-XKBVARIANT=${XKBVARIANT-dvp,}
-XKBOPTIONS=${XKBOPTIONS-ctrl:nocaps,grp:shifts_toggle,grp_led:scroll,nbsp:level3n,compose:lctrl-altgr,compose:rctrl-algtgr}
-
-if [ -e ~/.config/xkb/symbols/local ]; then
-	XKBLAYOUT="local,pl"
-	setxkbmap -I"$HOME/.config/xkb" \
-		"$XKBLAYOUT" "$XKBVARIANT" "$XKBOPTIONS" \
-		-print >~/.config/xkb/keymap/local
-	xkbcomp -w0 -I"$HOME/.config/xkb" \
-		~/.config/xkb/keymap/local $DISPLAY
+dir=$HOME/.config/xkb
+if [ -e $dir/symbols/local ]; then
+	layout=local,pl
+	setxkbmap -I"$dir" -print "$layout" "$variant" "$options" \
+	          >$dir/keymap/local
+	xkbcomp -w0 -I"$dir" "$dir/keymap/local" "$DISPLAY"
 else
-	setxkbmap "$XKBLAYOUT" "$XKBVARIANT" "$XKBOPTIONS"
+	setxkbmap "$layout" "$variant" "$options"
 fi
