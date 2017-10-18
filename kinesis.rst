@@ -19,20 +19,20 @@ Reset settings:
   LEDs should blink several times.
 
 Disable audible tone and key clicks:
-  - Program + “-”
-  - Program + top-right “|\”
+  - Program + ``-``
+  - Program + top-right ``|\``
 
 Check settings:
-  - “=” + “s”
-  Should output “v3.2[]”
+  - ``=`` + ``s``
+  Should output ``v3.2[]``
 
 Turn PC Non-Windows mode:
-  - “=” + “p”
-  Settings now should be “[SL K H x e]”
+  - ``=`` + ``p``
+  Settings should now be ``[SL K H x e]``
 
 Pipe/backslash key handling:
-  - “=” + “v”
-  Settings now should be “[SL V K H x e]”
+  - ``=`` + ``v``
+  Settings should now be ``[SL V K H x e]``
 
 
 Remapping
@@ -42,16 +42,23 @@ Start remapping with:
   - Program + Remap,
   LEDs should start blinking.
 
-Shift numbers by one.  This makes sense for Programmer Dvorak layout
-so that left hand types odd numbers and right hand types even numbers.
-Without this remapping, “9” will be on the right side of the keyboard.
-  - “-”, “0”,
-  - “0”, “9”,
-  - … and so on …
-  - “2”, “1”,
-  - “1”, “-”,
+Numbers row
+~~~~~~~~~~~
 
-Thumb keys:
+Shift numbers by one:
+  - ``-``, ``0``,
+  - ``0``, ``9``,
+  - … and so on …
+  - ``2``, ``1``,
+  - ``1``, ``-``,
+  This makes sense for Programmer Dvorak layout and moves all odd
+  numbers to the left and all even numbers to the right side.  Without
+  this, ``9`` would be on the right side of the keyboard.
+
+Thumb keys
+~~~~~~~~~~
+
+::
 
            +------+------+       +------+------+
            | Left |      |       |      | Rht  |
@@ -64,38 +71,47 @@ Thumb keys:
     |      |      |      |       | Down |      |      |
     +------+------+------+       +------+------+------+
 
+Left side:
   - BS, Left Ctrl,
   - DEL, Alt,
   - RET, BS,
   - Alt, DEL,
 
+Right side:
   - Page Up, Win,
   - Page Down, Page Up,
   - Keypad, Scroll Lock (right Win key), Keypad, Page Down,
-  - Keypad, bottom-left “|\” (Insert key), Keypad, Rht Ctrl,
+  - Keypad, bottom-left ``|\`` (Insert key), Keypad, Rht Ctrl,
   - Keypad, Win (Right Alt), Keypad, RET.
 
+Make caps lock into control:
   - Left Ctrl, Caps Lock,
 
-Bottom row:
+Bottom row
+~~~~~~~~~~
+
+::
 
     +------+------+------+------+        +------+------+------+------+
     | ~    | |    |      |      |        |      |      | {    | }    |
     |  `   |  \   | Left | Right|        | Up   | Down |  [   |  ]   |
     +------+------+------+------+        +------+------+------+------+
 
-  - Keypad, PrnScr (left Win key), Keypad, “~`”,
-  - Left, bottom-left “|\”,
+Left side:
+  - Keypad, PrnScr (left Win key), Keypad, ``~```,
+  - Left, bottom-left ``|\``,
   - Right, Left,
-  - “+=”, Right,
+  - ``+=``, Right,
 
-  - Up, “{[”,
-  - Down, “}]”,
-  - “}]”, Down,
-  - top-right “|\”, Up
+Right side:
+  - Up, ``{[``,
+  - Down, ``}]``,
+  - ``}]``, Down,
+  - top-right ``|\``, Up
 
-  - “[{”, top-right “|\”,
-  - “~`”, “+=”,
+Others:
+  - ``[{``, top-right ``|\``,
+  - ``~```, ``+=``,
 
 Finish remapping with:
   - Program + Remap.
