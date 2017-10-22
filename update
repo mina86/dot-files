@@ -271,6 +271,7 @@ vimperatorrc       ~/.vimperator/rc
 x/Xresources.tpl   ~/.config/@
 x/gtkrc-2.0        ~/.@
 x/xinitrc          ~/.@
+x/xsettingsd       ~/.@
 x/xserverrc        ~/.@
 x/local.keymap     ~/.config/xkb/keymap/local
 x/local.symbols    ~/.config/xkb/symbols/local
