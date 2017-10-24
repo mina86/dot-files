@@ -216,6 +216,14 @@ handle() {
 	fi
 
 	case "$file" in
+	*/dir-colors)
+		# FIXME: Figure out more generic way of handling this instead of
+		# having a custom code specifically for dir-colors.
+		case $direction in to)
+			dircolors - <$file >$tempfile
+			cp_backup "$tempfile" "$dest" <&3 || true
+		esac
+		;;
 	*.tpl)
 		dest=${dest%.tpl}
 		cp_tpl_$direction "$file" "$dest" <&3
@@ -258,7 +266,6 @@ statuses           ~/.irssi/
 bin/               ~/
 bin/libexec/       ~/
 sh/                ~/.@
-dir-colors         ~/.dir_colors
 vimperatorrc       ~/.vimperator/rc
 x/Xresources.tpl   ~/.config/@
 x/gtkrc-2.0        ~/.@
