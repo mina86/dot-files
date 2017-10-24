@@ -200,65 +200,64 @@ compile_el() {
 ## Do the job
 ##
 handle() {
-	if match "$@"; then
-		case "$dest" in '~'*)   dest=$HOME${dest#'~'}; esac
-		case "$dest" in *@)     dest=${dest%@}${file##*/}; esac
-		case "$dest" in */.|*/) dest=$dest$file; esac
-
-		if ! [ -d "${dest%/*}" ]; then
-			tput setaf 6
-			echo "Skipping $file, ${dest%/*}/ missing"
-			tput sgr0
-			return 0
-		fi
-
-		case "$file" in
-		*.tpl)
-			dest=${dest%.tpl}
-			cp_tpl_$direction "$file" "$dest" <&3
-			;;
-		*)
-			cp_backup_$direction "$file" "$dest" <&3 || true
-		esac
-		case "$dest:$direction" in *.el:to)
-			compile_el "$dest"
-		esac
+	if ! match "$@"; then
+		return 0
 	fi
+
+	case "$dest" in '~'*)   dest=$HOME${dest#'~'}; esac
+	case "$dest" in *@)     dest=${dest%@}${file##*/}; esac
+	case "$dest" in */.|*/) dest=$dest$file; esac
+
+	if ! [ -d "${dest%/*}" ]; then
+		tput setaf 6
+		echo "Skipping $file, ${dest%/*}/ missing"
+		tput sgr0
+		return 0
+	fi
+
+	case "$file" in
+	*.tpl)
+		dest=${dest%.tpl}
+		cp_tpl_$direction "$file" "$dest" <&3
+		;;
+	*)
+		cp_backup_$direction "$file" "$dest" <&3 || true
+	esac
+	case "$dest:$direction" in *.el:to)
+		compile_el "$dest"
+	esac
 }
 
-if [ $direction = to ]; then
+case $direction in to)
 	mkdir -p ~/bin/libexec ~/.config/git ~/.config/xkb/keymap \
 	      ~/.config/xkb/symbols
-fi
+esac
 
-while read file dest; do
+while read file _dest; do
 	case $file in
-	*'*'*)
-		for file in $file; do
-			if [ -f "$file" ]; then
-				case $file in *~)
-					continue
-				esac
-				_dest=$dest
-				handle "$@"
-				dest=$_dest
-			fi
+	*/)
+		for file in "$file"*; do
+			case "$file" in *'~'|\#*|*\#|.*) continue; esac
+			[ -f "$file" ] || continue
+			dest=$_dest
+			handle "$@"
 		done
 		;;
 	*)
+		dest=$_dest
 		handle "$@"
 	esac
 done 3<&1 <<EOF
-emacs/*            ~/.emacs.d/@
-mail/*             ~/.mail/@
-git/*              ~/.config/git/@
+emacs/             ~/.emacs.d/@
+mail/              ~/.mail/@
+git/               ~/.config/git/@
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
 sawfishrc          ~/.sawfish/rc
 statuses           ~/.irssi/
-bin/*              ~/
-bin/libexec/*      ~/
-sh/*               ~/.@
+bin/               ~/
+bin/libexec/       ~/
+sh/                ~/.@
 dir-colors         ~/.dir_colors
 vimperatorrc       ~/.vimperator/rc
 x/Xresources.tpl   ~/.config/@
