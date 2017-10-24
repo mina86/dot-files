@@ -22,19 +22,19 @@ EOF
 ##
 ## Parse arguments
 ##
-DIRECTION=
-INTERACTIVE=true
-BACKUP=true
+direction=
+interactive=true
+backup=true
 
 while [ x"${1#-}" != x"$1" ]; do
 	ARG=${1#?}
 	shift
 	while [ -n "$ARG" ]; do
 		case "$ARG" in
-		f*) DIRECTION=from   ;;
-		t*) DIRECTION=to     ;;
-		B*) BACKUP=false     ;;
-		y*) INTERACTIVE=false;;
+		f*) direction=from   ;;
+		t*) direction=to     ;;
+		B*) backup=false     ;;
+		y*) interactive=false;;
 		?*) usage            ;;
 		esac
 		ARG=${ARG#?}
@@ -56,7 +56,7 @@ fi
 ## Print info
 ##
 
-case "$DIRECTION" in
+case "$direction" in
 from)
 	tput bold
 	tput setaf 7
@@ -84,7 +84,7 @@ if [ $# -eq 0 ]; then
 else
 	match () {
 		for f in "$@"; do
-			case "$FILE" in "$f")
+			case "$file" in "$f")
 				return 0
 			esac
 		done
@@ -96,7 +96,7 @@ fi
 ##
 ## Interactive asking
 ##
-if $INTERACTIVE; then
+if $interactive; then
 	ask() {
 		if which cdiff >/dev/null 2>&1; then
 			cdiff -u "$2" "$1"
@@ -137,7 +137,7 @@ cp_backup() {
 		cp "$1" "$2"
 		return 0
 	elif ! cmp -s -- "$1" "$2" && ask "$1" "$2"; then
-		if $BACKUP; then
+		if $backup; then
 			mv -- "$2" "$2~"
 		fi
 		cp "$1" "$2"
@@ -158,24 +158,24 @@ cp_backup_to() {
 ##
 ## Template handling
 ##
-TEMPFILE=$(umask 077; mktemp)
-trap 'rm -f -- "$TEMPFILE"' 0
+tempfile=$(umask 077; mktemp)
+trap 'rm -f -- "$tempfile"' 0
 
 cp_tpl_from() {
 	if ! [ -e "$1" ]; then
 		sed "s#$HOME#{{HOME}}#g" <$2 >$1
 	else
-		sed "s#{{HOME}}#$HOME#g" <$1 >$TEMPFILE
-		if cp_backup "$2" "$TEMPFILE"; then
-			sed "s#$HOME#{{HOME}}#g" <$TEMPFILE >$1
+		sed "s#{{HOME}}#$HOME#g" <$1 >$tempfile
+		if cp_backup "$2" "$tempfile"; then
+			sed "s#$HOME#{{HOME}}#g" <$tempfile >$1
 		fi
 	fi
 }
 
 cp_tpl_to() {
 	if [ -e "$1" ]; then
-		sed "s#{{HOME}}#$HOME#g" <$1 >$TEMPFILE
-		cp_backup "$TEMPFILE" "$2" || true
+		sed "s#{{HOME}}#$HOME#g" <$1 >$tempfile
+		cp_backup "$tempfile" "$2" || true
 	fi
 }
 
@@ -201,47 +201,47 @@ compile_el() {
 ##
 handle() {
 	if match "$@"; then
-		case "$DEST" in '~'*)   DEST=$HOME${DEST#'~'}; esac
-		case "$DEST" in *@)     DEST=${DEST%@}${FILE##*/}; esac
-		case "$DEST" in */.|*/) DEST=$DEST$FILE; esac
+		case "$dest" in '~'*)   dest=$HOME${dest#'~'}; esac
+		case "$dest" in *@)     dest=${dest%@}${file##*/}; esac
+		case "$dest" in */.|*/) dest=$dest$file; esac
 
-		if ! [ -d "${DEST%/*}" ]; then
+		if ! [ -d "${dest%/*}" ]; then
 			tput setaf 6
-			echo "Skipping $FILE, ${DEST%/*}/ missing"
+			echo "Skipping $file, ${dest%/*}/ missing"
 			tput sgr0
 			return 0
 		fi
 
-		case "$FILE" in
+		case "$file" in
 		*.tpl)
-			DEST=${DEST%.tpl}
-			cp_tpl_$DIRECTION "$FILE" "$DEST" <&3
+			dest=${dest%.tpl}
+			cp_tpl_$direction "$file" "$dest" <&3
 			;;
 		*)
-			cp_backup_$DIRECTION "$FILE" "$DEST" <&3 || true
+			cp_backup_$direction "$file" "$dest" <&3 || true
 		esac
-		case "$DEST:$DIRECTION" in *.el:to)
-			compile_el "$DEST"
+		case "$dest:$direction" in *.el:to)
+			compile_el "$dest"
 		esac
 	fi
 }
 
-if [ $DIRECTION = to ]; then
+if [ $direction = to ]; then
 	mkdir -p ~/bin/libexec ~/.config/git ~/.config/xkb/keymapa \
 	      ~/.config/xkb/symbols
 fi
 
-while read FILE DEST; do
-	case $FILE in
+while read file dest; do
+	case $file in
 	*'*'*)
-		for FILE in $FILE; do
-			if [ -f "$FILE" ]; then
-				case $FILE in *~)
+		for file in $file; do
+			if [ -f "$file" ]; then
+				case $file in *~)
 					continue
 				esac
-				_DEST=$DEST
+				_dest=$dest
 				handle "$@"
-				DEST=$_DEST
+				dest=$_dest
 			fi
 		done
 		;;
