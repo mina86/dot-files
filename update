@@ -227,7 +227,7 @@ handle() {
 }
 
 if [ $direction = to ]; then
-	mkdir -p ~/bin/libexec ~/.config/git ~/.config/xkb/keymapa \
+	mkdir -p ~/bin/libexec ~/.config/git ~/.config/xkb/keymap \
 	      ~/.config/xkb/symbols
 fi
 
