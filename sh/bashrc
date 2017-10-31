@@ -14,6 +14,10 @@ fi
 ## Prompt
 ##
 
+PROMPT_COMMANDS=:
+
+case $TERM in xterm*|rxvt*|eterm*|screen*|linux*)
+
 __PS1='\[\e[0;37;44m\]'
 if [ x"$TERM" = xscreen ]; then
 	__PS1+=\<
@@ -74,15 +78,9 @@ PS2=':; '
 
 unset P
 
-PROMPT_COMMANDS=:
 PROMPT_COMMAND='PS1=${__PS1//"{{}}"/"$(eval "$PROMPT_COMMANDS")"}'
 
-
-##
-## Prompt GIT Stuff
-##
-
-# Sources
+# Git prompt stuff.  Sources:
 # * http://www.jukie.net/~bart/conf/zsh.d/S55_git
 # * http://blog.madism.org/index.php/2008/05/07/173-git-prompt
 # * http://github.com/jcorbin/zsh-git/
@@ -174,6 +172,7 @@ if which git >/dev/null 2>&1; then
 	PROMPT_COMMANDS+=' ; __git_prompt'
 fi
 
+esac ## case $TERM
 
 ##
 ## Show times on the right, behaves a bit like zsh's right prompt, but

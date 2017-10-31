@@ -32,7 +32,9 @@ fi
 
 # Default prompt (most likely will be overwritten in shell specific rc files)
 if [ X"$UID" = X0 ]; then PS1='# '; else PS1='$ '; fi
-if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then PS1="[$(hostname)]$PS1"; fi
+case $TERM in xterm*|rxvt*|eterm*|screen*|linux*)
+	if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then PS1="[$(hostname)]$PS1"; fi
+esac
 export PS1
 
 # Add title to terminals
