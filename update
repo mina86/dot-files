@@ -265,6 +265,7 @@ sawfishrc          ~/.sawfish/rc
 statuses           ~/.irssi/
 bin/               ~/
 bin/libexec/       ~/
+music/             ~/bin/libexec/@
 sh/                ~/.@
 vimperatorrc       ~/.vimperator/rc
 x/Xresources.tpl   ~/.config/@
