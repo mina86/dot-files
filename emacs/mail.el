@@ -234,7 +234,7 @@
 (define-key notmuch-search-mode-map "t" 'notmuch-search-previous-thread)
 
 (define-key notmuch-show-mode-map "\C-t" 'notmuch-show-view-raw-message)
-(define-key notmuch-show-mode-map "q"    'notmuch-kill-this-buffer)
+(define-key notmuch-show-mode-map "q"    'notmuch-bury-or-kill-this-buffer)
 
 (define-key notmuch-show-mode-map "f" 'notmuch-show-reply)
 (define-key notmuch-show-mode-map "F" 'notmuch-show-reply-sender)
