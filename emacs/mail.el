@@ -19,6 +19,13 @@
  message-subject-trailing-was-regexp
  "[ 	]*\\((*[Ww][Aa][Ss]:.*)\\|\\[*[Ww][Aa][Ss]:.*\\]\\)"
 
+ message-dont-reply-to-names
+ (eval-when-compile
+   ;; This matches way more than it should but it’s easier to write that way.
+   (concat "\\<m\\(?:ina86\\|n86\\|pn\\|nazarewicz\\)@"
+           "\\(?:\\(?:g\\(?:oogle\\|mail\\)\\|mina86\\)\\.com\\|"
+           "\\(?:g\\?o2\\|tlen\\)\\.pl\\)\\>"))
+
  notmuch-mua-cite-function 'message-cite-original-without-signature)
 
 (defun message-narrow-to-body ()
@@ -74,12 +81,9 @@
     (catch 'break
       (mapc (lambda (hdr-name)
               (let ((val (message-fetch-field hdr-name)))
-                (when val
-                  (set-match-data (list 0 0))
-                  (while (string-match "@[-A-Za-z0-9.]+" val (match-end 0))
-                    (unless (string= "@google.com"
-                                     (downcase (match-string 0 val)))
-                      (throw 'break t))))))
+                (or (not val)
+                    (string-match "@\\(google\\.com\\|x\\.team\\)\\>" val)
+                    (throw 'break t))))
             '("to" "cc" "bcc"))
       nil)))
 
