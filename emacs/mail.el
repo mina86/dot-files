@@ -13,7 +13,13 @@
  user-full-name "Michal Nazarewicz"
  user-mail-address (eval-when-compile (rot13-string "zvan86@zvan86.pbz"))
  message-from-style 'angels
- message-user-fqdn "mina86.com")
+ message-user-fqdn "mina86.com"
+
+ message-subject-trailing-was-query t
+ message-subject-trailing-was-regexp
+ "[ 	]*\\((*[Ww][Aa][Ss]:.*)\\|\\[*[Ww][Aa][Ss]:.*\\]\\)"
+
+ notmuch-mua-cite-function 'message-cite-original-without-signature)
 
 (defun message-narrow-to-body ()
   (widen)
