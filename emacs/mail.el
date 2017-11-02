@@ -85,11 +85,20 @@
 
 (when (eval-when-compile (load "gnus-alias" t))
   (let ((has-corp (string-match "^mpn-glaptop" (system-name)))
-        (headers '(("X-PGP" . "50751FF4")
-                   ("X-PGP-FP" . "AC1F 5F5C D418 88F8 CC84 5858 2060 4012 5075 1FF4")
-                   ("X-Face" . "PbkBB1w#)bOqd`iCe\"Ds{e+!C7`pkC9a|f)Qo^BMQvy\\q5x3?vDQJeN(DS?|-^$uMti[3D*#^_Ts\"pU$jBQLq~Ud6iNwAw_r_o_4]|JO?]}P_}Nc&\"p#D(ZgUb4uCNPe7~a[DbPG0T~!&c.y$Ur,=N4RT>]dNpd;KFrfMCylc}gc??'U2j,!8%xdD")
-                   ("Face" . "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAJFBMVEWbfGlUPDDHgE57V0jUupKjgIObY0PLrom9mH4dFRK4gmjPs41MxjOgAAACQElEQVQ4jW3TMWvbQBQHcBk1xE6WyALX1069oZBMlq+ouUwpEQQ6uRjttkWP4CmBgGM0BQLBdPFZYPsyFUo6uEtKDQ7oy/U96XR2Ux8ehH/89Z6enqxBcS7Lg81jmSuujrfCZcLI/TYYvbGj+jbgFpHJ/bqQAUISj8iLyu4LuFHJTosxsucO4jSDNE0Hq3hwK/ceQ5sx97b8LcUDsILfk+ovHkOIsMbBfg43VuQ5Ln9YAGCkUdKJoXR9EclFBhixy3EGVz1K6eEkhxCAkeMMnqoAhAKwhoUJkDrCqvbecaYINlFKSRS1i12VKH1XpUd4qxL876EkMcDvHj3s5RBajHHMlA5iK32e0C7VgG0RlzFPvoYHZLRmAC0BmNcBruhkE0KsMsbEc62ZwUJDxWUdMsMhVqovoT96i/DnX/ASvz/6hbCabELLk/6FF/8PNpPCGqcZTGFcBhhAaZZDbQPaAB3+KrWWy2XgbYDNIinkdWAFcCpraDE/knwe5DBqGmgzESl1p2E4MWAz0VUPgYYzmfWb9yS4vCvgsxJriNTHoIBz5YteBvg+VGISQWUqhMiByPIPpygeDBE6elD973xWwKkEiHZAHKjhuPsFnBuArrzxtakRcISv+XMIPl4aGBUJm8Emk7qBYU8IlgNEIpiJhk/No24jHwkKTFHDWfPniR4iw5vJaw2nzSjfq2zffcE/GDjRC2dn0J0XwPAbDL84TvaFCJEU4Oml9pRyEUhR3Cl2t01AoEjRbs0sYugp14/4X5n4pU4EHHnMAAAAAElFTkSuQmCC")))
+        ;; Yeah, I know the RFC describing OpenGPG header never came to
+        ;; fruition, but I might just as well use it instead of any other X-PGP
+        ;; headers which are not standardised.
+        (headers '(("OpenPGP" . "id=AC1F5F5CD41888F8CC8458582060401250751FF4; url=http://mina86.com/mina86.pub")))
         (signature (expand-file-name "~/.mail/signature.txt")))
+
+    (let ((face-png (expand-file-name "~/.mail/face.png")))
+      (if (not (file-exists-p face-png))
+        (message "~/.mail/face.png missing; no Face header will be used")
+        (with-temp-buffer
+          (insert-file-contents face-png)
+          (if (<= (base64-encode-region (point-min) (point-max) t) 967)
+              (push (cons "Face" (buffer-string)) headers)
+            (message "~/.mail/face.png > 966 chars after encoding; no Face header will be used")))))
 
     (setq gnus-alias-identity-alist
         (list (list "priv" nil
