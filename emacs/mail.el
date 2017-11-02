@@ -126,8 +126,6 @@
       message-citation-line-function 'message-insert-formatted-citation-line
       message-citation-line-format   "On %a, %b %d %Y, %N wrote:"
 
-      message-generate-hashcash 'opportunistic
-
       send-mail-function    'message-smtpmail-send-it
       smtpmail-smtp-server  "smtp.gmail.com"
       smtpmail-smtp-service 587)
