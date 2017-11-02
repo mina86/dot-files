@@ -2,8 +2,12 @@
 
 set -eu
 
+if [ $# -eq 0 ]; then
+	set -- show
+fi
+
 if [ -x ~/bin/libexec/"music-pre-$1.sh" ]; then
-	source ~/bin/libexec/"music-pre-$1.sh"
+	source ~/bin/libexec/"music-pre-$1.sh" "$@"
 	exit $?
 fi
 
@@ -36,9 +40,5 @@ case ${1-} in if)
 		shift 2
 	fi
 esac
-
-if [ $# -eq 0 ]; then
-	set -- show
-fi
 
 ${player}_ctl "$@"

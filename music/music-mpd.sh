@@ -1,7 +1,12 @@
 #!/bin/sh
 
 _mpc() {
-	mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]' "$@" | sed -ne '
+	exec 3>&1
+	return $(
+		exec 4>&1 >&3
+		{
+			mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]' "$@" || echo $? >&4
+		} | sed -ne '
 		1 h
 		/^\(\[[a-z]*\] \).*/ {
 			s//\1/
@@ -13,7 +18,7 @@ _mpc() {
 			x
 			p
 		}
-	'
+	')
 }
 
 _mpc_file() {
