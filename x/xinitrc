@@ -42,10 +42,14 @@ init_kbd() {
 	unset dir layout variant options
 }
 
+gkrellm_maybe() {
+	[ -f "$1" ] && shift && exec gkrellm "$@" &
+}
+
 start_gkrellm() {
-	test -f ~/.gkrellm2/user-config && gkrellm &
+	gkrellm_maybe ~/.gkrellm2/user-config
 	for file in ~/.gkrellm2/user-config_S-*; do
-		test -f "$file" && gkrellm -s "${file##*/user-config_S-}" &
+		gkrellm_maybe "$file" -s "${file##*/user-config_S-}"
 	done
 	unset file
 }
