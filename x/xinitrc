@@ -74,6 +74,7 @@ start_wm() {
 		echo '!!!'
 		echo '!!! Sawfish not found; running xterm instead.'
 		echo '!!!'
+		unset SAWFISH_QUIT_CMD_FILE
 		xterm
 	# elif ssh-add -l >/dev/null 2>&1; then
 	#	sawfish
@@ -87,16 +88,11 @@ start_wm() {
 }
 
 exec_quit_cmd() {
-	if test -s "$1" && read cmd <$1; then
-		case "$cmd" in
-		poweroff|reboot)
-			exec /sbin/$cmd
-			;;
-		reboot-w)
-			exec /usr/local/sbin/reboot-w
-		esac
-	fi
-	exit 0
+	case ${1-} in
+	poweroff|reboot) exec /sbin/$1 ;;
+	reboot-w)        exec /usr/local/sbin/reboot-w
+	esac
+	exit
 }
 
 exec_x() {
@@ -106,8 +102,14 @@ exec_x() {
 
 	tmp=$(mktemp)
 	trap 'rm -f -- "$tmp"' 0
+
 	SAWFISH_QUIT_CMD_FILE=$tmp start_wm
-	exec_quit_cmd "$tmp"
+
+	[ -s "$tmp" ] && read cmd <$tmp || cmd=
+	rm -f -- "$tmp"
+	trap '' 0
+
+	exec_quit_cmd "$cmd"
 }
 
 main() {
