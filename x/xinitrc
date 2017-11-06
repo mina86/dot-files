@@ -99,7 +99,7 @@ exec_quit_cmd() {
 	exit 0
 }
 
-init_x() {
+exec_x() {
 	[ -f ~/.config/Xresources ] && xrdb -merge ~/.config/Xresources
 	init_screen
 	exec_background_tasks &
@@ -108,26 +108,28 @@ init_x() {
 	trap 'rm -f -- "$tmp"' 0
 	SAWFISH_QUIT_CMD_FILE=$tmp start_wm
 	exec_quit_cmd "$tmp"
-	unset tmp
 }
 
-case ${1-} in
-scr|screen)
-	shift
-	init_screen "$@"
-	exec_xset
-	;;
-kbd|key)
-	shift
-	init_kbd "$@"
-	exec_xset
-	;;
-'')
-	init_x "$@" >>/tmp/x-${USER-anonymous}-${DISPLAY-no-display}.log 2>&1
-	;;
-*)
-	echo "xinit: unrecognised subcommand: $1" >&2
-	echo 'usage: xinit (screen | kbd)' >&2
-	exit 1
-esac
+main() {
+	case ${1-} in
+	scr|screen)
+		shift
+		init_screen "$@"
+		exec_xset
+		;;
+	kbd|key)
+		shift
+		init_kbd "$@"
+		exec_xset
+		;;
+	'')
+		exec_x "$@" >>/tmp/x-${USER-anonymous}@${DISPLAY-no-display}.log 2>&1
+		;;
+	*)
+		echo "xinit: unrecognised subcommand: $1" >&2
+		echo 'usage: xinit (screen | kbd)' >&2
+		exit 1
+	esac
 }
+
+main "$@"
