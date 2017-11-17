@@ -92,7 +92,7 @@
         ;; Yeah, I know the RFC describing OpenGPG header never came to
         ;; fruition, but I might just as well use it instead of any other X-PGP
         ;; headers which are not standardised.
-        (headers '(("OpenPGP" . "id=AC1F5F5CD41888F8CC8458582060401250751FF4; url=http://mina86.com/mina86.pub")))
+        (headers '(("OpenPGP" . "id=AC1F5F5CD41888F8CC8458582060401250751FF4; url=https://mina86.com/mina86.pub")))
         (signature (expand-file-name "~/.mail/signature.txt")))
 
     (let ((face-png (expand-file-name "~/.mail/face.png")))
@@ -107,7 +107,7 @@
     (setq gnus-alias-identity-alist
         (list (list "priv" nil
                     (concat user-full-name " <" user-mail-address ">")
-                    "http://mina86.com/" headers "\n" signature)
+                    "https://mina86.com/" headers "\n" signature)
               (list "dc" nil
                     (concat user-full-name " <" user-mail-address ">")
                     "Google Inc"
