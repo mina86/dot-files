@@ -17,7 +17,7 @@
 	a      = am -3
 	b      = branch
 	br     = branch -v
-	ci     = "!f() { if [ $# -eq 0 ]; then git commit; else git commit -m \"$@\"; fi; }; f"
+	ci     = "!f() { git commit ${1+-m} \"$@\"; }; f"
 	amend  = commit --amend
 	fix    = "!f() { if [ $# -eq 0 ]; then git commit --amend -C HEAD; else git commit --fixup \"$@\"; fi; }; f"
 	wip    = commit -m wip
@@ -40,10 +40,10 @@
 	lp     = log -p
 	tip    = log -n1
 	k      = !gitk
-	edit   = "!f() { GIT_EDITOR=\"sed -i 1s/pick/edit/\" git rebase -i \"$1\"~; }; f"
+	edit   = "!f() { GIT_EDITOR='sed -i 1s/pick/edit/' git rebase -i \"$1\"~; }; f"
 	ed     = edit
 	sync   = remote update
-	patch  = "!f() { file=\"$1\"; shift; patch -p1 <$file \"$@\"; }; f"
+	patch  = "!f() { file=$1; shift; patch -p1 <$file \"$@\"; }; f"
 [user]
 	name = Michal Nazarewicz
 	email = mina86@mina86.com
