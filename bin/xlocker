@@ -3,14 +3,9 @@
 playing_file=$(umask 077; mktemp)
 trap 'rm -f -- "$playing_file"' 0
 
-(
-	if m pause-maybe; then
-		ln -sf ~/bin/m "$playing_file"
-	fi
-
-	sleep 1
-	exec xset dpms force off
-) &
+if m pause-maybe; then
+	exec ln -sf ~/bin/m "$playing_file"
+fi &
 
 if [ -e ~/bin/libexec/slock ]; then
 	~/bin/libexec/slock
