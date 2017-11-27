@@ -65,15 +65,6 @@
 
 (set-key message-mode-map "\C-ca" mn-ack-patch)
 
-(defun mn-email-to-dresscode-pl ()
-  "Returns whether email message is being sent to dresscode-pl@google.com."
-  (save-restriction
-    (message-narrow-to-headers)
-    (cl-some (lambda (hdr-name)
-               (let ((val (message-fetch-field hdr-name)))
-                 (and val (string-match "dresscode-pl@google.com" val))))
-             '("to" "cc" "bcc"))))
-
 (defun mn-email-to-non-google ()
   "Returns whether email message is being sent to some non-@google.com address."
   (save-restriction
@@ -97,7 +88,7 @@
 
     (let ((face-png (expand-file-name "~/.mail/face.png")))
       (if (not (file-exists-p face-png))
-        (message "~/.mail/face.png missing; no Face header will be used")
+          (message "~/.mail/face.png missing; no Face header will be used")
         (with-temp-buffer
           (insert-file-contents face-png)
           (if (<= (base64-encode-region (point-min) (point-max) t) 967)
@@ -105,24 +96,14 @@
             (message "~/.mail/face.png > 966 chars after encoding; no Face header will be used")))))
 
     (setq gnus-alias-identity-alist
-        (list (list "priv" nil
-                    (concat user-full-name " <" user-mail-address ">")
-                    "https://mina86.com/" headers "\n" signature)
-              (list "dc" nil
-                    (concat user-full-name " <" user-mail-address ">")
-                    "Google Inc"
-                    (cons (cons "Bcc" "coding-challenge-2015@googlegroups.com")
-                          headers) "\n" signature)))
-    (when has-corp
-      (push (list "corp" nil
-                  (concat user-full-name " <mpn@google.com>")
-                  "Google Inc" headers "\n" signature)
-            gnus-alias-identity-alist))
-
-    (setq gnus-alias-identity-rules
-          (cons '("dresscode-pl" mn-email-to-dresscode-pl "dc")
-                (when has-corp
-                  '(("non-google-address" mn-email-to-non-google "priv"))))))
+          `(("corp" nil ,(concat user-full-name " <mpn@google.com>")
+             "Google Inc" ,headers "\n" ,signature)
+            ("priv" nil ,(concat user-full-name " <" user-mail-address ">")
+             "https://mina86.com/" ,headers "\n" ,signature)))
+    (if has-corp
+        (setq gnus-alias-identity-rules
+              '(("non-google-address" mn-email-to-non-google "priv")))
+      (setq gnus-alias-identity-alist (cdr gnus-alias-identity-alist))))
 
   (setq gnus-alias-default-identity (caar gnus-alias-identity-alist))
   (add-hook 'message-setup-hook 'gnus-alias-determine-identity))
