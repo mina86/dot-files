@@ -1,0 +1,2 @@
+#!/bin/sh
+exec sawfish-client -f set-bg

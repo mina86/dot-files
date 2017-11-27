@@ -21,7 +21,6 @@ init_screen() {
 		rm -f -- "$tmp"
 	fi
 	unset tmp
-	test -x ~/bin/set-bg && ~/bin/set-bg
 }
 
 init_kbd() {
