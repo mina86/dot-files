@@ -1021,7 +1021,8 @@ rules so it is likely not to work."
        (when (boundp var)
          (set (make-local-variable var) tab-width)))
      '(c-basic-offset perl-indent-level cperl-indent-level  js-indent-level
-       sh-basic-offset sh-indentation python-indent-offset))
+       sh-basic-offset sh-indentation python-indent-offset css-indent-offset
+       typescript-indent-level))
      (cond
       (negative (setq indent-tabs-mode nil))
       (prefix-arg (setq indent-tabs-mode t)))))
