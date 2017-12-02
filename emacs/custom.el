@@ -1,9 +1,3 @@
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -74,3 +68,11 @@
  '(widget-button-face ((t (:background "blue" :foreground "cyan" :weight bold))) t)
  '(widget-field ((t (:background "blue"))))
  '(widget-field-face ((t (:background "blue"))) t))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (apache-mode notmuch bison-mode typescript-mode beacon rust-mode haskell-mode go-mode browse-kill-ring browse-kill-ring+ sed-mode less-css-mode markdown-mode smart-tabs-mode num3-mode multiple-cursors jinja2-mode google-c-style gitignore-mode gitconfig-mode gitattributes-mode form-feed emr auto-dim-other-buffers ace-jump-mode))))
