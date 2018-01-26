@@ -29,4 +29,7 @@ xkb_symbols "dvp" {
 
     // Micro under AltGr+m
     key <AB07> { [ m, M, U00B5 ] };
+
+    // Euro sign under AltGr+$; dead tilde moved to AltGr+Shift+$
+    key <TLDE> { [ dollar, asciitilde, EuroSign, dead_tilde ] };
 };
