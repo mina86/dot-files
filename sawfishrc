@@ -273,19 +273,15 @@ happened."
      ("W-o" "Geeqie"         "geeqie")
 
      ("W-l"                 . "xlocker")
-     ("XF86ScreenSaver"     . "xlocker")
      ("W-\""                . "m rewind")
-     ("XF86AudioPrev"       . "m rewind")
      ("W-'"                 . "m prev")
      ("W-j"                 . "m toggle")
-     ("XF86AudioPlay"       . "m toggle")
      ("W-k"                 . "m next")
-     ("XF86AudioNext"       . "m next")
-     ("XF86AudioStop"       . "m stop")
-     ("XF86AudioMute"       . "amixer set Master toggle")
      ("XF86Display"         . ,(sh-maybe home "/.xscreen-config"))
      ("XF86MonBrightnessUp"   . "xbacklight + 25")
      ("XF86MonBrightnessDown" . "xbacklight - 25"))))
+
+(bind-keys global-keymap "XF86AudioMute" (lambda ()))
 
 (define (mn-get-browser)
   "Selects Firefox, Opera or Chrome window.
@@ -355,16 +351,16 @@ Also wraps mouse to the centre of the window if not already above it."
 
 (let ((map (make-keymap)))
   (bind-keys map
-             "'"   (lambda () (mn-run "amixer set Master  25%"))
-             "W-'" (lambda () (mn-run "amixer set Master  30%"))
+;             "W-'" (lambda () (mn-run "amixer set Master  15%"))
+             "W-q" (lambda () (mn-run "amixer set Master  15%"))
+             "W-j" (lambda () (mn-run "amixer set Master  20%"))
+             "W-k" (lambda () (mn-run "amixer set Master  25%"))
+             "W-x" (lambda () (mn-run "amixer set Master  30%"))
+;             "'"   (lambda () (mn-run "amixer set Master  40%"))
              "q"   (lambda () (mn-run "amixer set Master  35%"))
-             "W-q" (lambda () (mn-run "amixer set Master  40%"))
-             "j"   (lambda () (mn-run "amixer set Master  50%"))
-             "W-j" (lambda () (mn-run "amixer set Master  60%"))
-             "k"   (lambda () (mn-run "amixer set Master  65%"))
-             "W-k" (lambda () (mn-run "amixer set Master  70%"))
-             "x"   (lambda () (mn-run "amixer set Master  75%"))
-             "W-x" (lambda () (mn-run "amixer set Master  80%")))
+             "j"   (lambda () (mn-run "amixer set Master  40%"))
+             "k"   (lambda () (mn-run "amixer set Master  45%"))
+             "x"   (lambda () (mn-run "amixer set Master  50%")))
   (bind-keys global-keymap "W-x" map))
 
 ; Having Super-Tab bound seems to overwrite existing W-Tab binding.
