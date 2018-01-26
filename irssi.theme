@@ -240,7 +240,7 @@ abstracts = {
   sb_act_hilight_color = "$0$1-%n";
 };
 formats = {
-  "fe-common/core" = { pubmsg = "{pubmsgnick $2 {pubnick \00303$0}}$1"; };
+  "fe-common/core" = { pubmsg = "{pubmsgnick $2 {pubnick \00313$0}}$1"; };
   "fe-common/irc" = {
     notice_public = "{noticenick {pubnick $0}}$2";
     notice_private = "{noticenick {pubnick $0}}$2";
