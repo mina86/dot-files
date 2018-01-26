@@ -176,9 +176,9 @@
       notmuch-show-mark-read-tags nil
       notmuch-show-all-multipart/alternative-parts nil
       notmuch-show-relative-dates nil
-      notmuch-show-insert-text/plain-hook
-      '(notmuch-wash-wrap-long-lines notmuch-wash-tidy-citations
-        notmuch-wash-elide-blank-lines notmuch-wash-excerpt-citations)
+      notmuch-show-insert-text/plain-hook '(notmuch-wash-tidy-citations
+                                            notmuch-wash-elide-blank-lines
+                                            notmuch-wash-excerpt-citations)
 
       notmuch-message-replied-tags '("replied" "-unread")
       notmuch-message-headers '("Subject" "To" "Cc" "Bcc" "Date")
