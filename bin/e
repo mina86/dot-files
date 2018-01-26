@@ -1,17 +1,129 @@
-#!/bin/sh
+#!/usr/bin/perl
 
-if [ $# -eq 0 ]; then
-	if [ -n "$DISPLAY" ]; then
-		exec emacsclient -a '' -c -n
-	else
-		exec emacsclient -a ''
-	fi
-fi
+use strict;
+use warnings;
 
-if emacsclient -n "$@" 2>/dev/null; then
-	: ok
-elif [ -n "$DISPLAY" ]; then
-	emacsclient -a '' -n "$@"
-else
-	emacsclient -a '' "$@"
-fi
+use Cwd;
+use IPC::Run;
+
+
+my $_devnull;
+
+sub devnull(@) {
+	if (!$_devnull) {
+		open($_devnull, '+<', '/dev/null') or die "e: /dev/null: $!\n";
+	}
+	$_devnull;
+}
+
+sub client(@) {
+	my ($out, $err);
+	if (@_ && $_[0] eq '-q') {
+		shift @_;
+		$out = devnull;
+	}
+	if (@_ && $_[0] eq '-Q') {
+		shift @_;
+		$err = devnull;
+	}
+
+	IPC::Run::run [qw(emacsclient -f server), @_], \undef, $out, $err;
+}
+
+
+sub has_x() {
+	defined $ENV{'DISPLAY'};
+}
+
+my $_is_remote;
+
+sub is_remote() {
+	if (!defined $_is_remote) {
+		my $home = $ENV{'HOME'};
+		$_is_remote = defined $home &&
+		  -e "$home/.emacs.d/server/server.is-remote";
+	}
+	$_is_remote;
+}
+
+
+my ($windmove, $stdin, @files) = ('', 0);
+
+while (defined(my $arg = shift)) {
+	if ($arg eq '-l') {
+		$windmove = 'left';
+	} elsif ($arg eq '-r') {
+		$windmove = 'right';
+	} elsif ($arg eq '-o') {
+		$windmove = 'other';
+	} elsif ($arg eq '--') {
+		last;
+	} elsif ($arg eq '-') {
+		$stdin = 1;
+	} elsif ($arg =~ /^-./) {
+		die "e: unknown option: $arg\n";
+	} else {
+		push @files, $arg;
+	}
+}
+push @files, @ARGV;
+
+if ($windmove eq 'other') {
+	$windmove = <<ELISP
+(condition-case nil
+    (windmove-right)
+  (error (windmove-left)))
+ELISP
+} elsif ($windmove) {
+	$windmove = "(condition-case nil (windmove-$windmove) (error nil))";
+}
+
+
+if ($stdin) {
+	if (@files) {
+		die "e: reading standard input is supported only if it’s the only file\n";
+	}
+
+	my $data;
+	$data = join '', <STDIN>;
+	$data =~ s/\\/\\\\/g;
+	$data =~ s/"/\\"/g;
+	$data = <<ELISP;
+(let ((buf (generate-new-buffer "*pipe*")))
+  (set-buffer buf)
+  (insert "$data")
+  (goto-char (point-min))
+  $windmove
+  (switch-to-buffer buf)
+  (x-focus-frame nil))
+ELISP
+	@ARGV = ('-e', $data);
+	undef $windmove;
+} elsif (!@files) {
+	my @ARGV = ('-a', '');
+	if (has_x) {
+		push @ARGV, '-c', '-n';
+	}
+	exit client(@ARGV) ? 0 : 1;
+} elsif (is_remote) {
+	# TODO: Don’t hard-code ‘/zrh’ prefix.
+	@ARGV = map { '/zrh' . Cwd::abs_path $_ } @files;
+}
+
+
+if ($windmove) {
+	client '-q', '-n', '-e', $windmove;
+}
+
+my @args;
+if (is_remote) {
+	@args = ('-n');
+} elsif (has_x) {
+	@args = ('-a', '', '-n')
+} else {
+	@args = ('-a', '', '-t')
+}
+if ($stdin) {
+	unshift @args, '-q';
+}
+exit client(@args, @ARGV) ? 0 : 1;
