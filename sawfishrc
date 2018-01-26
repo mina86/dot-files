@@ -478,90 +478,82 @@ Also wraps mouse to the centre of the window if not already above it."
     (mapc (lambda (prp) (window-put w prp value))
           '(sticky sticky-viewport cycle-skip window-list-skip task-list-skip))))
 
-(setq
- match-window-profile
- (let ((size (screen-size)))
-   (mapcar (lambda (wnd-rule)
-             (cons (car wnd-rule)
-                   (apply nconc
-                          (mapcar
-                           (lambda (rule)
-                             (and (string-match (car rule) size) (cdr rule)))
-                           (cdr wnd-rule)))))
-    '(;; Various terminals, size is specified via -g in command
-      (((WM_CLASS . "/Term$"))
-       ("1680x1050" (position  500 .   0))
-       ("1024x.*"   (position  480 . 100))
-       ("1600x1200" (position  492 .   0))
-       ("3200x1200" (position 1120 . 100))
-       (".*x1600"   (position  648 . 110))
-       ("2400x1920" (position  494 . 100))
-       ("3600x1080" (position 2900 . 110)))
 
-      (((WM_CLASS . "/IRC$"))
-       ("1680x1050" (position 1132 .  10))
-       ("1024x768"  (position  480 .  10))
-       ("1024x600"  (position  480 .   0))
-       ("1600x1200" (position  492 .   0))
-       ("3200x1200" (position 1120 .  10))
-       (".*x1600"   (position  648 .  10))
-       ("2400x1920" (position  494 .   0))
-       ("3600x1080" (position 2900 .  10))
-       (""          (sticky . #t) (sticky-viewport . #t)))
+;; (define-match-window-matcher 'screen
+;;   (lambda (w _prop value)
+;;     (and (let ((w) (car value)) (or (not w) (= (screen-width ) w)))
+;;          (let ((h) (car value)) (or (not h) (= (screen-height) h))))))
 
-      (((WM_CLASS . "/MPD$" ))
-       ("1680x1050" (position 1132 .   0))
-       ("1024x.*"   (position  480 .   0))
-       ("1600x1200" (position  492 .   0))
-       ("3200x1200" (position 1120 .   0))
-       (".*x1600"   (position  648 .   0))
-       ("2400x1920" (position  494 .   0))
-       ("3600x1080" (position 2900 .   0))
-       (""          (focus-when-mapped . #f) (focus-mode . click)
-                    (sticky-and-skip . #t)))
 
-      ;; Opera
-      (((WM_CLASS . "^Opera/opera$"))
-       ("1680x1050" (location  500  350   1179  700  1))
-       ("1920x1080" (location  500  350   1419  730  1))
-       ("1024x600"  (location    0    0   1024  600  2))
-       ("1024x768"  (location    0  368   1024  400  1))
-       ("1600x1200" (location  600  500   1000  700  1))
-       ("1200x1600" (location    0    0   1200 1600  2))
-       ("2400x1600" (location 1200    0   1200 1600  1))
-       ("3600x1080" (location    0    0   1920 1080  1) (maximize . both))
-       ("2400x1920" (location  974    0   1426 1920  1)))
+(let ((match-width
+       (lambda (_wnd w)
+         (= w (screen-width))))
+      (match-height
+       (lambda (_wnd h)
+         (= h (screen-height)))))
+  (mapc
+   (lambda (wnd-rule)
+     (let ((matches (car wnd-rule)))
+       (cond ((stringp matches)
+              (setq matches (list (cons 'WM_CLASS  matches))))
+             ((stringp (car matches))
+              (setq matches `((WM_CLASS . ,(car matches)) . ,(cdr matches)))))
+       (mapc
+        (lambda (rule)
+          (let ((m matches))
+            (unless (consp (car rule))
+              (let ((w (car rule)) (h (cadr rule)))
+                (when h (setq m (cons (list match-height h) m)))
+                (when w (setq m (cons (list match-width  w) m)))
+                (setq rule (cddr rule))))
+            (when (numberp (caar rule))
+              (setq rule (cons (cons 'location (car rule))
+                               (cdr rule))))
+            (setq match-window-profile (cons (cons m rule)
+                                             match-window-profile))))
+        (cdr wnd-rule))))
+   '(("/Term$"
+      (1920 1080  (1200  110   120   97)))
 
-       ;; Emacs
-      (((WM_CLASS . "^Emacs"))
-       ("1680x1050" (location    0    0     80  105  1) (maximize . vertical))
-       ("1920x1080" (location    0    0     80  108  1) (maximize . vertical))
-       ("1024x600"  (location    0    0     78   46  1) (maximize . vertical))
-       ("1024x768"  (location    0    0     80   76  1) (maximize . vertical))
-       ("1600x1200" (location    0    0     80  120  1) (maximize . vertical))
-       ("3200x1200" (location   72    0    170  118  1) (maximize . vertical))
-       ("2400x1920" (location    0    0     80  192  1) (maximize . vertical))
-       ("3600x1080" (location 1920    0    160  105  1) (maximize . vertical))
-       (".*x1600"   (location    0    0     80  160  1) (maximize . vertical)))
+     ("/IRC$"
+      (1920 1080  (1200   10   120   10))
+      (           (sticky . #t) (sticky-viewport . #t)))
 
-      ;; Some windows do not like alpha
-      (((WM_CLASS . "^Gimp/|^MPlayer/|^openttd/|^Inkscape/"))
-       (""          (alpha . 1)))
+     ("/MPD$"
+      (1920 1080  (1200    0   120   1))
+      (           (focus-when-mapped . #f) (focus-mode . click)
+                  (sticky-and-skip . #t)))
 
-      ;; GIMP
-      (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-[^s]"))
-       (""          (viewport 2 . 1) (group . Gimp) (alpha . 1))
-       ("1200x1600|1024x600" (viewport 3 . 1)))
+     ("^Firefox(-esr)?/Navigator$"
+      (1920 1080  (   0    0  1920 1080  2))
+      )
 
-      (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
-       (""          (place-mode . centered) (depth . 16)
-                    (focus-when-mapped . #f) (never-focus . #t)
-                    (sticky-and-skip . #t)))
+     ;; Emacs
+     ("^Emacs"
+      (1680 1050  (   0    0    80  105  1) (maximize . vertical))
+      (1920 1080  (   0    0   162  107  1) (maximize . vertical))
+      (1600 1200  (   0    0    80  120  1) (maximize . vertical))
+      (3200 1200  (  72    0   170  118  1) (maximize . vertical))
+      (2400 1920  (   0    0    80  192  1) (maximize . vertical))
+      (3600 1080  (1920    0   160  105  1) (maximize . vertical))
+      (#f   1600  (   0    0    80  160  1) (maximize . vertical)))
 
-      ;; Geeqie
-      (((WM_ICON_NAME . "Geeqie$"))
-       (""          (viewport 3 . 1) (alpha . 1))
-       ("1200x1600" (viewport 4 . 1)))))))
+     ;; Some windows do not like alpha
+     ("^Gimp/|^MPlayer/|^openttd/|^Inkscape/"
+      ((alpha . 1)))
+
+     ;; GIMP
+     (("^Gimp/gimp$" (WM_WINDOW_ROLE . "^gimp-[^s]"))
+      ((viewport 2 . 1) (group . Gimp) (alpha . 1)))
+
+     (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
+      (           (place-mode . centered) (depth . 16) (never-focus . #t)
+                  (focus-when-mapped . #f) (sticky-and-skip . #t)))
+
+     ;; Geeqie
+     (((WM_ICON_NAME . "Geeqie$"))
+      (           (viewport 3 . 1) (alpha . 1))
+      (1200 1600  (viewport 4 . 1))))))
 
 ;;}}}
 
