@@ -176,7 +176,7 @@ happened."
 ;; * if blur is nil     takes alpha's car,
 ;; * if blur is not nil takes alpha's cdr.
 ;; If now alpha is not a number returns `window-alpha-max'.
-;; If alpha is within [0, 1] multiplies it by `window-alpha-max'
+;; If alpha is within [0, 1] mueltiplies it by `window-alpha-max'
 ;; Returns (max `window-alpha-min' (min `window-alpha-max' alpha))
 (defun window-alpha-value (alpha blur)
   (let ((a (if (listp alpha) (if blur (cdr alpha) (car alpha)) alpha)))
