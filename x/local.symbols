@@ -19,17 +19,24 @@ xkb_symbols "dvp" {
 
     // Add ellipsis to AltGr+Shift+Comma.  xkeyboard-config has it
     // unused, Debian uses it for “ which I already have at ‘k’.
-    key <AD02> { [ comma,           less,           guillemotleft,   U2026      ] };
+    key <AD02> { [ comma,      less,     guillemotleft,        U2026 ] };
 
     // Swap “ and ‘ as well as ” and ’ to match UK quotes order.
-    //             Unmodified    Shift           AltGr            Shift+AltGr
-    key <AB01> { [ apostrophe,   quotedbl,       rightsinglequotemark, dead_acute ] };
-    key <AB04> { [ k,            K,              leftsinglequotemark, leftdoublequotemark ] };
-    key <AB06> { [ b,            B,              rightsinglequotemark, rightdoublequotemark ] };
+    key <AB01> { [ apostrophe, quotedbl, rightsinglequotemark, dead_acute ] };
+    key <AB04> { [ k,          K,        leftsinglequotemark,  leftdoublequotemark ] };
+    key <AB06> { [ b,          B,        rightsinglequotemark, rightdoublequotemark ] };
 
     // Micro under AltGr+m
     key <AB07> { [ m, M, U00B5 ] };
 
     // Euro sign under AltGr+$; dead tilde moved to AltGr+Shift+$
     key <TLDE> { [ dollar, asciitilde, EuroSign, dead_tilde ] };
+
+    // Make Swiss/UK keyboard layouts more bearable.  By turning the LSGT key
+    // (which is between left shift and ‘z’) into shift, left shift’s width
+    // becomes a more palatable.
+    key <LSGT> {
+        type[Group1] = "TWO_LEVEL",
+        symbols[Group1] = [ Shift_L, ISO_Prev_Group ]
+    };
 };
