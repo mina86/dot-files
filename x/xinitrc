@@ -13,9 +13,9 @@ exec_xset() {
 }
 
 init_screen() {
-	if [ -e ~/bin/libexec/xscreen-config.pl ]; then
+	if [ -e ~/.local/libexec/xscreen-config.pl ]; then
 		tmp=$(mktemp)
-		if perl -w ~/bin/libexec/xscreen-config.pl "$@" >$tmp; then
+		if perl -w ~/.local/libexec/xscreen-config.pl "$@" >$tmp; then
 			sh -x -- "$tmp"
 		fi
 		rm -f -- "$tmp"

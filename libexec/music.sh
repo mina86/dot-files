@@ -6,15 +6,15 @@ if [ $# -eq 0 ]; then
 	set -- show
 fi
 
-if [ -x ~/bin/libexec/"music-pre-$1.sh" ]; then
-	source ~/bin/libexec/"music-pre-$1.sh" "$@"
+if [ -x ~/.local/libexec/"music-pre-$1.sh" ]; then
+	source ~/.local/libexec/"music-pre-$1.sh" "$@"
 	exit $?
 fi
 
 found=false
 for player in audacious spotify mpd; do
-	if [ -x ~/bin/libexec/music-$player.sh ]; then
-		source ~/bin/libexec/music-$player.sh
+	if [ -x ~/.local/libexec/music-$player.sh ]; then
+		source ~/.local/libexec/music-$player.sh
 		if "${player}_query" >/dev/null 2>&1; then
 			found=true
 			break

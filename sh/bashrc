@@ -163,7 +163,7 @@ if which git >/dev/null 2>&1; then
 				unset __GIT_PROMPT_PWD __GIT_PROMPT_GITDIR
 			esac
 			case \"\$1\" in ?*)
-				~/bin/g \"\$@\"
+				~/.local/bin/g \"\$@\"
 			esac
 		}; g \"\$@\""
 

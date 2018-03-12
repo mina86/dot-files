@@ -192,13 +192,19 @@ MINA86RC=done
 export MINA86RC
 
 # PATH
-if ! echo ":$PATH:" | grep -Fe ":$HOME/bin:" -e ':~/bin:' >/dev/null 2>&1; then
-	test -d ~/code/tinyapps && PATH="$HOME/code/tinyapps:$PATH"
-	test -d ~/bin && PATH="$HOME/bin:$PATH"
-	uname_m=`uname -m`
-	test -d ~/bin/$uname_m && PATH="$HOME/bin/$uname_m:$PATH"
-	unset uname_m
-fi
+case ":$PATH:" in
+*:"$HOME/bin":*|*:"~/bin":*|*:"$HOME/.local/bin":*|*:"~/.local/bin":*)
+	: ;;
+*)
+	if [ -d ~/code/tinyapps ]; then
+		PATH="$HOME/code/tinyapps:$PATH"
+	fi
+	if [ -d ~/.local/bin ]; then
+		PATH="$HOME/.local/bin:$PATH"
+	elif [ -d ~/bin ]; then
+		PATH="$HOME/bin:$PATH"
+	fi
+esac
 
 # Remove relative paths
 PATH="$(echo ":$PATH:" | sed -e 's~:\(\([^/:][^:]*\)\?:\)*~:~g

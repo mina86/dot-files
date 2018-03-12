@@ -237,8 +237,8 @@ handle() {
 }
 
 case $direction in to)
-	mkdir -p ~/bin/libexec ~/.config/git ~/.config/xkb/keymap \
-	      ~/.config/xkb/symbols
+	mkdir -p ~/.local/bin ~/.local/libexec ~/.emacs.d ~/.config/git \
+	      ~/.config/xkb/keymap ~/.config/xkb/symbols ~/.urxvt
 esac
 
 while read file _dest; do
@@ -263,9 +263,8 @@ inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
 sawfishrc          ~/.sawfish/rc
 statuses           ~/.irssi/
-bin/               ~/
-bin/libexec/       ~/
-music/             ~/bin/libexec/@
+bin/               ~/.local/
+libexec/           ~/.local/
 sh/                ~/.@
 vimperatorrc       ~/.vimperator/rc
 x/Xresources.tpl   ~/.config/@

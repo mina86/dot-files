@@ -4,11 +4,11 @@ playing_file=$(umask 077; mktemp)
 trap 'rm -f -- "$playing_file"' 0
 
 if m pause-maybe; then
-	exec ln -sf ~/bin/m "$playing_file"
+	exec ln -sf ~/.local/bin/m "$playing_file"
 fi &
 
-if [ -e ~/bin/libexec/slock ]; then
-	~/bin/libexec/slock
+if [ -e ~/.local/libexec/slock ]; then
+	~/.local/libexec/slock
 else
 	xlock -mode blank -bg black -fg gray3
 fi

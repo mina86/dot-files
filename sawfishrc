@@ -262,7 +262,7 @@ happened."
             (mn-run spec)))))))
 
  (let* ((home (getenv "HOME"))
-        (libexec (concat home "/bin/libexec/"))
+        (libexec (concat home "/.local/libexec/"))
         (sh-maybe (lambda (dir fname #!optional args)
                     (let ((fname (concat dir fname)))
                       (if (file-exists-p fname)
@@ -413,7 +413,7 @@ Also wraps mouse to the centre of the window if not already above it."
 
 ;; Desktop background
 
-(when (file-exists-p (concat (getenv "HOME") "/bin/libexec/set-bg"))
+(when (file-exists-p (concat (getenv "HOME") "/.local/libexec/set-bg"))
   (require 'rep.io.timers)
 
   (define set-bg--timer (make-timer (lambda (_) (set-bg))))
@@ -429,7 +429,7 @@ Also wraps mouse to the centre of the window if not already above it."
                      (set-process-function proc set-bg--state-func)
                      (set-process-dir proc "/")
                      (set-process-prog proc (concat (getenv "HOME")
-                                                    "/bin/libexec/set-bg"))
+                                                    "/.local/libexec/set-bg"))
                      proc))
     ())
 
