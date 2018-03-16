@@ -27,23 +27,12 @@ sub client(@) {
 		$err = devnull;
 	}
 
-	IPC::Run::run [qw(emacsclient -f server), @_], \undef, $out, $err;
+	IPC::Run::run ['emacsclient', @_], \undef, $out, $err;
 }
 
 
 sub has_x() {
 	defined $ENV{'DISPLAY'};
-}
-
-my $_is_remote;
-
-sub is_remote() {
-	if (!defined $_is_remote) {
-		my $home = $ENV{'HOME'};
-		$_is_remote = defined $home &&
-		  -e "$home/.emacs.d/server/server.is-remote";
-	}
-	$_is_remote;
 }
 
 
@@ -105,9 +94,6 @@ ELISP
 		push @ARGV, '-c', '-n';
 	}
 	exit client(@ARGV) ? 0 : 1;
-} elsif (is_remote) {
-	# TODO: Don’t hard-code ‘/zrh’ prefix.
-	@ARGV = map { '/zrh' . Cwd::abs_path $_ } @files;
 }
 
 
@@ -115,15 +101,8 @@ if ($windmove) {
 	client '-q', '-n', '-e', $windmove;
 }
 
-my @args;
-if (is_remote) {
-	@args = ('-n');
-} elsif (has_x) {
-	@args = ('-a', '', '-n')
-} else {
-	@args = ('-a', '', '-t')
-}
+my @args = ('-a', '', has_x ? '-n' : '-t');
 if ($stdin) {
 	unshift @args, '-q';
 }
-exit client(@args, @ARGV) ? 0 : 1;
+exit client(@args, @files) ? 0 : 1;
