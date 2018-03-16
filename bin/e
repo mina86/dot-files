@@ -9,7 +9,7 @@ use IPC::Run;
 
 my $_devnull;
 
-sub devnull(@) {
+sub devnull {
 	if (!$_devnull) {
 		open($_devnull, '+<', '/dev/null') or die "e: /dev/null: $!\n";
 	}
@@ -17,17 +17,12 @@ sub devnull(@) {
 }
 
 sub client(@) {
-	my ($out, $err);
+	my $out;
 	if (@_ && $_[0] eq '-q') {
 		shift @_;
 		$out = devnull;
 	}
-	if (@_ && $_[0] eq '-Q') {
-		shift @_;
-		$err = devnull;
-	}
-
-	IPC::Run::run ['emacsclient', @_], \undef, $out, $err;
+	IPC::Run::run ['emacsclient', @_], \undef, $out, undef;
 }
 
 
