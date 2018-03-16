@@ -36,9 +36,10 @@ sub has_x() {
 }
 
 
-my ($windmove, $stdin, @files) = ('', 0);
+my ($windmove, $stdin) = ('', 0);
 
-while (defined(my $arg = shift)) {
+for ($_ = 0; $_ < @ARGV; ) {
+	my $arg = $ARGV[$_];
 	if ($arg eq '-l') {
 		$windmove = 'left';
 	} elsif ($arg eq '-r') {
@@ -52,10 +53,11 @@ while (defined(my $arg = shift)) {
 	} elsif ($arg =~ /^-./) {
 		die "e: unknown option: $arg\n";
 	} else {
-		push @files, $arg;
+		++$_;
+		next;
 	}
+	splice @ARGV, $_, 1;
 }
-push @files, @ARGV;
 
 if ($windmove eq 'other') {
 	$windmove = <<ELISP
@@ -69,8 +71,8 @@ ELISP
 
 
 if ($stdin) {
-	if (@files) {
-		die "e: reading standard input is supported only if it’s the only file\n";
+	if (@ARGV) {
+		die "e: reading standard input is supported if there are no other arguments\n";
 	}
 
 	my $data;
@@ -88,8 +90,8 @@ if ($stdin) {
 ELISP
 	@ARGV = ('-e', $data);
 	undef $windmove;
-} elsif (!@files) {
-	my @ARGV = ('-a', '');
+} elsif (!@ARGV) {
+	@ARGV = ('-a', '');
 	if (has_x) {
 		push @ARGV, '-c', '-n';
 	}
@@ -105,4 +107,4 @@ my @args = ('-a', '', has_x ? '-n' : '-t');
 if ($stdin) {
 	unshift @args, '-q';
 }
-exit client(@args, @files) ? 0 : 1;
+exit client(@args, @ARGV) ? 0 : 1;
