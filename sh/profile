@@ -13,17 +13,6 @@ elif [ -r ~/.shellrc ]; then
 	. ~/.shellrc
 fi
 
-# 64/32 bit differences
-bits=32
-if [ x"`uname -m`" = xx86_64 ]; then
-	bits=64
-fi
-for dir in ~/.gkrellm2/plugins ~/.irssi/modules; do
-	if [ -e "$dir$bits" ]; then
-		ln -sf -- "${dir##*/}$bits" "$dir"
-	fi
-done
-
 # Start emacs if not running
 if which emacs >/dev/null 2>/dev/null &&
    ! [ -e /tmp/emacs$UID/server ]; then
