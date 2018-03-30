@@ -29,6 +29,10 @@
 
 (package-initialize)
 
+(when (fboundp 'auto-compile-on-save-mode)
+  (auto-compile-on-save-mode))
+(setq load-prefer-newer t)
+
 ;;}}}
 ;;{{{ Utilities
 
@@ -118,122 +122,6 @@ list.  BODY is body of the lambda to be added."
           . ,(mapcar (lambda (h) `(add-hook (quote ,h) ,func))
                      (cadr hook))))
     `(add-hook ,hook (function (lambda () ,@body)))))
-
-;;}}}
-;;{{{ Auto-byte-compile
-
-(defvar auto-byte-compile-files-list
-  (eval-when-compile
-    (append
-     (when user-init-file
-       (if (string-match "\\.elc$" user-init-file)
-           (list
-            (substring user-init-file 0 -4)
-            (substring user-init-file 0 -1))
-         (list user-init-file)))
-     (list (concat user-emacs-directory "/init.el")
-           (concat user-emacs-directory "/mail.el"))))
-  "List of files to auto compile.")
-
-(defun auto-byte-compile-file (&optional files match regexp)
-  "Byte compiles file matching criteria.
-FILES can be
-- nil in which case value of the `buffer-file-name' variable will be
-  used unless it returns nil in which case no action will be taken;
-- a string which is equivalent to passing list with that string as the
-  only element;
-- a list of strings representing file names; or
-- anything else which is equivalent to passing
-  `auto-byte-compile-files-list'.
-
-Entries equal to \".\", \"..\" or ending with \"/.\" or \"/..\"
-are ignored.  Directories starting with a dot will be ignored.
-If element is a directory it will be processed recursively but if
-REGEXP is nil only files ending with \".el\" will be processed.
-
-MATCH can be
-- nil which is equivalent to passing `auto-byte-compile-files-list';
-- a string which is equivalent to passing list with that string as the
-  only element;
-- a list in which case file have to be in that list to be processed; or
-- anything else in which case file will be processed regardless of name.
-
-If any element of MATCH is a string ending with a slash ('/') it
-is treated as directory name (no checking is done if it is really
-a directory or even if it exists) and file is said to match such
-entry if it begins with it thus all files in given directory will
-match.
-
-If called interacivelly without prefix arg will behave as with
-MATCH equal t.  With prefix arg will behave as with MATCH equal
-nil.
-
-REGEXP must be nil which is equivalent with passing a list
-containing only empty string or a list of regular expressions
-which file have to match to be processed.
-
-So the default is to auto-compile the current file iff it exists
-in `auto-byte-compile-files-list'.
-
-Non-string elements in list will be ignored.
-
-Auto-compilation means that file will be byte-compiled iff the
-compiled version does not exits or is older then the file
-itself."
-  (interactive (list (read-file-name "Auto byte compile file:" nil nil t)
-                     (not current-prefix-arg)))
-
-  (when (or files (setq files buffer-file-name))
-    (setq files (cond ((stringp files) (list files))
-                      ((listp   files) files)
-                      (t               auto-byte-compile-files-list))
-          match (mapcar 'expand-file-name
-                        (cond ((null match)    auto-byte-compile-files-list)
-                              ((stringp match) (list match))
-                              ((listp match)   match))))
-
-    (let (f)
-      (while files
-        (setq f     (expand-file-name (car files))
-              files (cdr files))
-        (cond
-         ((string-match "\\(?:^\\|/\\)\\.\\.?$" f)
-          "Ignored")
-         ((file-directory-p f)
-          (unless (string-match f "\\(?:^\\|/\\)\\.")
-            (if regexp
-                (setq files (append (directory-files f t nil t) files))
-              (auto-byte-compile-file (directory-files f t nil t)
-                                      (or match t) '("\\.el$")))))
-         ((and (file-newer-than-file-p f (byte-compile-dest-file f))
-               (or (not match)
-                   (catch 'found
-                     (dolist (m match)
-                       (if (string= m (if (string-match "/$" m)
-                                          (substring f 0 (length m)) f))
-                           (throw 'found t)))))
-               (or (not regexp)
-                   (catch 'found (dolist (r regexp)
-                                   (if (string-match r f) (throw 'found t)))))
-               (byte-compile-file f))))))))
-
-(defun auto-byte-compile-buffer (&optional match buffer)
-  "Auto compiles file in given buffer if in Lisp mode.
-MATCH has the same meaning as in `auto-byte-compile-file' function.
-If BUFFER is nil, current buffer is used.  Buffer is compiled only if
-major mode of BUFFER is 'lisp-mode or 'emacs-lisp-mode.
-
-If called interacivelly will behave as with MATCH equal t and
-BUFFER equal nil unless prefix argument was given in which case
-MATCH will equal nil."
-  (interactive (list (not current-prefix-arg) nil))
-  (and (buffer-file-name buffer)
-       (memq (if buffer (with-current-buffer buffer major-mode) major-mode)
-             '(lisp-mode emacs-lisp-mode))
-       (auto-byte-compile-file (buffer-file-name buffer) match)))
-
-(add-hook 'kill-buffer-hook 'auto-byte-compile-buffer)
-(add-lambda-hook 'kill-emacs-hook (auto-byte-compile-file t))
 
 ;;}}}
 ;;{{{ Bindings
@@ -748,8 +636,8 @@ modified beforehand."
   (interactive "P")
   (if touch (set-buffer-modified-p t))
   (save-buffer)
-  (if (or (eq major-mode 'lisp-mode) (eq major-mode 'emacs-lisp-mode))
-      (auto-byte-compile-file nil t)
+  (if (derived-mode-p 'emacs-lisp-mode)
+      (byte-compile-file (buffer-file-name))
     (let (v (vars (if alt (cadr mn-compile-vars) (car mn-compile-vars))))
       (while (set 'v (pop vars)) (setenv (car v) (cadr v))))
     (if (and recompile (fboundp 'recompile))
@@ -816,7 +704,6 @@ modified beforehand."
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (when (file-exists-p custom-file)
   (load-file custom-file))
-(push custom-file auto-byte-compile-files-list)
 
 ;; Other
 (show-paren-mode t)               ;show matching parenthesis.
