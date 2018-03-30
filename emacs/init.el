@@ -324,9 +324,8 @@ perform stripping and behaves as plain `save-buffer'."
     (setq-default browse-kill-ring-display-duplicates nil
                   browse-kill-ring-highlight-current-entry t
                   browse-kill-ring-highlight-inserted-item t
-                  browse-kill-ring-separator "——————————")
-    ;;       browse-kill-ring-separator "\x0C")  ; form feed
-    ;; (add-hook 'browse-kill-ring-hook 'form-feed-mode))
+                  browse-kill-ring-separator "\x0C")  ; form feed
+    (add-hook 'browse-kill-ring-hook 'form-feed-mode)
     (with-no-warnings
       (browse-kill-ring-default-keybindings))))
 

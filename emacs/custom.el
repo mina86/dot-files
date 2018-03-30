@@ -40,6 +40,7 @@
  '(font-lock-type-face ((t (:foreground "palegreen"))))
  '(font-lock-variable-name-face ((t (:foreground "lightgoldenrod"))))
  '(font-lock-warning-face ((t (:foreground "pink" :weight bold))))
+ '(form-feed-line ((t (:strike-through "#366"))))
  '(fringe ((t (:background "#112211"))))
  '(header-line ((t (:inherit mode-line :background "#006" :foreground "#FFF" :box nil))))
  '(help-argument-name ((t (:inherit font-lock-variable-name-face))))
