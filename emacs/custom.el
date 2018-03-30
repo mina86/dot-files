@@ -45,7 +45,6 @@
  '(help-argument-name ((t (:inherit font-lock-variable-name-face))))
  '(highlight ((t (:background "#060" :underline "#0F0"))))
  '(hl-line ((t (:background "#003"))))
- '(keywiz-command-face ((t (:foreground "cyan" :weight bold :height 1.2 :inherit (quote variable-pitch)))))
  '(keywiz-right-face ((t (:foreground "green"))))
  '(lazy-highlight ((t (:background "paleturquoise4"))))
  '(link ((t (:foreground "cyan" :underline t))))
@@ -74,5 +73,4 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   (quote
-    (apache-mode notmuch bison-mode typescript-mode beacon rust-mode haskell-mode go-mode browse-kill-ring browse-kill-ring+ sed-mode less-css-mode markdown-mode smart-tabs-mode num3-mode multiple-cursors jinja2-mode google-c-style gitignore-mode gitconfig-mode gitattributes-mode form-feed emr auto-dim-other-buffers ace-jump-mode))))
+   '(ace-jump-mode apache-mode auto-dim-other-buffers beacon bison-mode browse-kill-ring form-feed gitattributes-mode gitconfig-mode gitignore-mode go-mode google-c-style haskell-mode less-css-mode markdown-mode multiple-cursors notmuch num3-mode rust-mode sed-mode smart-tabs-mode typescript-mode)))

@@ -10,19 +10,24 @@
   '(defun enriched-decode-display-prop (start end &optional _param)
      (list start end)))
 
-;;{{{ System dependend data and directories
-
-;; Add  ~/.emacs.d/elisp  to load path
-(when (file-directory-p (concat user-emacs-directory "elisp"))
-  (eval-and-compile
-    (setq load-path (cons (concat user-emacs-directory "elisp") load-path))))
-
-;; Must come before configurations of installed packages.
-(package-initialize)
-
-(eval-when-compile (require 'package))
+;; Configure and activate packages
+(require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.milkbox.net/packages/")))
+                         ("melpa" . "https://melpa.milkbox.net/packages/"))
+      package-menu-hide-low-priority t
+      package-archive-priorities '(("gnu" . 100)))
+
+(unless package-archive-contents
+  (package-refresh-contents))
+;; This is similar to ‘package-install-selected-packages’ except it doesn’t ask
+;; any questions.
+(dolist (pkg package-selected-packages)
+  (unless (package-installed-p pkg)
+    (condition-case err
+        (package-install pkg t)
+      (error (message (error-message-string err))))))
+
+(package-initialize)
 
 ;;}}}
 ;;{{{ Utilities
