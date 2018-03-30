@@ -1098,29 +1098,11 @@ the open brace was real open brace or part of comment/string."
                           (other    . "mina86")))
 
   (add-lambda-hook 'c-common-mode-hook
-    (when buffer-file-name
-      (let ((fn (file-name-nondirectory buffer-file-name)))
-        (setq-local compile-command
-                    (concat "make -k "
-                            (substring
-                             fn 0 (string-match "\\.[^\\.]*$" fn 1)))))
-      (and (string-match-p "/google3/" buffer-file-name)
-           (or (assoc "google" c-style-alist)
-               (when (and (load "google-c-style" t) (boundp 'google-c-style))
-                 (c-add-style "google" google-c-style)
-                 t))
-           (c-set-style "google")))))
-
-;; https://github.com/nelhage/elisp/blob/master/dot-emacs
-(defun smells-like-c++ ()
-  (and (string-match "\\.h\\'" (buffer-name))
-       (save-excursion
-         (goto-char (point-min))
-         (save-match-data
-           (re-search-forward "\\<\\(class\\|template\\|using\\)\\>"
-                              (min (point-max) (+ (point-min) 4096)) t)))))
-
-(add-to-list 'magic-mode-alist '(smells-like-c++ . c++-mode))
+    (and buffer-file-name
+         (string-match-p "/\\(google3\\|com/barcap\\)/" buffer-file-name)
+         (cond
+          ((assoc "google" c-style-alist) (c-set-style "google"))
+          ((boundp 'google-c-style) (c-add-style "google" google-c-style t))))))
 
 ;;}}}
 ;;{{{   HTML/XML & comapny Mode
