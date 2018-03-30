@@ -236,27 +236,6 @@ three times - back to where it was at the beginning."
 (substitute-key-definition 'move-end-of-line 'my-end (current-global-map))
 
 ;;}}}
-;;{{{   Pager/Scrolling
-
-(setq scroll-error-top-bottom t)
-(setq scroll-preserve-screen-position t)
-
-;; Makes paging functions work the way god intended
-;; http://www.docs.uu.se/~mic/emacs.html
-;; pager.el was modified by me
-(when (eval-when-compile (load "pager" t))
-  (require 'pager)
-  (setq pager-goto-edge t)
-  (substitute-key-definition 'scroll-down 'pager-page-up
-                             (current-global-map))
-  (substitute-key-definition 'scroll-down-command 'pager-page-up
-                             (current-global-map))
-  (substitute-key-definition 'scroll-up 'pager-page-down
-                             (current-global-map))
-  (substitute-key-definition 'scroll-up-command 'pager-page-down
-                             (current-global-map)))
-
-;;}}}
 ;;{{{   Save with no blanks
 
 ;; Save with no trailing whitespaces
@@ -928,7 +907,9 @@ rules so it is likely not to work."
 ;; Scrolling/moving
 (setq scroll-step 1               ;scroll one line
       hscroll-step 1              ;scroll one column
-      next-line-add-newlines nil) ;no new lines with down arrow key
+      next-line-add-newlines nil  ;no new lines with down arrow key
+      scroll-error-top-bottom t
+      scroll-preserve-screen-position t)
 
 ;;}}}
 ;;{{{ Major Modes
