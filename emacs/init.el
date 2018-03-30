@@ -1,13 +1,13 @@
 ;; init.el  -- Emacs configuration file             -*- lexical-binding: t -*-
 
-;; Copyright 2004-2015 by Michal Nazarewicz (mina86@mina86.com)
+;; Copyright 2004-2018 by Michal Nazarewicz (mina86@mina86.com)
 ;; Some parts of the code may be © by their respective authors.
 
 ;;; Code:
 
 ;; Mitigate Bug#28350 (security) in Emacs 25.2 and earlier.
 (eval-after-load "enriched"
-  '(defun enriched-decode-display-prop (start end &optional param)
+  '(defun enriched-decode-display-prop (start end &optional _param)
      (list start end)))
 
 ;;{{{ System dependend data and directories
@@ -299,6 +299,7 @@ the buffer, thrice - back to where it was at the beginning."
 (substitute-key-definition 'move-beginning-of-line 'my-home
                            (current-global-map))
 
+(eval-when-compile (require 'message))
 (eval-after-load "message-mode"
   '(progn
      (defun my-message-home ()
@@ -311,7 +312,7 @@ Otherwise (when it’s in message body), the point goes
 to 1. beginning of line, 2. beginning of the message body
 and 3. wrap to it’s original position."
        (interactive)
-       (times-called-cond (setq my-home-end--point (point))
+       (seq-times-do nil (setq my-home-end--point (point))
 	 ;; First time:
 	 (progn
 	   (beginning-of-line)
@@ -448,13 +449,14 @@ perform stripping and behaves as plain `save-buffer'."
 ;; Use browse-kill-ring
 (add-lambda-hook 'after-init-hook
   (when (load "browse-kill-ring" t)
-    (setq browse-kill-ring-display-duplicates nil
-          browse-kill-ring-highlight-current-entry t
-          browse-kill-ring-highlight-inserted-item t
-          browse-kill-ring-separator "——————————")
+    (setq-default browse-kill-ring-display-duplicates nil
+                  browse-kill-ring-highlight-current-entry t
+                  browse-kill-ring-highlight-inserted-item t
+                  browse-kill-ring-separator "——————————")
     ;;       browse-kill-ring-separator "\x0C")  ; form feed
     ;; (add-hook 'browse-kill-ring-hook 'form-feed-mode))
-    (browse-kill-ring-default-keybindings)))
+    (with-no-warnings
+      (browse-kill-ring-default-keybindings))))
 
 ;;}}}
 ;;{{{   Just one space
@@ -586,6 +588,7 @@ If function given tries to `describe-function' otherwise uses
 ;;}}}
 ;;{{{     F3/F4 - keyboard macros
 
+(eval-when-compile (require 'kmacro))
 (defun kmacro-end-or-call-possibly-on-region-lines (arg &optional no-repeat)
   "End keyboard macro or call it.
 End defining a keyboard macro if one is being defined and if not call
@@ -601,7 +604,7 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
          kmacro-view-last-item)
     (kmacro-exec-ring-item (car kmacro-view-last-item) arg))
    ((and arg (listp arg))
-    (kmacro-call-ring-2nd 1))
+    (with-no-warnings (kmacro-call-ring-2nd 1)))
    ((use-region-p)
     (apply-macro-to-region-lines (region-beginning) (region-end)))
    (t
@@ -618,19 +621,17 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
   (set-key [(f5)]
            (load (concat user-emacs-directory "mail.el"))
            (set-key [(f5)] notmuch)
-           (notmuch)))
+           (with-no-warnings (notmuch))))
 
 ;;}}}
 ;;{{{     F6 - notes
 
 (require 'remember)
 (when (fboundp 'remember-notes)
-  (setq remember-notes-auto-save-visited-file-name t
-        remember-notes-buffer-name "*scratch*")
-  (setq initial-buffer-choice
-        (lambda ()
-          (kill-buffer remember-notes-buffer-name)
-          (remember-notes))))
+  (setq remember-notes-buffer-name "*scratch*"
+        initial-buffer-choice (lambda ()
+                                (kill-buffer remember-notes-buffer-name)
+                                (remember-notes))))
 
 (set-key [(f6)] remember-notes)
 
@@ -727,7 +728,6 @@ set and cadr is a list is a list of alternative enviroment variables.
 Each list is a list of two element lists which car is a enviroment
 variables name and cadr is value.")
 
-
 (defun mn-compile (&optional alt recompile touch)
   "Compile current file.
 If ALT is omited or nil sets CFLAGS, CXXFLAGS, CPPFLAGS and
@@ -749,7 +749,9 @@ modified beforehand."
       (auto-byte-compile-file nil t)
     (let (v (vars (if alt (cadr mn-compile-vars) (car mn-compile-vars))))
       (while (set 'v (pop vars)) (setenv (car v) (cadr v))))
-    (if recompile (recompile) (call-interactively 'compile))))
+    (if (and recompile (fboundp 'recompile))
+        (recompile)
+      (call-interactively 'compile))))
 
 
 (set-key [(f9)]         mn-compile)
@@ -779,10 +781,11 @@ modified beforehand."
 (autoload 'ace-jump-mode "ace-jump-mode" "Emacs quick move minor mode" t)
 (set-key "\M-s" ace-jump-mode)
 (set-key [insert] ace-jump-mode)
-(setq ace-jump-mode-scope 'window
-      ace-jump-mode-case-fold nil
-      ace-jump-mode-move-keys
-      (string-to-list "htnsueoagcrlp.,;mwvzkjq'difybx/-\\@#)(+}]{![*=&$"))
+(setq-default
+ ace-jump-mode-scope 'window
+ ace-jump-mode-case-fold nil
+ ace-jump-mode-move-keys
+ (string-to-list "htnsueoagcrlp.,;mwvzkjq'difybx/-\\@#)(+}]{![*=&$"))
 
 ;;}}}
 ;;{{{   Copy/Kill
@@ -835,13 +838,13 @@ modified beforehand."
 
 ;; 'lines-tail would be great but it does not really work with tabs ≠ 8
 ;; characters.
-(setq whitespace-style '(face
-                         space-before-tab::tab
-                         tab-mark
-                         tabs
-                         big-indent
-                         trailing)
-      whitespace-big-indent-regexp "^\\(\t\\{4,\\}\\)")
+(setq-default whitespace-style '(face
+                                 space-before-tab::tab
+                                 tab-mark
+                                 tabs
+                                 big-indent
+                                 trailing)
+              whitespace-big-indent-regexp "^\\(\t\\{4,\\}\\)")
 (global-whitespace-mode)
 
 ;;}}}
@@ -1552,19 +1555,19 @@ returns that number."
 ;; Org mode
 (eval-when-compile (require 'org))
 (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+(setq-default
+ org-insert-mode-line-in-empty-file t
+ org-hide-leading-stars t
+ org-startup-indented t
+ org-src-fontify-natively t
+ org-catch-invisible-edits 'smart
+ org-agenda-start-with-follow-mode t
+ org-agenda-window-setup 'current-window
+ org-agenda-restore-windows-after-quit t
+ org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
+ org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
 (eval-after-load "org"
   (lambda ()
-    (setq org-insert-mode-line-in-empty-file t
-          org-hide-leading-stars t
-          org-startup-indented t
-          org-src-fontify-natively t
-          org-catch-invisible-edits 'smart
-          org-agenda-start-with-follow-mode t
-          org-agenda-window-setup 'current-window
-          org-agenda-restore-windows-after-quit t
-          org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
-          org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
-
     (set-key org-mode-map "\M-p" org-backward-element)
     (set-key org-mode-map "\M-n" org-forward-element)
     (define-key org-mode-map "\C-a" (lookup-key global-map "\C-a"))
@@ -1572,6 +1575,7 @@ returns that number."
 
     (add-hook 'org-agenda-mode-hook (lambda () (hl-line-mode 1)))))
 
+(eval-when-compile (require 'org-agenda))
 (set-key [(control f6)]
          (require 'org-agenda)
          (if (equal (buffer-name) org-agenda-buffer-name)
@@ -1638,10 +1642,9 @@ returns that number."
 ;;{{{ Various features
 
 ;; uniquify
-(when (eval-when-compile (load "uniquify" t))
-  (require 'uniquify)
-  (setq uniquify-buffer-name-style 'reverse
-        uniquify-strip-common-suffix t))
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'reverse
+      uniquify-strip-common-suffix t)
 
 ;; HTMLize
 ;; http://fly.srk.fer.hr/~hniksic/emacs/htmlize.el
