@@ -95,7 +95,9 @@ exec_quit_cmd() {
 }
 
 exec_x() {
-	[ -f ~/.config/Xresources ] && xrdb -merge ~/.config/Xresources
+	if [ -f ~/.config/Xresources ]; then
+		xrdb -merge -D"HOME=$HOME" ~/.config/Xresources
+	fi
 	init_screen
 	exec_background_tasks &
 

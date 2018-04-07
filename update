@@ -156,30 +156,6 @@ cp_backup_to() {
 }
 
 ##
-## Template handling
-##
-tempfile=$(umask 077; mktemp)
-trap 'rm -f -- "$tempfile"' 0
-
-cp_tpl_from() {
-	if ! [ -e "$1" ]; then
-		sed "s#$HOME#{{HOME}}#g" <$2 >$1
-	else
-		sed "s#{{HOME}}#$HOME#g" <$1 >$tempfile
-		if cp_backup "$2" "$tempfile"; then
-			sed "s#$HOME#{{HOME}}#g" <$tempfile >$1
-		fi
-	fi
-}
-
-cp_tpl_to() {
-	if [ -e "$1" ]; then
-		sed "s#{{HOME}}#$HOME#g" <$1 >$tempfile
-		cp_backup "$tempfile" "$2" || true
-	fi
-}
-
-##
 ## Emacs files handling
 ##
 compile_el() {
@@ -199,6 +175,9 @@ compile_el() {
 ##
 ## Do the job
 ##
+tempfile=$(umask 077; mktemp)
+trap 'rm -f -- "$tempfile"' 0
+
 handle() {
 	if ! match "$@"; then
 		return 0
@@ -223,10 +202,6 @@ handle() {
 			dircolors - <$file >$tempfile
 			cp_backup "$tempfile" "$dest" <&3 || true
 		esac
-		;;
-	*.tpl)
-		dest=${dest%.tpl}
-		cp_tpl_$direction "$file" "$dest" <&3
 		;;
 	*)
 		cp_backup_$direction "$file" "$dest" <&3 || true
@@ -267,7 +242,7 @@ bin/               ~/.local/
 libexec/           ~/.local/
 sh/                ~/.@
 vimperatorrc       ~/.vimperator/rc
-x/Xresources.tpl   ~/.config/@
+x/Xresources       ~/.config/@
 x/gtkrc-2.0        ~/.@
 x/xinitrc          ~/.@
 x/xsettingsd       ~/.@

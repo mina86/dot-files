@@ -92,7 +92,11 @@ URxvt.color15:         #FFFFFF
 
 ! Terminal in urxvt
 Term.perl-ext-common:  matcher,tabbedex,searchable-scrollback<M-s>
-URxvt.backgroundPixmap: {{HOME}}/.urxvt/80-char.png;0x0+0+0:tile
+#ifdef HOME
+URxvt.backgroundPixmap:    HOME/.urxvt/80-char.png;0x0+0+0:tile
+#else
+#  warning "HOME not set, won't configure urxvt background"
+#endif
 URxvt.tabbed.new-button: false
 URxvt.tabbed.autohide: ignore-named
 URxvt.tabbed.bell-timeout: 0
