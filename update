@@ -159,10 +159,10 @@ cp_backup_to() {
 ## Emacs files handling
 ##
 compile_el() {
-	if [ -e "${1}c" ] &&
-	   [ "$1" -nt  "${1}c" ] &&
-	   file "${1}c" | grep -q 'Emacs.*byte-compiled' &&
-	   [ -n "$(which emacs 2>/dev/null)" ]; then
+	if [ -e "${1}c" ] && [ "$1" -ot  "${1}c" ]; then
+		return 0
+	fi
+	if [ -n "$(which emacs 2>/dev/null)" ]; then
 		tput bold
 		tput setaf 7
 		echo "Compiling $1"
