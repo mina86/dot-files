@@ -6,7 +6,7 @@ have() {
 
 if [ -e /etc/slackware-version ]; then
 	cmd=slack
-elif  have apt-get || have yum; then
+elif have apt || have apt-get || have yum; then
 	cmd=$have
 else
 	echo "a: could not find package manager software" >&2
@@ -24,10 +24,15 @@ else
 	exit 1
 fi
 
+# Normalise command by removing full path and collapse ‘apt’ and ‘apt-get’ into
+# a single entry.
+normalised=${cmd##*/}
+normalised=${normalised%-get}
+
 # If "$1" is not one of the known commands, assume install.  Also do some
 # mapping so yum commands look more like apt-get commands.  I have nothing
 # against yum but I'm more used to apt-get.
-case "${cmd##*/}:$1" in
+case "${normalised##*/}:$1" in
 yum:remove|yum:purge)
 	shift
 	set -- erase "$@"
@@ -64,31 +69,35 @@ yum:update-minimal | \
 yum:updateinfo | \
 yum:upgrade | \
 yum:help | \
-apt-get:install | \
-apt-get:remove | \
-apt-get:purge | \
-apt-get:hold | \
-apt-get:unhold | \
-apt-get:markauto | \
-apt-get:unmarkauto | \
-apt-get:forbid-version | \
-apt-get:update | \
-apt-get:upgrade | \
-apt-get:safe-upgrade | \
-apt-get:full-upgrade | \
-apt-get:forget-new | \
-apt-get:search | \
-apt-get:show | \
-apt-get:clean | \
-apt-get:autoclean | \
-apt-get:changelog | \
-apt-get:download | \
-apt-get:reinstall | \
-apt-get:why | \
-apt-get:why-not)
+apt:install | \
+apt:remove | \
+apt:hold | \
+apt:unhold | \
+apt:markauto | \
+apt:unmarkauto | \
+apt:forbid-version | \
+apt:update | \
+apt:upgrade | \
+apt:safe-upgrade | \
+apt:full-upgrade | \
+apt:forget-new | \
+apt:search | \
+apt:show | \
+apt:clean | \
+apt:autoclean | \
+apt:changelog | \
+apt:download | \
+apt:reinstall | \
+apt:why | \
+apt:why-not)
 	;;
 
-yum:?*|apt-get:?*)
+apt:purge)
+	shift
+	set -- remove --purge --auto-remove "$@"
+	;;
+
+yum:?*|apt:?*)
 	set -- install "$@"
 	;;
 
@@ -110,6 +119,7 @@ slack:?*.t?z)
 	exit 1
 esac
 
+echo "+" "$cmd" "$@" >&2
 $sudo "$cmd" "$@"
 if [ $# -eq 1 ] && have apt-file && [ x"$1" = xupdate ]; then
 	exec $sudo apt-file update
