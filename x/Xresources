@@ -91,7 +91,7 @@ URxvt.color14:         #00FFFF
 URxvt.color15:         #FFFFFF
 
 ! Terminal in urxvt
-Term.perl-ext-common:  matcher,tabbedex,searchable-scrollback<M-s>
+Term.perl-ext-common:  matcher<C1>,tabbedex,searchable-scrollback<M-s>
 #ifdef HOME
 URxvt.backgroundPixmap:    HOME/.urxvt/80-char.png;0x0+0+0:tile
 #else
@@ -101,7 +101,13 @@ URxvt.tabbed.new-button: false
 URxvt.tabbed.autohide: ignore-named
 URxvt.tabbed.bell-timeout: 0
 
+URxvt.url-launcher:    firefox
+URxvt.keysym.C-Delete: matcher:last
+URxvt.keysym.M-o:      matcher:list
+URxvt.keysym.M-u:      matcher:select
+
 ! Irssi in urxvt
+IRC.perl-ext-common:  matcher<C1>,searchable-scrollback<M-s>
 IRC.title:     IRC
 IRC.saveLines: 0
 
