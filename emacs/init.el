@@ -1368,34 +1368,6 @@ it's not bound to space, the results may be somehow surprising."
   (set-key nroff-mode-map " " nroff-space))
 
 ;;}}}
-;;{{{   Generate serialVersionUID in Java
-
-(defun mn-serialVersionUID (&optional insert)
-  "Generate serialVersionUID and possibly insert it to current buffer.
-When called interactivly or with a non nil INSERT argument insert
-a random 64-bit hexadecimal integer prefixed with \"0x\" and suffixed
-with \"L\".  When called with nil argument or with argument ommited
-returns that number."
-  (interactive (list t))
-  (if insert
-      (insert (mn-serialVersionUID))
-    (format "0x%04x%04x%04x%04xL"
-            (random 65536) (random 65536)
-            (random 65536) (random 65536))))
-
-(add-lambda-hook 'java-mode-hook
-  (add-lambda-hook 'write-contents-functions
-    (save-excursion
-      (save-restriction
-        (widen)
-        (goto-char (point-min))
-        (while (re-search-forward "serialVersionUID\s+=\s+[0-9a-fA-FxX]+L;"
-                                  nil t)
-          (replace-match
-           (concat "serialVersionUID = " (mn-serialVersionUID) ";")
-           nil t))))))
-
-;;}}}
 ;;{{{   Misc
 
 ;; Text mode
