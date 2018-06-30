@@ -42,7 +42,7 @@
 	k      = !gitk
 	edit   = "!f() { GIT_EDITOR='sed -i 1s/pick/edit/' git rebase -i \"$1\"~; }; f"
 	ed     = edit
-	sync   = remote update
+	sync   = remote update -p
 	patch  = "!f() { file=$1; shift; patch -p1 <$file \"$@\"; }; f"
 [user]
 	name = Michal Nazarewicz
