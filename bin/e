@@ -4,25 +4,38 @@ use strict;
 use warnings;
 
 use Cwd;
-use IPC::Run;
 
 
-my $_devnull;
-
-sub devnull {
-	if (!$_devnull) {
-		open($_devnull, '+<', '/dev/null') or die "e: /dev/null: $!\n";
+sub check_exit_status($) {
+	my ($cmd) = @_;
+	if ($? & 127) {
+		die $cmd . ': terminated with signal ' . ($? & 127) . "\n";
+	} elsif ($? >> 8) {
+		die $cmd . ': returned ' . ($? >> 8) . "\n";
 	}
-	$_devnull;
 }
 
 sub client(@) {
-	my $out;
-	if (@_ && $_[0] eq '-q') {
-		shift @_;
-		$out = devnull;
+	# I’ve been having problems with IPC::Run and couldn’t debug them.
+	# Implementing system run with proper stdin and stdout redirection
+	# turned out to be the fastest solution.
+
+	my $pid = fork();
+	if (!defined $pid) {
+		die "fork: $!\n";
+	} elsif (!$pid) {
+		open(STDIN, '<', '/dev/null') or die "/dev/null: $!\n";
+		if ($_[0] eq '-q') {
+			shift @_;
+			open(STDOUT, '>', '/dev/null') or die "/dev/null: $!\n";
+		}
+		exec 'emacsclient', @_;
+		die "emacsclient: $!\n";
+	} elsif (waitpid($pid, 0) < 0) {
+		die "wait: $!";
+	} else {
+		check_exit_status 'emacsclient';
 	}
-	IPC::Run::run ['emacsclient', @_], \undef, $out, undef;
 }
 
 
@@ -86,20 +99,14 @@ ELISP
 	@ARGV = ('-e', $data);
 	undef $windmove;
 } elsif (!@ARGV) {
-	@ARGV = ('-a', '');
-	if (has_x) {
-		push @ARGV, '-c', '-n';
-	}
-	exit client(@ARGV) ? 0 : 1;
+	client has_x ? '-cna' : '-a', '';
+	exit 0;
 }
 
 
 if ($windmove) {
-	client '-q', '-n', '-e', $windmove;
+	client '-q', '-ne', $windmove;
 }
 
-my @args = ('-a', '', has_x ? '-n' : '-t');
-if ($stdin) {
-	unshift @args, '-q';
-}
-exit client(@args, @ARGV) ? 0 : 1;
+my @q = $stdin ? ('-q') : ();
+client @q, has_x ? '-na' : '-ta', '', @ARGV;
