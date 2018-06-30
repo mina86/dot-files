@@ -1257,45 +1257,6 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
     (add-lambda-hook 'nxml-mode-hook
       (mn-xml-configure-bindings nxml-mode-map))))
 
-(defun replace-string-pairs (list)
-  "Replace strings pairs from LIST.
-
-LIST is a list of (pattern . replacement) cons specifying that all
-occurrences of pattern in portion of the buffer are to be replaced by
-replacement.
-
-If `use-region-p' returns non-nil, function operates on region.
-Otherwise, function operates on portion of the buffer from `point' to
-`point-max'."
-  (let* ((mark  (use-region-p))
-         (start (if mark (region-beginning) (point)))
-         (end   (if mark (region-end) (point-max))))
-    (save-excursion
-      (dolist (pair list)
-        (let ((diff (- (length (cdr pair)) (length (car pair)))))
-          (goto-char start)
-          (while (search-forward (car pair) end t)
-            (setq end (+ end diff))
-            (replace-match (cdr pair) nil t)))))))
-
-(defun html-escape ()
-  "Replace HTML special characters with HTML entities.
-
-In Transient Mark mode, if the mark is active, operate on the contents
-of the region.  Otherwise, operate from point to the end of the buffer."
-  (interactive)
-  (replace-string-pairs
-   '(("&" . "&amp;") ("<" . "&lt;") (">" . "&gt;") ("\"" . "&quot;"))))
-
-(defun html-unescape ()
-  "Replace (some) HTML entities with characters.
-
-In Transient Mark mode, if the mark is active, operate on the contents
-of the region.  Otherwise, operate from point to the end of the buffer."
-  (interactive)
-  (replace-string-pairs
-   '(("&amp;" . "&") ("&lt;" . "<") ("&gt;" . ">") ("&quot;" . "\""))))
-
 ;;}}}
 ;;{{{   (La)TeX and nroff mode
 
