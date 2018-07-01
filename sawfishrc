@@ -271,8 +271,9 @@ happened."
      ("W-." "/IRC$"          ,mn-irssi-command)
      ("W-a" "GIMP"           "gimp")
      ("W-o" "Geeqie"         "geeqie")
-
-     ("W-l"                 . "xlocker")
+     ("Pause"               . ,(sh-maybe libexec "xlocker"))
+     ("Scroll_Lock"         . ,(sh-maybe libexec "xlocker"))
+     ("Print"               . ,(sh-maybe libexec "xlocker"))
      ("W-\""                . "m rewind")
      ("W-'"                 . "m prev")
      ("W-j"                 . "m toggle")
