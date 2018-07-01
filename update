@@ -240,7 +240,10 @@ sawfishrc          ~/.sawfish/rc
 statuses           ~/.irssi/
 bin/               ~/.local/
 libexec/           ~/.local/
-sh/                ~/.@
+sh/bashrc          ~/.@
+sh/shellrc         ~/.@
+sh/profile         ~/.@
+sh/dir-colors      ~/.config/sh/@
 vimperatorrc       ~/.vimperator/rc
 x/Xresources       ~/.config/@
 x/gtkrc-2.0        ~/.@

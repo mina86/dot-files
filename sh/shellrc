@@ -251,8 +251,8 @@ export LESS_TERMCAP_md LESS_TERMCAP_mb LESS_TERMCAP_us LESS_TERMCAP_so
 export LESS_TERMCAP_se LESS_TERMCAP_ue LESS_TERMCAP_me
 
 # LS colors
-if [ -f ~/.dir-colors ]; then
-	. ~/.dir-colors
+if [ -f ~/.config/sh/dir-colors ]; then
+	. ~/.config/sh/dir-colors
 fi
 
 # Various
