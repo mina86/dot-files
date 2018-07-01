@@ -1,5 +1,4 @@
 ## .shellrc                                             -*- shell-script -*-
-## Copyright 2004-2014 by Michal Nazarewicz (mina86@mina86.com)
 
 # Not interactive?
 [ X"${-#*i}" != X"$-" ] || return
@@ -287,7 +286,7 @@ if which ccache >/dev/null 2>&1; then
 	export CCACHE_COMPRESS CCACHE_LOGFILE CCACHE_SLOPPINESS CCACHE_TEMPDIR
 fi
 
-## Some local stuff
-if [ -e ~/.shell_local ]; then
-	. ~/.shell_local
+# Some local stuff
+if [ -e ~/.config/sh/local ]; then
+	. ~/.config/sh/local
 fi

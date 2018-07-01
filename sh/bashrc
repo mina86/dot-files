@@ -1,5 +1,4 @@
 ## .bashrc                                              -*- shell-script -*-
-## Copyright 2004-2013 by Michal Nazarewicz (mina86@mina86.com)
 
 # Not interactive?
 [ X"${-#*i}" != X"$-" ] || return
@@ -211,10 +210,3 @@ shopt -qs no_empty_cmd_completion
 export HISTFILE="/tmp/.$(id -un)-history"
 HISTCONTROL="ignorespace:erasedups"
 HISTIGNORE="ls:su:cd:bc:wp rm:mp3 mv:cd -"
-
-##
-## Some local stuff
-##
-if [ -e ~/.bash_local ]; then
-	. ~/.bash_local
-fi
