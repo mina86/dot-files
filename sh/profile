@@ -1,14 +1,10 @@
 ## .profile                                             -*- shell-script -*-
-## Copyright 2004-2013 by Michal Nazarewicz (mina86@mina86.com)
 
-# Set ENV
-export ENV=~/.shellrc
+ENV=~/.shellrc
+export ENV
 
-# Source .shellrc
-if [ x"$1" = xnothing ]; then
-	: nothing
-elif [ -r "$1" ]; then
-	. "$1"
+if [ -n "$BASH_VERSION" ] && [ -r ~/.bashrc ]; then
+	. ~/.bashrc
 elif [ -r ~/.shellrc ]; then
 	. ~/.shellrc
 fi
