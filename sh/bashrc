@@ -63,19 +63,13 @@ case "$TERM" in rxvt*)
 esac
 
 # Add title to terminals
-case "$TERM" in xterm*|rxvt*)
-	__PS1+='\[\e]2;'
-	case "$(id -nu)@$SSH_CLIENT$SSH_CONNECTION" in
-	mina86@)   __PS1+='(\s)' ;;
-	mina86@*)  __PS1+='@\h'  ;;
-	*@)        __PS1+='\u'   ;;
-	*@*)       __PS1+='\u@\u';;
-	esac
-	__PS1+=' \w\007\]'
-esac
+tsl=$(tput tsl 2>/dev/null)
+if [ -n "$tsl" ]; then
+	__PS1=$(printf '%s' "$tsl" "$USER@$HOST" "$(tput fsl)" "$__PS1")
+fi
 PS2=':; '
 
-unset P
+unset P tsl
 
 PROMPT_COMMAND='PS1=${__PS1//"{{}}"/"$(eval "$PROMPT_COMMANDS")"}'
 

@@ -45,9 +45,11 @@ esac
 export PS1
 
 # Add title to terminals
-case "$TERM" in xterm*|rxvt*)
-	printf '\033]2;%s@%s\07' "$USER" "$HOST"
-esac
+tsl=$(tput tsl 2>/dev/null)
+if [ -n "$tsl" ]; then
+	PS1=$(printf '%s%s@%s%s%s' "$tsl" "$USER" "$HOST" "$(tput fsl)" "$PS1")
+fi
+unset tsl
 
 ## Aliases & functions
 unalias ls dir vdir ll l 2>/dev/null
