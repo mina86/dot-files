@@ -1405,9 +1405,10 @@ it's not bound to space, the results may be somehow surprising."
 ;;{{{ Various features
 
 ;; uniquify
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'reverse
-      uniquify-strip-common-suffix t)
+(when (eval-when-compile (load "uniquify" t))
+  (require 'uniquify)
+  (setq uniquify-buffer-name-style 'reverse
+        uniquify-strip-common-suffix t))
 
 ;; HTMLize
 ;; http://fly.srk.fer.hr/~hniksic/emacs/htmlize.el
