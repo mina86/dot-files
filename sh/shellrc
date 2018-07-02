@@ -232,19 +232,19 @@ if which tput >/dev/null 2>&1; then
 	LESS_TERMCAP_md=$(tput setaf 2)   # begin bold
 	LESS_TERMCAP_mb=$(tput setaf 1)   # begin blinking
 	LESS_TERMCAP_us=$(tput setaf 6)   # begin underline
-	LESS_TERMCAP_so=$(tput setab 3)   # begin standout-mode - info box
-	LESS_TERMCAP_se=$(tput sgr0)      # end standout-mode
+	LESS_TERMCAP_so=$(tput setab 3)   # begin stand-out-mode - info box
+	LESS_TERMCAP_se=$(tput sgr0)      # end stand-out-mode
 	LESS_TERMCAP_ue=$LESS_TERMCAP_se  # end underline
 	LESS_TERMCAP_me=$LESS_TERMCAP_se  # end mode
 else
 	esc=$(printf \\33)
-	LESS_TERMCAP_md=$ESC'[36m'    # begin bold
-	LESS_TERMCAP_mb=$ESC'[31m'    # begin blinking
-	LESS_TERMCAP_us=$ESC'[33m'    # begin underline
-	LESS_TERMCAP_so=$ESC'[38;43m' # begin standout-mode - info box
-	LESS_TERMCAP_se=$ESC'[0m'     # end standout-mode
-	LESS_TERMCAP_ue=$ESC'[0m'     # end underline
-	LESS_TERMCAP_me=$ESC'[0m'     # end mode
+	LESS_TERMCAP_md=$esc'[36m'        # begin bold
+	LESS_TERMCAP_mb=$esc'[31m'        # begin blinking
+	LESS_TERMCAP_us=$esc'[33m'        # begin underline
+	LESS_TERMCAP_so=$esc'[38;43m'     # begin stand-out-mode - info box
+	LESS_TERMCAP_se=$esc'[0m'         # end stand-out-mode
+	LESS_TERMCAP_ue=$esc'[0m'         # end underline
+	LESS_TERMCAP_me=$esc'[0m'         # end mode
 	unset esc
 fi
 export LESS_TERMCAP_md LESS_TERMCAP_mb LESS_TERMCAP_us LESS_TERMCAP_so
