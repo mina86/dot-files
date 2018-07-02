@@ -404,7 +404,7 @@ In minibuffer run `minibuffer-complete', if `use-region-p' run
 ;; (set-key "\t"    indent-or-complete)
 ;; (set-key [(tab)] indent-or-complete)
 
-(add-lambda-hook 'find-file-hooks
+(add-lambda-hook 'find-file-hook
   (unless (eq major-mode 'org-mode)
     (set-key :local [(tab)] indent-or-complete)))
 
