@@ -12,6 +12,11 @@
 
 ;; Configure and activate packages
 (require 'package)
+
+;; Emacs 26.1 does this automatically but older don’t.
+(unless package--initialized
+  (package-initialize))
+
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.milkbox.net/packages/"))
       package-menu-hide-low-priority t
@@ -26,8 +31,6 @@
     (condition-case err
         (package-install pkg t)
       (error (message (error-message-string err))))))
-
-(package-initialize)
 
 (when (fboundp 'auto-compile-on-save-mode)
   (auto-compile-on-save-mode))
@@ -319,15 +322,13 @@ perform stripping and behaves as plain `save-buffer'."
     (mouse-yank-primary nil)))
 
 ;; Use browse-kill-ring
-(add-lambda-hook 'after-init-hook
-  (when (load "browse-kill-ring" t)
-    (setq-default browse-kill-ring-display-duplicates nil
-                  browse-kill-ring-highlight-current-entry t
-                  browse-kill-ring-highlight-inserted-item t
-                  browse-kill-ring-separator "\x0C")  ; form feed
-    (add-hook 'browse-kill-ring-hook 'form-feed-mode)
-    (with-no-warnings
-      (browse-kill-ring-default-keybindings))))
+(when (fboundp 'browse-kill-ring)
+  (setq-default browse-kill-ring-display-duplicates nil
+                browse-kill-ring-highlight-current-entry t
+                browse-kill-ring-highlight-inserted-item t
+                browse-kill-ring-separator "\x0C")
+  (add-hook 'browse-kill-ring-hook 'form-feed-mode)
+  (browse-kill-ring-default-keybindings))
 
 ;;}}}
 ;;{{{   Just one space
@@ -795,39 +796,13 @@ modified beforehand."
                                (down-mouse-1 . mouse-major-mode-menu))))
         ") "))
 
-(add-lambda-hook 'after-init-hook
-  ;; Highlight groups of three digits
-  (when (fboundp 'global-num3-mode)
-    (global-num3-mode t))
-  ;; Dim buffers which are not (current-buffer)
-  (when (fboundp 'auto-dim-other-buffers-mode)
-    (auto-dim-other-buffers-mode t))
+;; Highlight groups of three digits
+(when (fboundp 'global-num3-mode)
+  (global-num3-mode t))
 
-  ;; Enable jinja2-mode for HTML files that look like Jinja2 templates
-  (when (fboundp 'jinja2-mode)
-    (defun smells-like-jinja2 ()
-      (and (string-match "\\.html\\'" (buffer-name))
-           (save-excursion
-             (goto-char (point-min))
-             (save-match-data
-               (re-search-forward
-                (eval-when-compile
-                  (concat
-                   "{%-?\s-*"
-                   (regexp-opt '("if" "for" "block" "filter" "with" "raw"
-                                 "macro" "autoescape" "trans" "call" "else"
-                                 "elif" "extends" "include")
-                               'words)
-                   ".*?%}"))
-                (min (point-max) (+ 4096 (point-min))) t)))))
-    (add-to-list 'magic-mode-alist '(smells-like-jinja2 . jinja2-mode)))
-
-  (when (fboundp 'shackle-mode)
-    (shackle-mode))
-
-  (when (load "multiple-cursors" t t)
-    (set-key "\M-." mc/mark-next-like-this)
-    (set-key "\M-," mc/unmark-next-like-this)))
+(when (fboundp 'multiple-cursors-mode)
+  (set-key "\M-." mc/mark-next-like-this)
+  (set-key "\M-," mc/unmark-next-like-this))
 
 ;; Other
 (require 'icomplete)
