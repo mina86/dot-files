@@ -92,14 +92,17 @@ URxvt.color15:         #FFFFFF
 
 ! Terminal in urxvt
 Term.perl-ext-common:  matcher<C1>,tabbedex,searchable-scrollback<M-s>
+
 #ifdef HOME
 URxvt.backgroundPixmap:    HOME/.urxvt/80-char.png;0x0+0+0:tile
 #else
 #  warning "HOME not set, won't configure urxvt background"
 #endif
-URxvt.tabbed.new-button: false
-URxvt.tabbed.autohide: ignore-named
-URxvt.tabbed.bell-timeout: 0
+
+URxvt.tabbed.tabbedex-rs-prefix: %
+URxvt.tabbedex.new-button:   0
+URxvt.tabbedex.autohide:     1
+URxvt.tabbedex.bell-timeout: 0
 
 URxvt.url-launcher:    firefox
 URxvt.keysym.C-Delete: matcher:last
