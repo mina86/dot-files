@@ -10,7 +10,6 @@ elif [ -r ~/.shellrc ]; then
 fi
 
 # Start emacs if not running
-if which emacs >/dev/null 2>/dev/null &&
-   ! [ -e /tmp/emacs$UID/server ]; then
-	emacs --daemon
+if which emacs >/dev/null 2>/dev/null && ! [ -e /tmp/emacs$UID/server ]; then
+	emacs --daemon >/dev/null 2>&1 &
 fi
