@@ -853,6 +853,9 @@ modified beforehand."
                            (box    . box)) ;blink-cursor-mode does not
       cursor-type 'box)                    ;work for me.
 (setq visible-bell nil)           ;no visual bell
+(setq ring-bell-function (lambda ()
+                           (invert-face 'mode-line)
+                           (run-with-timer 0.05 nil 'invert-face 'mode-line)))
 (eval-when-compile (require 'compile))
 (setq compilation-auto-jump-to-first-error t)
 (setq line-move-visual nil) ;move by logical lines not screen lines
