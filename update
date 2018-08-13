@@ -100,15 +100,51 @@ fi
 ##
 ## Interactive asking
 ##
-ask() {
-	if cmp -s -- "$1" "$2"; then
+if diff=$(which cdiff 2>&1); then
+	cdiff=$diff
+else
+	diff=diff
+	cdiff=cat
+fi
+
+equal() {
+	set -- "$@" "$(readlink "$2")" "$(readlink "$3")"
+
+	if [ x"$4" = x"$5" ]; then
+		if [ -n "$4" ] || cmp -s "$2" "$3"; then
+			return 0
+		fi
+	fi
+
+	if [ x"$1" != x-v ]; then
+		return 1
+	elif [ -z "$4$5" ]; then
+		"$diff" -u -- "$3" "$2"
 		return 1
 	fi
 
-	if which cdiff >/dev/null 2>&1; then
-		cdiff -u "$2" "$1"
-	else
-		diff  -u "$2" "$1"
+	(
+		printf '%s\n' "--- $3"
+		printf '%s\n' "+++ $2"
+
+		if [ -z "$5" ]; then
+			sed s/^/-/ <$3
+		else
+			printf %s\\n "-→ $5"
+		fi
+
+		if [ -z "$4" ]; then
+			sed s/^/+/ <$2
+		else
+			printf %s\\n "+→ $4"
+		fi
+	) | "$cdiff"
+	return 1
+}
+
+ask() {
+	if equal -v "$1" "$2"; then
+		return 1
 	fi
 
 	while :; do
@@ -131,7 +167,7 @@ ask() {
 }
 
 if_different() {
-	! cmp -s -- "$1" "$2"
+	! equal -s "$1" "$2"
 }
 
 
@@ -139,7 +175,7 @@ if_different() {
 ## Backup & copy
 ##
 cp_backup() {
-	if [ -e "$2" ]; then
+	if [ -h "$2" ] || [ -e "$2" ]; then
 		if ! $ask "$1" "$2"; then
 			return 1
 		elif $backup; then
@@ -147,7 +183,7 @@ cp_backup() {
 		fi
 	fi
 	mkdir -p -- "${2%/*}"
-	cp -v -- "$1" "$2"
+	cp -dv -- "$1" "$2"
 }
 
 cp_backup_from() {
@@ -182,10 +218,6 @@ tempfile=$(umask 077; mktemp)
 trap 'rm -f -- "$tempfile"' 0
 
 handle() {
-	if ! match "$@"; then
-		return 0
-	fi
-
 	case "$dest" in '~'*)   dest=$HOME${dest#'~'}; esac
 	case "$dest" in *@)     dest=${dest%@}${file##*/}; esac
 	case "$dest" in */.|*/) dest=$dest$file; esac
@@ -216,7 +248,9 @@ while read _src _dest; do
 		case "$file" in *\~|\#*|*\#|.*)
 			continue
 		esac
-		if [ -f "$file" ]; then
+		if ! match "$@"; then
+			:
+		elif [ -h "$file" ] || [ -f "$file" ]; then
 			dest=$_dest
 			handle "$@"
 		elif ! [ -e "$file" ]; then
