@@ -132,18 +132,15 @@ fi
 ## Backup & copy
 ##
 cp_backup() {
-	if ! [ -e "$2" ]; then
-		cp "$1" "$2"
-		return 0
-	elif ! cmp -s -- "$1" "$2" && ask "$1" "$2"; then
-		if $backup; then
+	if [ -e "$2" ]; then
+		if cmp -s -- "$1" "$2" || ! ask "$1" "$2"; then
+			return 1
+		elif $backup; then
 			mv -- "$2" "$2~"
 		fi
-		cp "$1" "$2"
-		return 0
-	else
-		return 1
 	fi
+	mkdir -p -- "${2%/*}"
+	cp -v -- "$1" "$2"
 }
 
 cp_backup_from() {
@@ -186,11 +183,8 @@ handle() {
 	case "$dest" in *@)     dest=${dest%@}${file##*/}; esac
 	case "$dest" in */.|*/) dest=$dest$file; esac
 
-	if ! [ -d "${dest%/*}" ]; then
-		tput setaf 6
-		echo "Skipping $file, ${dest%/*}/ missing"
-		tput sgr0
-		return 0
+	if ! [ -d "${dest%/*}" ] && [ "$direction" != to ]; then
+		return 0;
 	fi
 
 	case "$file" in
@@ -209,11 +203,6 @@ handle() {
 		compile_el "$dest"
 	esac
 }
-
-case $direction in to)
-	mkdir -p ~/.local/bin ~/.local/libexec ~/.emacs.d ~/.config/git \
-	      ~/.config/xkb/keymap ~/.config/xkb/symbols ~/.urxvt
-esac
 
 while read _src _dest; do
 	for file in $_src; do
