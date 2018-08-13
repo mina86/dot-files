@@ -13,7 +13,8 @@ usage: $0 [ <options> ] [ <files> ]
   -f  Update files in current directory from configuration files in home.
   -t  Update configuration files from files in current directory; make backups.
   -T  Like ‘-t’ but don’t make any backups.
-  -y  Assume ‘y’ to all questions.
+  -y  Assume ‘y’ to all questions, i.e. overwrite any changed files w/o asking.
+  -n  Assume ‘n’ to all questions, i.e. only copy new files; leave existing be.
 EOF
 	exit 1
 }
@@ -23,7 +24,7 @@ EOF
 ## Parse arguments
 ##
 direction=
-interactive=true
+ask=ask
 
 while [ x"${1#-}" != x"$1" ]; do
 	arg=${1#?}
@@ -33,8 +34,9 @@ while [ x"${1#-}" != x"$1" ]; do
 		f*) direction=from   ; backup=false;;
 		t*) direction=to     ; backup=true ;;
 		T*) direction=to     ; backup=false;;
-		y*) interactive=false;;
-		?*) usage            ;;
+		y*) ask=if_different ;;
+		n*) ask=false        ;;
+		*)  usage            ;;
 		esac
 		arg=${arg#?}
 	done
@@ -95,37 +97,39 @@ fi
 ##
 ## Interactive asking
 ##
-if $interactive; then
-	ask() {
-		if which cdiff >/dev/null 2>&1; then
-			cdiff -u "$2" "$1"
-		else
-			diff  -u "$2" "$1"
-		fi
+ask() {
+	if cmp -s -- "$1" "$2"; then
+		return 1
+	fi
 
-		while :; do
-			tput bold
-			tput setaf 7
-			tput setab 4
-			printf '%s:' "$2"
-			tput sgr0
-			tput setaf 7
-			tput setab 4
-			printf ' [yn] '
-			tput sgr0
-			read answer || exit 0
-			case "$answer" in
-			[yY]) return 0 ;;
-			[nN]) return 1 ;;
-			esac
-		done
-		echo
-	}
-else
-	ask() {
-		return 0
-	}
-fi
+	if which cdiff >/dev/null 2>&1; then
+		cdiff -u "$2" "$1"
+	else
+		diff  -u "$2" "$1"
+	fi
+
+	while :; do
+		tput bold
+		tput setaf 7
+		tput setab 4
+		printf '%s:' "$2"
+		tput sgr0
+		tput setaf 7
+		tput setab 4
+		printf ' [yn] '
+		tput sgr0
+		read answer || exit 0
+		case "$answer" in
+		[yY]) return 0 ;;
+		[nN]) return 1 ;;
+		esac
+	done
+	echo
+}
+
+if_different() {
+	! cmp -s -- "$1" "$2"
+}
 
 
 ##
@@ -133,7 +137,7 @@ fi
 ##
 cp_backup() {
 	if [ -e "$2" ]; then
-		if cmp -s -- "$1" "$2" || ! ask "$1" "$2"; then
+		if ! $ask "$1" "$2"; then
 			return 1
 		elif $backup; then
 			mv -- "$2" "$2~"
