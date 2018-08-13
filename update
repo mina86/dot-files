@@ -1,6 +1,6 @@
 #! /bin/sh
 
-set -e
+set -eu
 
 
 ##
@@ -26,10 +26,14 @@ EOF
 direction=
 ask=ask
 
-while [ x"${1#-}" != x"$1" ]; do
-	arg=${1#?}
+for arg in "$@"; do
+	case $arg in
+	-)   usage;;
+	-?*) :    ;;
+	*)   break
+	esac
 	shift
-	while [ -n "$arg" ]; do
+	while arg=${arg#?}; [ -n "$arg" ]; do
 		case "$arg" in
 		f*) direction=from   ; backup=false;;
 		t*) direction=to     ; backup=true ;;
@@ -38,7 +42,6 @@ while [ x"${1#-}" != x"$1" ]; do
 		n*) ask=false        ;;
 		*)  usage            ;;
 		esac
-		arg=${arg#?}
 	done
 done
 
