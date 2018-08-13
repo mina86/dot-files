@@ -216,30 +216,28 @@ case $direction in to)
 	      ~/.config/xkb/keymap ~/.config/xkb/symbols ~/.urxvt
 esac
 
-while read file _dest; do
-	case $file in
-	*/)
-		for file in "$file"*; do
-			case "$file" in *'~'|\#*|*\#|.*) continue; esac
-			[ -f "$file" ] || continue
+while read _src _dest; do
+	for file in $_src; do
+		case "$file" in *\~|\#*|*\#|.*)
+			continue
+		esac
+		if [ -f "$file" ]; then
 			dest=$_dest
 			handle "$@"
-		done
-		;;
-	*)
-		dest=$_dest
-		handle "$@"
-	esac
+		elif ! [ -e "$file" ]; then
+			echo "update: $file: repository file does not exist, skipping" >&2
+		fi
+	done
 done 3<&1 <<EOF
-emacs/             ~/.emacs.d/@
-mail/              ~/.mail/@
-git/               ~/.config/git/@
+emacs/*            ~/.emacs.d/@
+mail/*             ~/.mail/@
+git/*              ~/.config/git/@
 inputrc            ~/.
 irssi.theme        ~/.irssi/mina.theme
 sawfishrc          ~/.sawfish/rc
 statuses           ~/.irssi/
-bin/               ~/.local/
-libexec/           ~/.local/
+bin/*              ~/.local/
+libexec/*          ~/.local/
 sh/bashrc          ~/.@
 sh/shellrc         ~/.@
 sh/profile         ~/.@
