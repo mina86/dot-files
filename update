@@ -10,10 +10,10 @@ usage () {
 	cat <<EOF
 usage: $0 [ <options> ] [ <files> ]
 <options>:
-  -f  update files in current directory from configuration files
-  -t  update configuration files from files in current directory
-  -B  do not make backups
-  -y  assume "y" to all questions
+  -f  Update files in current directory from configuration files in home.
+  -t  Update configuration files from files in current directory; make backups.
+  -T  Like ‘-t’ but don’t make any backups.
+  -y  Assume ‘y’ to all questions.
 EOF
 	exit 1
 }
@@ -24,20 +24,19 @@ EOF
 ##
 direction=
 interactive=true
-backup=true
 
 while [ x"${1#-}" != x"$1" ]; do
-	ARG=${1#?}
+	arg=${1#?}
 	shift
-	while [ -n "$ARG" ]; do
-		case "$ARG" in
-		f*) direction=from   ;;
-		t*) direction=to     ;;
-		B*) backup=false     ;;
+	while [ -n "$arg" ]; do
+		case "$arg" in
+		f*) direction=from   ; backup=false;;
+		t*) direction=to     ; backup=true ;;
+		T*) direction=to     ; backup=false;;
 		y*) interactive=false;;
 		?*) usage            ;;
 		esac
-		ARG=${ARG#?}
+		arg=${arg#?}
 	done
 done
 
