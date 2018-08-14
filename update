@@ -163,7 +163,6 @@ ask() {
 		[nN]) return 1 ;;
 		esac
 	done
-	echo
 }
 
 if_different() {
@@ -172,35 +171,9 @@ if_different() {
 
 
 ##
-## Backup & copy
-##
-cp_backup() {
-	if [ -h "$2" ] || [ -e "$2" ]; then
-		if ! $ask "$1" "$2"; then
-			return 1
-		elif $backup; then
-			mv -- "$2" "$2~"
-		fi
-	fi
-	mkdir -p -- "${2%/*}"
-	cp -dv -- "$1" "$2"
-}
-
-cp_backup_from() {
-	cp_backup "$2" "$1"
-}
-
-cp_backup_to() {
-	cp_backup "$@"
-}
-
-##
 ## Emacs files handling
 ##
 compile_el() {
-	if [ -e "${1}c" ] && [ "$1" -ot  "${1}c" ]; then
-		return 0
-	fi
 	if [ -n "$(which emacs 2>/dev/null)" ]; then
 		tput bold
 		tput setaf 7
@@ -214,47 +187,43 @@ compile_el() {
 ##
 ## Do the job
 ##
-tempfile=$(umask 077; mktemp)
-trap 'rm -f -- "$tempfile"' 0
-
 handle() {
-	case "$dest" in '~'*)   dest=$HOME${dest#'~'}; esac
-	case "$dest" in *@)     dest=${dest%@}${file##*/}; esac
-	case "$dest" in */.|*/) dest=$dest$file; esac
+	case $3 in \~*)    set -- "$1" "$2" "$HOME${3#?}"; esac
+	case $3 in *@)     set -- "$1" "$2" "${3%@}${2##*/}"; esac
+	case $3 in */.|*/) set -- "$1" "$2" "$3$2"; esac
 
-	if ! [ -d "${dest%/*}" ] && [ "$direction" != to ]; then
-		return 0;
+	case $1 in from)
+		[ -d "${3%/*}" ] || return 0
+		set -- "$1" "$3" "$2"
+	esac
+
+	if [ -h "$3" ] || [ -e "$3" ]; then
+		if ! $ask "$2" "$3" <&3; then
+			return 0
+		elif $backup; then
+			mv -- "$3" "$3~"
+		fi
 	fi
 
-	case "$file" in
-	*/dir-colors)
-		# FIXME: Figure out more generic way of handling this instead of
-		# having a custom code specifically for dir-colors.
-		case $direction in to)
-			dircolors - <$file >$tempfile
-			cp_backup "$tempfile" "$dest" <&3 || true
-		esac
-		;;
-	*)
-		cp_backup_$direction "$file" "$dest" <&3 || true
-	esac
-	case "$dest:$direction" in *.el:to)
-		compile_el "$dest"
+	mkdir -p -- "${3%/*}"
+	cp -dv -- "$2" "$3"
+
+	case "$direction:$3" in to:*.el)
+		compile_el "$3"
 	esac
 }
 
-while read _src _dest; do
-	for file in $_src; do
+while read pattern destination; do
+	for file in $pattern; do
 		case "$file" in *\~|\#*|*\#|.*)
 			continue
 		esac
 		if ! match "$@"; then
 			:
 		elif [ -h "$file" ] || [ -f "$file" ]; then
-			dest=$_dest
-			handle "$@"
+			handle "$direction" "$file" "$destination"
 		elif ! [ -e "$file" ]; then
-			echo "update: $file: repository file does not exist, skipping" >&2
+			echo "update: $file: missing, skipping" >&2
 		fi
 	done
 done 3<&1 <<EOF
@@ -267,10 +236,7 @@ sawfishrc          ~/.sawfish/rc
 statuses           ~/.irssi/
 bin/*              ~/.local/
 libexec/*          ~/.local/
-sh/bashrc          ~/.@
-sh/shellrc         ~/.@
-sh/profile         ~/.@
-sh/dir-colors      ~/.config/sh/@
+sh/*               ~/.@
 vimperatorrc       ~/.vimperator/rc
 x/Xresources       ~/.config/@
 x/gtkrc-2.0        ~/.@
