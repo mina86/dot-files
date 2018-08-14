@@ -905,7 +905,7 @@ rules so it is likely not to work."
      ;; Use block-comments
      (comment-begin . "/* ")
      (comment-end . " */")
-     (comment-style . 'multi-line)
+     (comment-style . multi-line)
 
      (c-cleanup-list                 ; Clean ups
       brace-else-brace                 ; "} else {" in one line
@@ -1073,14 +1073,7 @@ the open brace was real open brace or part of comment/string."
 
   (eval-when-compile (require 'cc-mode))
   (setq c-default-style '((awk-mode . "awk")
-                          (other    . "mina86")))
-
-  (add-lambda-hook 'c-common-mode-hook
-    (and buffer-file-name
-         (string-match-p "/\\(google3\\|com/barcap\\)/" buffer-file-name)
-         (cond
-          ((assoc "google" c-style-alist) (c-set-style "google"))
-          ((boundp 'google-c-style) (c-add-style "google" google-c-style t))))))
+                          (other    . "mina86"))))
 
 ;;}}}
 ;;{{{   HTML/XML & comapny Mode
