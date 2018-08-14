@@ -61,6 +61,18 @@ for ($_ = 0; $_ < @ARGV; ) {
 	} elsif ($arg =~ /^-./) {
 		die "e: unknown option: $arg\n";
 	} else {
+		# When showing diffs, git will use ‘a/’ and ‘b/’ prefixes for
+		# old and new versions of the file.  Try to detect that and
+		# strip the prefix.  Similarly, if path ends with ‘:’ that might
+		# be result of grep including the colon in the name; strip the
+		# suffix as well.
+		if (-e $arg) {
+			# nop
+		} elsif ($arg =~ m~^[ab]/(.+)$~ && -e $1) {
+			$ARGV[$_] = $1;
+		} elsif ($arg =~ m/^(.+):$/ && -e $1) {
+			$ARGV[$_] = $1;
+		}
 		++$_;
 		next;
 	}
