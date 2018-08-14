@@ -4,18 +4,17 @@
 [ X"${-#*i}" != X"$-" ] || return
 
 # Hostname
-if [ -n "$HOST" ]; then
-	HOST="$(which hostname >/dev/null 2>&1)"
-	if [ -n "$HOST" ]; then
-		HOST=$(hostname)
-	else
+host=$HOST
+if [ -z "$host" ]; then
+	host=$(hostname 2>/dev/null)
+	if [ -z "$host" ]; then
 		# So yeah… My OpenWRT is missing hostname and I don’t quite know
 		# where to get it from.  Fortunately it has Python so I can use
 		# it.  (It does not have Perl).
-		HOST=$(python -c 'import socket; print socket.gethostname()')
+		host=$(python -c 'import socket; print socket.gethostname()')
 	fi
-	HOST=${HOST%%.*}
 fi
+host=${host%%.*}
 
 ## If normal user -> umask 077; if super user -> umask 022
 ## Also, set TMOUT when super user
@@ -39,15 +38,13 @@ fi
 
 # Default prompt (most likely will be overwritten in shell specific rc files)
 if [ X"$UID" = X0 ]; then PS1='# '; else PS1='$ '; fi
-case $TERM in xterm*|rxvt*|eterm*|screen*|linux*)
-	if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then PS1="[$HOST]$PS1"; fi
-esac
+[ -z "$SSH_CLIENT$SSH_CONNECTION" ] || PS1="[$host]$PS1"
 export PS1
 
 # Add title to terminals
 tsl=$(tput tsl 2>/dev/null)
 if [ -n "$tsl" ]; then
-	PS1=$(printf '%s%s@%s%s%s' "$tsl" "$USER" "$HOST" "$(tput fsl)" "$PS1")
+	PS1=$(printf '%s%s@%s%s%s' "$tsl" "$USER" "$host" "$(tput fsl)" "$PS1")
 fi
 unset tsl
 
@@ -266,7 +263,7 @@ LANG=en_GB.UTF-8
 LC_MESSAGES=en_GB.UTF-8
 export FIGNORE CC CXX LANG LC_COLLATE LC_MESSAGES
 unset MAILCHECK MAIL
-case "X$HOST" in Xerwin|Xtuptus)
+case $host in erwin|tuptus)
 	if [ x"`uname -m`" = xx86_64 ]; then
 		ARCH=x86_64
 	else
