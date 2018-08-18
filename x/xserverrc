@@ -1,6 +1,16 @@
 #!/bin/sh
-[ -n "$XDG_VTNR" ] && set -- "vt${XDG_VTNR?}" "$@"
-[ -n "$XDG_SEAT" ] && set -- -seat "${XDG_SEAT?}" "$@"
-set -- /usr/bin/X -nolisten tcp -core -novtswitch "$@"
+
+if [ -n "$XDG_VTNR" ]; then
+	set -- "vt$XDG_VTNR" "$@"
+else
+	tty=$(tty)
+	case $tty in /dev/tty[0-9]*)
+		set -- "vt${tty#/dev/tty}" "$@"
+	esac
+fi
+
+set -- /usr/bin/X -nolisten tcp -nolisten local -core "$@"
+
 echo + "$@" >&2
+
 exec "$@"
