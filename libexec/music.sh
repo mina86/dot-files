@@ -14,7 +14,7 @@ fi
 found=false
 for player in audacious spotify mpd; do
 	if [ -x ~/.local/libexec/music-$player.sh ]; then
-		source ~/.local/libexec/music-$player.sh
+		. ~/.local/libexec/music-$player.sh
 		if "${player}_query" >/dev/null 2>&1; then
 			found=true
 			break
