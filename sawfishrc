@@ -403,12 +403,10 @@ Also wraps mouse to the centre of the window if not already above it."
                (lambda (spec)
                  (when (string-looking-at (car spec) sn)
                    (apply mn-run-unless (cdr spec))))
-               `(("erwin|pikus"       "^Opera/opera$"      "opera")
-                 (""                  "^Emacs/emacs$"      "e")
-                 ("erwin|pikus"       "/IRC$"              ,mn-irssi-command)
-                 ("erwin"             "/MPD$"              ,mn-mpdshow-command)
-                 (""                  "^Gkrellm/gkrellm$"  "gkrellm"))))
-            (set-screen-viewport 0 0)))
+               `((""                  "^Emacs/emacs$" "e")
+                 ("erwin|pikus"       "/IRC$"         ,mn-irssi-command)
+                 ("erwin"             "/MPD$"         ,mn-mpdshow-command)))
+            (set-screen-viewport 0 0))))
 
 ;;}}}
 
