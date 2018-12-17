@@ -1204,30 +1204,6 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
   (if reset (rng-first-error))
   (rng-next-error arg))
 
-(eval-when-compile (require 'sgml-mode))
-(declare-function sgml-close-tag "sgml-mode")
-(eval-after-load "sgml-mode"
-  (add-lambda-hook 'sgml-mode-hook
-    (mn-xml-configure-bindings sgml-mode-map)
-    (set-key sgml-mode-map "/"
-             (if (and (not prefix-arg)
-                      (eq (char-before) ?<))
-                 (let (delete-active-region)
-                   (delete-char -1)
-                   (sgml-close-tag))
-               (funcall 'self-insert-command
-                        (prefix-numeric-value prefix-arg))))))
-
-(when (fboundp 'nxml-mode)
-  (eval-when-compile (require 'nxml-mode))
-  (setq nxml-slash-auto-complete-flag t
-        nxml-auto-insert-xml-declaration-flag t
-        nxml-bind-meta-tab-to-complete-flag t)
-  (add-to-list 'auto-mode-alist '("\\.xml\\'" . nxml-mode))
-  (eval-after-load "nxml-mode"
-    (add-lambda-hook 'nxml-mode-hook
-      (mn-xml-configure-bindings nxml-mode-map))))
-
 ;;}}}
 ;;{{{   (La)TeX and nroff mode
 
@@ -1391,6 +1367,9 @@ it's not bound to space, the results may be somehow surprising."
 (eval-when-compile (require 'sh-script))
 (setq sh-indent-for-case-label 0
       sh-indent-for-case-alt '+)
+
+;; csv-mode
+(add-hook 'csv-mode-hook 'turn-off-auto-fill)
 
 ;;}}}
 

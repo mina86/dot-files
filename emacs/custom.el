@@ -74,4 +74,4 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(ace-jump-mode apache-mode auto-compile auto-dim-other-buffers beacon bison-mode browse-kill-ring form-feed gitattributes-mode gitconfig-mode gitignore-mode go-mode google-c-style haskell-mode markdown-mode multiple-cursors notmuch num3-mode rust-mode sed-mode smart-tabs-mode typescript-mode)))
+   '(ace-jump-mode apache-mode atomic-chrome auto-compile auto-dim-other-buffers bison-mode browse-kill-ring csv-mode easy-kill form-feed gitattributes-mode gitconfig-mode gitignore-mode google-c-style haskell-mode markdown-mode multiple-cursors num3-mode rust-mode sed-mode typescript-mode)))
