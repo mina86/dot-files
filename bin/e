@@ -44,10 +44,46 @@ sub has_x() {
 }
 
 
-my ($windmove, $stdin) = ('', 0);
+sub file_argument {
+	my ($arg) = @_;
+	if (-e $arg) {
+		return ($arg);
+	}
 
-for ($_ = 0; $_ < @ARGV; ) {
-	my $arg = $ARGV[$_];
+	# When showing diffs, git indicates old and new versions of the
+	# file by using ‘a/’ and ‘b/’ prefixes.  Detect and strip them.
+	if ($arg =~ m~^[ab]/(.+)$~ && -e $1) {
+		return ($arg);
+	}
+
+	# Lastly, try matching ‘«filename»:«line»:«column»:«text»’.  «filename»
+	# and «text» may include colons and «line» and «column» are optional.
+	# This makes the matching a bit tricky so we try various possible file
+	# names if there are multiple colons in $arg.
+	my @parts = split /:/, $arg;
+	for (my $i = @parts; --$i; ) {
+		my $filename = join ':', @parts[0..($i - 1)];
+		if (!-e $filename) {
+			next;
+		}
+		my $line = $parts[$i] // '';
+		my $column = $parts[$i + 1] // '';
+		if ($line !~ /^\d+$/) {
+			return ($filename);
+		} elsif ($column =~ /^\d+$/) {
+			return ("+$line:$column", $filename);
+		} else {
+			return ("+$line", $filename);
+		}
+	}
+	($arg)
+}
+
+
+my ($windmove, $stdin) = ('', 0);
+my @args;
+
+for my $arg (@ARGV) {
 	if ($arg eq '-l') {
 		$windmove = 'left';
 	} elsif ($arg eq '-r') {
@@ -61,22 +97,8 @@ for ($_ = 0; $_ < @ARGV; ) {
 	} elsif ($arg =~ /^-./) {
 		die "e: unknown option: $arg\n";
 	} else {
-		# When showing diffs, git will use ‘a/’ and ‘b/’ prefixes for
-		# old and new versions of the file.  Try to detect that and
-		# strip the prefix.  Similarly, if path ends with ‘:’ that might
-		# be result of grep including the colon in the name; strip the
-		# suffix as well.
-		if (-e $arg) {
-			# nop
-		} elsif ($arg =~ m~^[ab]/(.+)$~ && -e $1) {
-			$ARGV[$_] = $1;
-		} elsif ($arg =~ m/^(.+):$/ && -e $1) {
-			$ARGV[$_] = $1;
-		}
-		++$_;
-		next;
+		push @args, file_argument($arg);
 	}
-	splice @ARGV, $_, 1;
 }
 
 if ($windmove eq 'other') {
@@ -91,7 +113,7 @@ ELISP
 
 
 if ($stdin) {
-	if (@ARGV) {
+	if (@args) {
 		die "e: reading standard input is supported if there are no other arguments\n";
 	}
 
@@ -108,9 +130,9 @@ if ($stdin) {
   (switch-to-buffer buf)
   (x-focus-frame nil))
 ELISP
-	@ARGV = ('-e', $data);
+	@args = ('-e', $data);
 	undef $windmove;
-} elsif (!@ARGV) {
+} elsif (!@args) {
 	client has_x ? '-cna' : '-a', '';
 	exit 0;
 }
@@ -121,4 +143,4 @@ if ($windmove) {
 }
 
 my @q = $stdin ? ('-q') : ();
-client @q, has_x ? '-na' : '-ta', '', @ARGV;
+client @q, has_x ? '-na' : '-ta', '', @args;
