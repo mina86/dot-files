@@ -725,25 +725,26 @@ modified beforehand."
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
 (if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
-(setq default-frame-alist '((width . 80)
-                            (right-fringe . 4)
-                            (left-fringe  . 4)
-                            (menu-bar-lines . 0)
-                            (tool-bar-lines . 0)
-                            (vertical-scroll-bars)
-                            (foreground-color . "gray")
-                            (background-color . "black")
-                            (background-mode . dark)
-                            (wait-for-wm . nil)))
-
-;; For some reason, Emacs uses latin-2 version of the font and when it
-;; encounters Unicode characters it changes font for those characters only.
-;; This makes for very ugly rendering.  Force Unicode font in all frames.
-(add-hook 'after-make-frame-functions
-          (lambda (frame)
-            (set-frame-font
-             "-adobe-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1"
-             nil (list frame))))
+(setq default-frame-alist
+      '((font . "-adobe-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1")
+        (left . 0)
+        (top . 0)
+        (fullscreen . fullheight)
+        (width . 80)
+        (right-fringe . 4)
+        (left-fringe  . 4)
+        (menu-bar-lines . 0)
+        (tool-bar-lines . 0)
+        (vertical-scroll-bars)
+        (foreground-color . "gray")
+        (background-color . "black")
+        (background-mode . dark)
+        (wait-for-wm . nil))
+      initial-frame-alist
+      '((left . 0)
+        (top . 0)
+        (fullscreen . fullheight))
+      frame-resize-pixelwise t)
 (set-face-attribute
  'default t :font "-adobe-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1")
 
