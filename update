@@ -239,7 +239,6 @@ statuses           ~/.irssi/
 bin/*              ~/.local/
 libexec/*          ~/.local/
 sh/*               ~/.@
-vimperatorrc       ~/.vimperator/rc
 x/Xresources       ~/.config/@
 x/gtkrc-2.0        ~/.@
 x/gtk-3.0.ini      ~/.config/gtk-3.0/settings.ini
