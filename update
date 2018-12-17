@@ -188,9 +188,7 @@ compile_el() {
 ## Do the job
 ##
 handle() {
-	case $3 in \~*)    set -- "$1" "$2" "$HOME${3#?}"; esac
-	case $3 in *@)     set -- "$1" "$2" "${3%@}${2##*/}"; esac
-	case $3 in */.|*/) set -- "$1" "$2" "$3$2"; esac
+	case $3 in *@) set -- "$1" "$2" "${3%@}${2##*/}"; esac
 
 	case $1 in from)
 		[ -d "${3%/*}" ] || return 0
@@ -217,35 +215,35 @@ handle() {
 
 while read pattern destination; do
 	for file in $pattern; do
-		case "$file" in *\~|\#*|*\#|.*)
+		case "$file" in *\~|*/\#*|*\#|*/.*)
 			continue
 		esac
 		if ! match "$@"; then
 			:
 		elif [ -h "$file" ] || [ -f "$file" ]; then
-			handle "$direction" "$file" "$destination"
+			handle "$direction" "$file" "$HOME/$destination"
 		elif ! [ -e "$file" ]; then
 			echo "update: $file: missing, skipping" >&2
 		fi
 	done
 done 3<&1 <<EOF
-emacs/*            ~/.emacs.d/@
-mail/*             ~/.mail/@
-git/*              ~/.config/git/@
-inputrc            ~/.
-irssi.theme        ~/.irssi/mina.theme
-sawfishrc          ~/.sawfish/rc
-statuses           ~/.irssi/
-bin/*              ~/.local/
-libexec/*          ~/.local/
-sh/*               ~/.@
-x/Xresources       ~/.config/@
-x/gtkrc-2.0        ~/.@
-x/gtk-3.0.ini      ~/.config/gtk-3.0/settings.ini
-x/xinitrc          ~/.@
-x/xsettingsd       ~/.@
-x/xserverrc        ~/.@
-x/local.keymap     ~/.config/xkb/keymap/local
-x/local.symbols    ~/.config/xkb/symbols/local
-x/80-char.png      ~/.urxvt/@
+emacs/*            .emacs.d/@
+mail/*             .mail/@
+git/*              .config/git/@
+inputrc            .@
+irssi.theme        .irssi/mina.theme
+sawfishrc          .sawfish/rc
+statuses           .irssi/@
+bin/*              .local/bin/@
+libexec/*          .local/libexec/@
+sh/*               .@
+x/Xresources       .config/@
+x/gtkrc-2.0        .@
+x/gtk-3.0.ini      .config/gtk-3.0/settings.ini
+x/xinitrc          .@
+x/xsettingsd       .@
+x/xserverrc        .@
+x/local.keymap     .config/xkb/keymap/local
+x/local.symbols    .config/xkb/symbols/local
+x/80-char.png      .urxvt/@
 EOF
