@@ -1,64 +1,99 @@
 ## .shellrc                                             -*- shell-script -*-
 
 # Not interactive?
-[ X"${-#*i}" != X"$-" ] || return
+case $- in *i*) : ;; *) return; esac
 
-# Hostname
-host=$HOST
-if [ -z "$host" ]; then
+case $HOST in
+'')
 	host=$(hostname 2>/dev/null)
 	if [ -z "$host" ]; then
-		# So yeah… My OpenWRT is missing hostname and I don’t quite know
-		# where to get it from.  Fortunately it has Python so I can use
-		# it.  (It does not have Perl).
+		# My OpenWRT is missing hostname and I don’t quite know where to
+		# get it from.  Fortunately it has Python so I can use it.
 		host=$(python -c 'import socket; print socket.gethostname()')
 	fi
-fi
-host=${host%%.*}
+	host=${host%%.*}
+	;;
+*)
+	host=${HOST%%.*}
+esac
 
-## If normal user -> umask 077; if super user -> umask 022
-## Also, set TMOUT when super user
-if [ $(id -u) -eq 0 ]; then
+# Make sure basic variables are set.  This should be guaranteed by the
+# environment (e.g. login) but I’ve seen those not being set in some weird
+# circumstances (maybe it was Solaris?).
+case $UID in '')
+	UID=$(id -u)
+esac
+case $USER in
+'')
+	case $LOGNAME in
+	'') USER=$(id -un) ;;
+	*)  USER=$LOGNAME
+	esac
+	;;
+*)
+	LOGNAME=${LOGNAME:-$USER}
+esac
+case $HOME in '')
+	HOME=$(eval echo ~"$USER")
+esac
+
+# Add ~/.local/bin and ~/.code/tinyapps to PATH and make sure relative paths are
+# not present in it.  This needs to be done early so that ‘which’ calls below
+# work correctly.
+case ":$PATH:" in
+*:"$HOME"/.local/bin:*)
+	: ;;
+*)
+	if [ -d ~/code/tinyapps ]; then
+		PATH=$HOME/code/tinyapps:$PATH
+	fi
+	if [ -d ~/.local/bin ]; then
+		PATH=$HOME/.local/bin:$PATH
+	fi
+esac
+PATH=$(echo ":$PATH:" | sed -e 's~::*\(\([^/:][^:]*\)\?:\)*~:~g' \
+                            -e 's/^::*//' -e 's/::*$//')
+
+export UID USER LOGNAME HOME PATH
+
+# When running as regular user I don’t want others reading my stuff.  When
+# running as root though, I often create system files and those I want world to
+# be able to read.  This is why I use 077 umask for normal users and 022 for
+# root.
+#
+# While here, set timeout for root shells so that they get automatically closed
+# if I forget do to it.  And also set PS1 the default PS1 which works for all
+# shells.
+case $UID in
+0)
 	umask 0022
 	TMOUT=1200
-else
+	PS1='# '
+	;;
+*)
 	umask 0077
-fi
+	PS1='$ '
+esac
 
-## Some basic variables
-[ -n "$UID" ] || UID="$(id -u)"
-if [ -z "$USER" ]; then
-	if [ -n "$LOGNAME" ]
-	then USER="$LOGNAME"
-	else USER="$(id -un)"
-	fi
-fi
-[ -n "$LOGNAME" ] || LOGNAME="$USER"
-[ -n "$HOME" ] || HOME="$(eval echo ~"$USER")"
+case $SSH_CLIENT$SSH_CONNECTION in ?*)
+	PS1="[$host]$PS1"
+esac
 
-# Default prompt (most likely will be overwritten in shell specific rc files)
-if [ X"$UID" = X0 ]; then PS1='# '; else PS1='$ '; fi
-[ -z "$SSH_CLIENT$SSH_CONNECTION" ] || PS1="[$host]$PS1"
-export PS1
-
-## Aliases & functions
 unalias ls dir vdir ll l 2>/dev/null
 unset LS_OPTIONS
 alias ls='LANG=C ls -FT0 --color=auto'
 alias ll='ls -l'
 
-## make and change directory
 unalias md 2>/dev/null
 md () {
 	if [ $# -eq 0 ]; then
 		echo usage: 'md dir [ dir ... ]' >&2
 		return 1
-	else
-		mkdir -p -- "$@" && \cd "$1"
 	fi
+	mkdir -p -- "$@" && \cd "$1"
 }
 
-## List directory or content of file
+# List directory or contents of a file
 l () {
 	if [ $# -eq 1 -a -f "$1" ]; then
 		less -- "$1"
@@ -69,9 +104,7 @@ l () {
 	fi
 }
 
-# Other
 alias rmd=rmdir
-which mpc >/dev/null 2>&1 && alias mpc="mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]'"
 alias make='nice make'
 
 if [ -x /usr/bin/ncal ]; then
@@ -87,7 +120,6 @@ elif cal -m >/dev/null 2>&1; then
 	alias cal='cal -3m'
 fi
 
-# tinyapps stuff
 if ! which xrun >/dev/null 2>&1; then
 	xrun () { "$@" </dev/null >/dev/null 2>&1 & }
 fi
@@ -95,20 +127,11 @@ if which cdiff >/dev/null 2>&1; then
 	alias diff=cdiff
 fi
 
-# More colors
 if echo foo | grep --color=auto foo >/dev/null 2>/dev/null; then
 	alias grep='grep --color=auto'
 fi
 alias fgrep='grep -F'
 alias egrep='grep -E'
-
-# For setting flags
-if [ -e ~/bin/flags-do ]; then
-	unalias flags 2>/dev/null
-	flags () {
-		. ~/bin/flags-do "$@"
-	}
-fi
 
 # Powerful cd
 _cd_do() {
@@ -156,12 +179,10 @@ EOF
 }
 alias -- -='builtin cd -'
 
-# Git
 alias +='git add'
 alias +u='git add -u'
 alias +p='git add -p'
 
-# Other
 alias @='for i in'
 
 ,() {
@@ -172,46 +193,17 @@ alias @='for i in'
 	fi
 }
 
-alias py=python
-alias pl=perl
-
-
-# No need to set it once again
-if [ -n "$MINA86RC" ]; then
-	return
-fi
+# No need to set environment if it has already been set.
+${MINA86RC:+return}
 MINA86RC=done
 export MINA86RC
 
-# PATH
-case ":$PATH:" in
-*:"$HOME/bin":*|*:"~/bin":*|*:"$HOME/.local/bin":*|*:"~/.local/bin":*)
-	: ;;
-*)
-	if [ -d ~/code/tinyapps ]; then
-		PATH="$HOME/code/tinyapps:$PATH"
-	fi
-	if [ -d ~/.local/bin ]; then
-		PATH="$HOME/.local/bin:$PATH"
-	elif [ -d ~/bin ]; then
-		PATH="$HOME/bin:$PATH"
-	fi
-esac
-
-# Remove relative paths
-PATH="$(echo ":$PATH:" | sed -e 's~:\(\([^/:][^:]*\)\?:\)*~:~g
-s/^::*//
-s/::*$//')"
-export PATH
-
-# Editor
 if [ -z "$EDITOR" ] && which nano >/dev/null 2>&1; then
 	EDITOR=nano
 	VISUAL=nano
 	export EDITOR VISUAL
 fi
 
-# less
 if [ -n "$LESS" ] || which less >/dev/null 2>&1; then
 	PAGER=less
 	LESS=-MS
@@ -219,7 +211,6 @@ if [ -n "$LESS" ] || which less >/dev/null 2>&1; then
 	[ -x ~/bin/lesspipe ] && eval $(~/bin/lesspipe --install-lesspipe)
 fi
 
-# Colours in less
 if which tput >/dev/null 2>&1; then
 	LESS_TERMCAP_md=$(tput setaf 2)   # begin bold
 	LESS_TERMCAP_mb=$(tput setaf 1)   # begin blinking
@@ -242,43 +233,29 @@ fi
 export LESS_TERMCAP_md LESS_TERMCAP_mb LESS_TERMCAP_us LESS_TERMCAP_so
 export LESS_TERMCAP_se LESS_TERMCAP_ue LESS_TERMCAP_me
 
-# LS colors
 if [ -z "$LS_COLORS" ] && [ -f ~/.dir_colors ]; then
 	eval "$(dircolors -b ~/.dir_colors)"
 fi
 
-# Various
 FIGNORE=".o:~:.bak"
-CC=gcc
-CXX=g++
 LC_COLLATE=C
 LANG=en_GB.UTF-8
 LC_MESSAGES=en_GB.UTF-8
-export FIGNORE CC CXX LANG LC_COLLATE LC_MESSAGES
+# /tmp is in RAM, don't save history between reboots
+HISTFILE=/tmp/.$(id -un)-history
+HISTCONTROL=ignorespace:erasedups
+export FIGNORE LANG LC_COLLATE LC_MESSAGES HISTFILE HISTCONTROL
 unset MAILCHECK MAIL
 case $host in erwin|tuptus)
-	if [ x"`uname -m`" = xx86_64 ]; then
-		ARCH=x86_64
-	else
-		ARCH=i686
-	fi
+	case $(uname -m) in
+	x86_64) ARCH=x86_64 ;;
+	*)      ARCH=i686
+	esac
 	export ARCH
 	flags init
 esac
 
-if which ccache >/dev/null 2>&1; then
-	CCACHE_COMPRESS=1
-	CCACHE_LOGFILE=/tmp/ccache.log
-	CCACHE_SLOPPINESS=file_macro,time_macros
-	CCACHE_TEMPDIR=/tmp
-	if which distcc >/dev/null 2>&1; then
-		CCACHE_PREFIX=distcc
-		export CCACHE_PREFIX
-	fi
-	export CCACHE_COMPRESS CCACHE_LOGFILE CCACHE_SLOPPINESS CCACHE_TEMPDIR
-fi
-
-# Some local stuff
+# And finally, load local configuration.
 if [ -e ~/.config/sh/local ]; then
 	. ~/.config/sh/local
 fi

@@ -1,206 +1,190 @@
 ## .bashrc                                              -*- shell-script -*-
 
 # Not interactive?
-[ X"${-#*i}" != X"$-" ] || return
+case $- in *i*) : ;; *) return; esac
 
-# Include ~/.shellrc
-if [ -r ~/.shellrc ]; then
-	. ~/.shellrc
+# ~/.shellrc has common stuff between shells so source it as well.
+. ~/.shellrc
+
+# Disable completion.
+if type complete >/dev/null 2>/dev/null; then
+	complete -r
 fi
 
+shopt -qu cdable_vars checkhash dotglob execfail extglob interactive_comments \
+          interactive_comments lithist nocaseglob shift_verbose sourcepath \
+          xpg_echo nullglob progcomp hostcomplete
+shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit \
+          histverify promptvars huponexit globstar failglob autocd \
+          no_empty_cmd_completion
 
-##
-## Prompt
-##
+PS2=':; '
+case $TERM in
+xterm*|rxvt*|eterm*|screen*|linux*)
+	:
+	;;
+*)
+	return
+esac
 
-PROMPT_COMMANDS=:
-
-case $TERM in xterm*|rxvt*|eterm*|screen*|linux*)
+PS1_COMMANDS=:
 
 __PS1='\[\e[0;37;44m\]'
-if [ x"$TERM" = xscreen ]; then
-	__PS1+=\<
-else
-	__PS1+=[
-fi
+case $TERM in
+screen) __PS1+='<'; __close='>' ;;
+*)      __PS1+='['; __close=']'
+esac
 
 __sp=
-if [ $UID -eq 0 ]; then
+case $UID in 0)
 	__PS1+='\[\e[1;31;44m\]\u\[\e[1;37;44m\]'
 	__sp=' '
-fi
-if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then
-	__PS1+='@\[\e[1;33;44m\]\h '
-else
-	__PS1+=$__sp
-fi
-unset __sp
+esac
+case $SSH_CLIENT$SSH_CONNECTION in
+?*) __PS1+='@\[\e[1;33;44m\]\h ';;
+'') __PS1+=$__sp
+esac
 
-__PS1+='{{}}'
-__PS1+='\[\e[1;32;44m\]'
+__PS1+='{{}}\[\e[1;32;44m\]'
 
 if which tpwd; then
-	__ellipsis=…
-	test xUTF-8 = x"$(locale charmap)" || __ellipsis={
+	case $(locale charmap) in
+	UTF-8) __ellipsis='…';;
+	*)     __ellipsis='{'
+	esac
 	__PS1+="\$(e=\$?; tpwd -n 30 $__ellipsis 1; exit \$e)"
-	unset __ellipsis
 else
 	__PS1+='\w'
 fi >/dev/null 2>&1
 
-__PS1+='\[\e[0;37;44m\]'
-if [ x"$TERM" = xscreen ]; then
-	__PS1+=\>
-else
-	__PS1+=]
-fi
-__PS1+='\[\e[0;1;3$(($??5:3))m\]\$\[\e[0m\] '
+__PS1+='\[\e[0;37;44m\]'$__close'\[\e[0;1;3$(($??5:3))m\]\$\[\e[0m\] '
 
 # urxvt-tabbedex has nice handling of bell
 # See https://github.com/mina86/urxvt-tabbedex for latest copy
-case "$TERM" in rxvt*)
+case $TERM in rxvt*)
 	__PS1+='\[\a\]'
 esac
 
 # Add title to terminals
-tsl=$(tput tsl 2>/dev/null)
-if [ -n "$tsl" ]; then
-	__PS1='\['$tsl$USER@$host$(tput fsl)'\]'$__PS1
-fi
-unset tsl
-
-PS2=':; '
-
-PROMPT_COMMAND='PS1=${__PS1//"{{}}"/"$(eval "$PROMPT_COMMANDS")"}'
-
-# Git prompt stuff.  Sources:
-# * http://www.jukie.net/~bart/conf/zsh.d/S55_git
-# * http://blog.madism.org/index.php/2008/05/07/173-git-prompt
-# * http://github.com/jcorbin/zsh-git/
-# * and of course rewritten a lot by myself
-
-if which git >/dev/null 2>&1; then
-	__GIT_PROMPT=
-	__git_prompt () {
-		if [ "x$PWD" = "x$__GIT_PROMPT_PWD" ]; then
-			echo -n "$__GIT_PROMPT "
-			return 0
-		fi
-
-		__GIT_PROMPT_PWD=$PWD
-		local dir
-		dir=$__GIT_PROMPT_GITDIR
-		if ! __GIT_PROMPT_GITDIR=$(git rev-parse --git-dir 2>/dev/null); then
-			__GIT_PROMPT=
-			return 0
-		fi
-
-		__GIT_PROMPT_GITDIR=$(realpath $__GIT_PROMPT_GITDIR)
-		test "$dir" = "$__GIT_PROMPT_GITDIR" && return 0
-
-		local branch state E ps
-		state=
-		dir=$__GIT_PROMPT_GITDIR
-		if   [ -d "$dir/rebase-apply" ] ; then
-			if   [ -f "$dir/rebase-apply/rebasing" ]; then state=rb
-			elif [ -f "$dir/rebase-apply/applying" ]; then state=am
-			else                                        state=am/rb
-			fi
-			branch="$(git symbolic-ref HEAD 2>/dev/null)"
-		elif [ -f "$dir/rebase-merge/interactive" ]; then
-			state="rb-i"
-			branch="$(cat "$dir/rebase-merge/head-name")"
-		elif [ -d "$dir/rebase-merge" ]; then
-			state="rb-m"
-			branch="$(cat "$dir/rebase-merge/head-name")"
-		elif [ -f "$dir/MERGE_HEAD" ]; then
-			state="mrg"
-			branch="$(git symbolic-ref HEAD 2>/dev/null)"
-		else
-			[ -f "$dir/BISECT_LOG" ] && state="bisect"
-			branch="$(git symbolic-ref HEAD 2>/dev/null)" || \
-				branch="$(git describe --exact-match HEAD 2>/dev/null)" || \
-				branch="$(cut -c1-7 "$dir/HEAD")..."
-		fi
-		branch="${branch#refs/heads/}"
-
-		case "$state" in
-		?*)                              # branch(state)
-			__GIT_PROMPT="\[\e[1;32;44m\]$branch"
-			__GIT_PROMPT+="\[\e[0;37;44m\]("
-			__GIT_PROMPT+="\[\e[0;32;44m\]$state"
-			__GIT_PROMPT+="\[\e[0;37;44m\])"
-			;;
-		*)                               # dir:branch
-			__GIT_PROMPT=
-			local fulldir=$(git rev-parse --show-toplevel)
-			dir=${fulldir##*/}
-			if [ ${#dir} -le 4 -a x"$fulldir" != x"$PWD" ]; then
-				__GIT_PROMPT+="\[\e[0;37;44m\]$dir"
-				__GIT_PROMPT+="\[\e[1;30;44m\]:"
-			fi
-			__GIT_PROMPT+="\[\e[0;32;44m\]$branch"
-		esac
-
-		echo -n "$__GIT_PROMPT "
-	}
-
-	g () {
-		local cmds='rebase|commit|branch|checkout|cherry-pick|start'
-		cmds=$cmds"|''"$(git config --get-regexp 'alias\..*' | \
-			awk -F '[. ]' 'END { print cmds }
-				$3 ~ /'"$cmds"'/ { cmds = cmds "|" $2 }')
-
-		eval "g() {
-			case \"\$1\" in $cmds)
-				unset __GIT_PROMPT_PWD __GIT_PROMPT_GITDIR
-			esac
-			case \"\$1\" in ?*)
-				~/.local/bin/g \"\$@\"
-			esac
-		}; g \"\$@\""
-
-	}
-
-	PROMPT_COMMANDS+=' ; __git_prompt'
+__tsl=$(tput tsl 2>/dev/null)
+if [ -n "$__tsl" ]; then
+	__PS1='\['$__tsl$USER@$host$(tput fsl)'\]'$__PS1
 fi
 
-esac ## case $TERM
+unset __tsl __close __sp __ellipsis
+
+PROMPT_COMMAND='PS1=${__PS1//"{{}}"/"$(eval "$PS1_COMMANDS")"}'
 
 ##
 ## Show times on the right, behaves a bit like zsh's right prompt, but
 ## not exactly the same way.
 ##
+__COMMAND_RPROMPT_CACHE=
+__COMMAND_RPROMPT_TIMEZONES='NYC:US/Eastern LON:Europe/London ZRH:Europe/Zurich TOK:Asia/Tokyo'
 __command_rprompt() {
-	local times='' n=$COLUMNS tz
-	for tz in ZRH:Europe/Zurich MTV:US/Pacific PIT:US/Eastern; do
-		[ $n -gt 40 ] || break
-		times="$times ${tz%%:*}\e[30;1m:\e[0;36;1m$(TZ=${tz#*:} date +%H:%M)\e[0m"
-		n=$(( $n - 10 ))
-	done
-	printf "%${n}s" '' >&2 2>/dev/null
-	printf "$times\\r" >&2 2>/dev/null
+	local n=$((COLUMNS - 6)) current=$(date +%H:%M)
+	if [ ":$__COMMAND_RPROMPT_CACHE_KEY" != ":$n:$current" ]; then
+		local times="\e[0;36;1m$current\e[0m" tz tm
+		for tz in $__COMMAND_RPROMPT_TIMEZONES; do
+			[ $n -gt 40 ] || break
+			tm=$(TZ=${tz#*:} date +%H:%M)
+			if [ "$tm" != "$current" ]; then
+				times+=" ${tz%%:*}\e[30;1m:\e[0;36m${tm%:*}\e[0m"
+				n=$(( $n - 7 ))
+			fi
+		done
+		__COMMAND_RPROMPT_CACHE_KEY=:$n:$current
+		__COMMAND_RPROMPT_CACHE_VALUE=$times
+	fi
+	printf "%${n}s$__COMMAND_RPROMPT_CACHE_VALUE\\r" '' >&2 2>/dev/null
 }
-PROMPT_COMMANDS+=' ; __command_rprompt'
-
+PROMPT_COMMAND+='; __command_rprompt'
 
 ##
-## Shell optons and parameters
+## Show git status information in prompt.
 ##
-if type complete >/dev/null 2>/dev/null; then
-	# I don't use auto completion and it has some weird interactions
-	complete -r
-fi
+which git >/dev/null 2>&1 || return
 
-shopt -qu cdable_vars checkhash dotglob execfail extglob interactive_comments
-shopt -qu interactive_comments lithist nocaseglob shift_verbose sourcepath
-shopt -qu xpg_echo nullglob progcomp hostcomplete
+__GIT_PROMPT=
+__git_prompt() {
+	if [ "x$PWD" = "x$__GIT_PROMPT_PWD" ]; then
+		printf '%s ' "$__GIT_PROMPT"
+		return 0
+	fi
 
-shopt -qs cdspell checkwinsize cmdhist expand_aliases histappend histreedit
-shopt -qs histverify promptvars huponexit globstar failglob autocd
-shopt -qs no_empty_cmd_completion
+	__GIT_PROMPT_PWD=$PWD
+	local dir
+	dir=$__GIT_PROMPT_GITDIR
+	if ! __GIT_PROMPT_GITDIR=$(git rev-parse --git-dir 2>/dev/null); then
+		__GIT_PROMPT=
+		return 0
+	fi
 
-# /tmp is in RAM, don't save history between reboots
-export HISTFILE="/tmp/.$(id -un)-history"
-HISTCONTROL="ignorespace:erasedups"
-HISTIGNORE="ls:su:cd:bc:wp rm:mp3 mv:cd -"
+	__GIT_PROMPT_GITDIR=$(realpath $__GIT_PROMPT_GITDIR)
+	test "$dir" = "$__GIT_PROMPT_GITDIR" && return 0
+
+	local branch state E ps
+	state=
+	dir=$__GIT_PROMPT_GITDIR
+	if   [ -d "$dir/rebase-apply" ] ; then
+		if   [ -f "$dir/rebase-apply/rebasing" ]; then state=rb
+		elif [ -f "$dir/rebase-apply/applying" ]; then state=am
+		else                                        state=am/rb
+		fi
+		branch=$(git symbolic-ref HEAD 2>/dev/null)
+	elif [ -f "$dir/rebase-merge/interactive" ]; then
+		state=rb-i
+		branch=$(cat "$dir/rebase-merge/head-name")
+	elif [ -d "$dir/rebase-merge" ]; then
+		state=rb-m
+		branch=$(cat "$dir/rebase-merge/head-name")
+	elif [ -f "$dir/MERGE_HEAD" ]; then
+		state=mrg
+		branch=$(git symbolic-ref HEAD 2>/dev/null)
+	else
+		[ -f "$dir/BISECT_LOG" ] && state="bisect"
+		branch=$(git symbolic-ref HEAD 2>/dev/null) || \
+			branch=$(git describe --exact-match HEAD 2>/dev/null) || \
+			branch=$(cut -c1-7 "$dir/HEAD")...
+	fi
+	branch=${branch#refs/heads/}
+
+	case $state in
+	?*)                              # branch(state)
+		__GIT_PROMPT="\[\e[1;32;44m\]$branch"
+		__GIT_PROMPT+="\[\e[0;37;44m\]("
+		__GIT_PROMPT+="\[\e[0;32;44m\]$state"
+		__GIT_PROMPT+="\[\e[0;37;44m\])"
+		;;
+	*)                               # dir:branch
+		__GIT_PROMPT=
+		local fulldir=$(git rev-parse --show-toplevel)
+		dir=${fulldir##*/}
+		if [ ${#dir} -le 4 -a x"$fulldir" != x"$PWD" ]; then
+			__GIT_PROMPT+="\[\e[0;37;44m\]$dir"
+			__GIT_PROMPT+="\[\e[1;30;44m\]:"
+		fi
+		__GIT_PROMPT+="\[\e[0;32;44m\]$branch"
+	esac
+
+	printf '%s ' "$__GIT_PROMPT"
+}
+
+g() {
+	local cmds='rebase|commit|branch|checkout|cherry-pick|start'
+	cmds=$cmds"|''"$(git config --get-regexp 'alias\..*' | awk -F '[. ]' '
+		$2 ~ /^[-_a-zA-Z0-9]+$/ && $3 ~ /'"$lst"'/ { lst = lst "|" $2 }
+		END { print lst }
+	')
+
+	eval "g() {
+		case \"\$1\" in $cmds)
+			unset __GIT_PROMPT_PWD __GIT_PROMPT_GITDIR
+		esac
+		case \"\$1\" in ?*)
+			~/.local/bin/g \"\$@\"
+		esac
+	}; g \"\$@\""
+}
+
+PS1_COMMANDS+='; __git_prompt'
