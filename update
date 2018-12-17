@@ -205,7 +205,9 @@ handle() {
 		fi
 	fi
 
-	mkdir -p -- "${3%/*}"
+	case $3 in */*)
+		mkdir -p -- "${3%/*}"
+	esac
 	cp -dv -- "$2" "$3"
 
 	case "$direction:$3" in to:*.el)
