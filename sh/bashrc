@@ -82,15 +82,16 @@ PROMPT_COMMAND='PS1=${__PS1//"{{}}"/"$(eval "$PS1_COMMANDS")"}'
 __COMMAND_RPROMPT_CACHE=
 __COMMAND_RPROMPT_TIMEZONES='NYC:US/Eastern LON:Europe/London ZRH:Europe/Zurich TOK:Asia/Tokyo'
 __command_rprompt() {
-	local n=$((COLUMNS - 6)) current=$(date +%H:%M)
+	local n=$((COLUMNS - 4)) current=$(date +%H:%M)
 	if [ ":$__COMMAND_RPROMPT_CACHE_KEY" != ":$n:$current" ]; then
-		local times="\e[0;36;1m$current\e[0m" tz tm
+		local times="\e[36;1m${current%:*}\e[0;36m${current#*:}\e[0m"
+		local tz tm
 		for tz in $__COMMAND_RPROMPT_TIMEZONES; do
 			[ $n -gt 40 ] || break
 			tm=$(TZ=${tz#*:} date +%H:%M)
 			if [ "$tm" != "$current" ]; then
-				times+=" ${tz%%:*}\e[30;1m:\e[0;36m${tm%:*}\e[0m"
-				n=$(( $n - 7 ))
+				times+=" \e[30;1m${tz%%:*}\e[0;36m${tm%:*}\e[0m"
+				n=$(( $n - 6 ))
 			fi
 		done
 		__COMMAND_RPROMPT_CACHE_KEY=:$n:$current
