@@ -36,7 +36,7 @@ screen) __PS1+='<'; __close='>' ;;
 esac
 
 __sp=
-case $UID in 0)
+case $USER in root)
 	__PS1+='\[\e[1;31;44m\]\u\[\e[1;37;44m\]'
 	__sp=' '
 esac

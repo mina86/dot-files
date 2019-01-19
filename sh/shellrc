@@ -20,9 +20,6 @@ esac
 # Make sure basic variables are set.  This should be guaranteed by the
 # environment (e.g. login) but I’ve seen those not being set in some weird
 # circumstances (maybe it was Solaris?).
-case $UID in '')
-	UID=$(id -u)
-esac
 case $USER in
 '')
 	case $LOGNAME in
@@ -50,11 +47,10 @@ case ":$PATH:" in
 	if [ -d ~/.local/bin ]; then
 		PATH=$HOME/.local/bin:$PATH
 	fi
+	PATH=$(echo ":$PATH:" | sed -e 's~::*\(\([^/:][^:]*\)\?:\)*~:~g' \
+	                            -e 's/^::*//' -e 's/::*$//')
 esac
-PATH=$(echo ":$PATH:" | sed -e 's~::*\(\([^/:][^:]*\)\?:\)*~:~g' \
-                            -e 's/^::*//' -e 's/::*$//')
-
-export UID USER LOGNAME HOME PATH
+export PATH
 
 # When running as regular user I don’t want others reading my stuff.  When
 # running as root though, I often create system files and those I want world to
@@ -64,8 +60,8 @@ export UID USER LOGNAME HOME PATH
 # While here, set timeout for root shells so that they get automatically closed
 # if I forget do to it.  And also set PS1 the default PS1 which works for all
 # shells.
-case $UID in
-0)
+case $USER in
+root)
 	umask 0022
 	TMOUT=1200
 	PS1='# '
@@ -81,7 +77,7 @@ esac
 
 unalias ls dir vdir ll l 2>/dev/null
 unset LS_OPTIONS
-alias ls='LANG=C ls -FT0 --color=auto'
+alias ls='LANG=C ls -vhFT0 --si --color=auto'
 alias ll='ls -l'
 
 unalias md 2>/dev/null
@@ -174,7 +170,7 @@ EOF
 		if [ x"$1" != x-P ]; then
 			set -- -L "$@"
 		fi
-		( _cd_do "$1" "$2" && shift 2 && "$@" )
+		( _cd_do "$1" "$2" && shift 2 && exec "$@" )
 	esac
 }
 alias -- -='builtin cd -'
@@ -206,9 +202,10 @@ fi
 
 if [ -n "$LESS" ] || which less >/dev/null 2>&1; then
 	PAGER=less
-	LESS=-MS
-	export PAGER LESS
-	[ -x ~/bin/lesspipe ] && eval $(~/bin/lesspipe --install-lesspipe)
+	LESS=-FMSRj4
+	if [ -x ~/.local/bin/lesspipe ]; then
+		eval $(~/.local/bin/lesspipe --install-lesspipe)
+	fi
 fi
 
 if which tput >/dev/null 2>&1; then
