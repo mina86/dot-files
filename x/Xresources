@@ -17,7 +17,7 @@ XTerm*utf8:            3
 XTerm*font:            -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
 XTerm*italicFont:      -*-courier-medium-o-normal-*-10-*-*-*-*-*-iso10646-1
 XTerm*boldfont:        -*-courier-bold-r-normal-*-10-*-*-*-*-*-iso10646-1
-XTerm*bolditalicFont:  -*-courier-bold-o-normal-*-10-*-*-*-*-*-iso10646-1
+XTerm*boldItalicFont:  -*-courier-bold-o-normal-*-10-*-*-*-*-*-iso10646-1
 
 XTerm*colorMode:       true
 XTerm*colorBDMode:     false
@@ -65,12 +65,11 @@ URxvt.externalBorder:  0
 URxvt.font:            -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
 URxvt.italicFont:      -*-courier-medium-o-normal-*-10-*-*-*-*-*-iso10646-1
 URxvt.boldfont:        -*-courier-bold-r-normal-*-10-*-*-*-*-*-iso10646-1
-URxvt.bolditalicFont:  -*-courier-bold-o-normal-*-10-*-*-*-*-*-iso10646-1
-
-URxvt.intensityStyles: true
+URxvt.boldItalicFont:  -*-courier-bold-o-normal-*-10-*-*-*-*-*-iso10646-1
 
 URxvt.background:      #000000
-URxvt.foreground:      #FFFFFF
+URxvt.foreground:      #CCCCCC
+URxvt.colorBD:         #FFFFFF
 URxvt.cursorColor:     #FFFF00
 
 ! Terminal in urxvt
