@@ -101,6 +101,10 @@ exec_x() {
 	init_screen
 	exec_background_tasks &
 
+	if has start-pulseaudio-x11; then
+		start-pulseaudio-x11
+	fi
+
 	tmp=$(mktemp)
 	trap 'rm -f -- "$tmp"' 0
 
