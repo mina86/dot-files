@@ -134,7 +134,7 @@ _cd_do() {
 	if [ x"$2" != x- ] && [ -e "$2" ] && ! [ -d "$2" ]; then
 		set -- "$1" "$(dirname $2)"
 	fi
-	builtin cd "$@"
+	command cd "$@"
 }
 
 cd() {
@@ -155,10 +155,10 @@ cd [-P] (<dir> | <file> | -) <command> [<args> ...]
 EOF
 		;;
 	0:)
-		builtin cd
+		command cd
 		;;
 	1:-P)
-		builtin cd -P "${PWD}"
+		command cd -P "${PWD}"
 		;;
 	1:*)
 		_cd_do "-L" "$1"
@@ -173,7 +173,7 @@ EOF
 		( _cd_do "$1" "$2" && shift 2 && exec "$@" )
 	esac
 }
-alias -- -='builtin cd -'
+alias -- -='command cd -'
 
 alias +='git add'
 alias +u='git add -u'
