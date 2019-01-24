@@ -181,14 +181,6 @@ alias +p='git add -p'
 
 alias @='for i in'
 
-,() {
-	if [ $# -eq 0 ]; then
-		paste -sd,
-	else
-		printf "%s\n" "$@" | paste -sd,
-	fi
-}
-
 # No need to set environment if it has already been set.
 ${MINA86RC:+return}
 MINA86RC=done
