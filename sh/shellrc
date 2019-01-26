@@ -176,7 +176,9 @@ EOF
 		( _cd_do "$1" "$2" && shift 2 && exec "$@" )
 	esac
 }
-alias -- -='command cd -'
+# Bash interprets ’-=…’ as a flag so ‘--’ is needed but BusyBox complains about
+# it so silence the warning.
+alias -- -='command cd -' 2>/dev/null
 
 alias +='git add'
 alias +u='git add -u'
