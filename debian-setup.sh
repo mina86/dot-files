@@ -14,6 +14,8 @@ if [ -z "$user" ]; then
 	exit 1
 fi
 
+# Makes git’s interactive.singleKey work
+apt install libterm-readkey-perl
 
 # Add current user to sudo; ask root password
 apt install sudo
