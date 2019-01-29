@@ -75,15 +75,19 @@ start_wm() {
 		echo '!!!'
 		unset SAWFISH_QUIT_CMD_FILE
 		xterm
-	# elif ssh-add -l >/dev/null 2>&1; then
-	#	sawfish
-	elif has ssh-agent; then
+		return
+	fi
+
+	SAWFISH_QUIT_CMD_FILE=$1
+	export SAWFISH_QUIT_CMD_FILE
+	if has ssh-agent; then
 		ssh-agent sawfish
 	elif has gpg-agent; then
 		gpg-agent --daemon sawfish
 	else
 		sawfish
 	fi
+	unset SAWFISH_QUIT_CMD_FILE
 }
 
 exec_quit_cmd() {
@@ -108,7 +112,7 @@ exec_x() {
 	tmp=$(mktemp)
 	trap 'rm -f -- "$tmp"' 0
 
-	SAWFISH_QUIT_CMD_FILE=$tmp start_wm
+	start_wm "$tmp"
 
 	[ -s "$tmp" ] && read cmd <$tmp || cmd=
 	rm -f -- "$tmp"
