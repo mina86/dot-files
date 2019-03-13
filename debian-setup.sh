@@ -62,3 +62,8 @@ TTYVTDisallocate=no"
                                                        Scarborough  |__|
 
 ' C C M S "$(tr -dc a-z </dev/urandom |head -c2)" "$(shuf -i0-99 -n1)"
+
+# Install and fix Sawfish
+apt install sawfish
+rm -f -- /etc/X11/sawfish/site-init.d/00debian.jl \
+         /etc/X11/sawfish/site-init.d/00menu.jl
