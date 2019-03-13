@@ -29,6 +29,7 @@ sed -i '
 	s/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=2/
 	s/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT=systemd.show_status=1/
 	s/^GRUB_CMDLINE_LINUX=.*/GRUB_CMDLINE_LINUX=text/
+	s/^#\?GRUB_TERMINAL=.*/GRUB_TERMINAL=console/
 ' /etc/default/grub
 update-grub
 systemctl set-default multi-user.target
