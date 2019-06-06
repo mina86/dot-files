@@ -53,14 +53,14 @@ sub file_argument {
 	# When showing diffs, git indicates old and new versions of the
 	# file by using ‘a/’ and ‘b/’ prefixes.  Detect and strip them.
 	if ($arg =~ m~^[ab]/(.+)$~ && -e $1) {
-		return ($arg);
+		return ($1);
 	}
 
 	# Lastly, try matching ‘«filename»:«line»:«column»:«text»’.  «filename»
 	# and «text» may include colons and «line» and «column» are optional.
 	# This makes the matching a bit tricky so we try various possible file
 	# names if there are multiple colons in $arg.
-	my @parts = split /:/, $arg;
+	my @parts = split /:/, $arg, -1;
 	for (my $i = @parts; --$i; ) {
 		my $filename = join ':', @parts[0..($i - 1)];
 		if (!-e $filename) {
