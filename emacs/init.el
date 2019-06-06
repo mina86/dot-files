@@ -289,6 +289,10 @@ perform stripping and behaves as plain `save-buffer'."
 (set-key "\C-cr"         revert-buffer)     ; Reload buffer
 (set-key "\C-x\C-b"      (switch-to-buffer (other-buffer))) ; C-x C-b switch
 
+(when (fboundp 'shift-number-up)
+  (set-key "\M-+"        shift-number-up)
+  (set-key "\M--"        shift-number-down))
+
 ;; Jump
 
 (require 'ffap)
