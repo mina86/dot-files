@@ -829,8 +829,8 @@ modified beforehand."
 (setq paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
       require-final-newline t)    ;always end file with NL
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
-(set-default 'indicate-empty-lines t) ;show empty lines at the end of file
-(set-default 'indicate-buffer-boundaries t) ;show buffer boundries on fringe
+(setq-default indicate-empty-lines t) ;show empty lines at the end of file
+(setq-default indicate-buffer-boundaries t) ;show buffer boundries on fringe
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
 (setq gc-cons-threshold 4000000)  ;bytes before garbage collection
 (eval-when-compile (require 'ange-ftp))
@@ -839,6 +839,7 @@ modified beforehand."
 (setq blink-cursor-alist '((t      . box)  ;seriously, don't blink,
                            (box    . box)) ;blink-cursor-mode does not
       cursor-type 'box)                    ;work for me.
+(setq-default cursor-type 'box)
 (setq visible-bell nil)           ;no visual bell
 (setq ring-bell-function (lambda ()
                            (invert-face 'mode-line)
