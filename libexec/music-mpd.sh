@@ -26,11 +26,11 @@ _mpc_file() {
 }
 
 mpd_file() {
-	file=${MPD_MUSIC_DIR:-/t/music}/$(_mpc_file)
+	file=${MPD_MUSIC_DIR:-/o/music}/$(_mpc_file)
 }
 
 mpd_query() {
-	return 0
+	which mpc >/dev/null 2>&1
 }
 
 mpd_ctl() {
@@ -52,17 +52,11 @@ mpd_ctl() {
 		mpd_file
 		dirname "$file"
 		;;
-	ls)
-		mpd_file
-		dir=$(dirname "$file")
-		printf %s:\\n "$dir"
-		ls -- "$dir"
-		;;
 	show)
-		_mpc
+		mpc
 		;;
 	pause-maybe)
-		_mpc pause-if-playing
+		mpc pause-if-playing
 		;;
 	tag)
 		file=$(_mpc_file)
@@ -74,7 +68,6 @@ mpd_ctl() {
 		_mpc next
 		;;
 	*)
-		echo "${0##*/}: $1: unknown or unsupported action" >&2
-		return 1
+		mpc "$@"
 	esac
 }
