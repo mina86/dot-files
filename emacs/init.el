@@ -1312,13 +1312,24 @@ it's not bound to space, the results may be somehow surprising."
  org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
  org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
 (eval-after-load "org"
-  (lambda ()
-    (set-key org-mode-map "\M-p" org-backward-element)
-    (set-key org-mode-map "\M-n" org-forward-element)
-    (define-key org-mode-map "\C-a" (lookup-key global-map "\C-a"))
-    (define-key org-mode-map "\C-e" (lookup-key global-map "\C-e"))
+  '(progn
+     (setq org-insert-mode-line-in-empty-file t
+	   org-hide-leading-stars t
+	   org-startup-indented t
+	   org-src-fontify-natively t
+	   org-catch-invisible-edits 'smart
+	   org-agenda-start-with-follow-mode t
+	   org-agenda-window-setup 'current-window
+	   org-agenda-restore-windows-after-quit t
+	   org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
+	   org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
 
-    (add-hook 'org-agenda-mode-hook (lambda () (hl-line-mode 1)))))
+     (set-key org-mode-map "\M-p" org-backward-element)
+     (set-key org-mode-map "\M-n" org-forward-element)
+     (define-key org-mode-map "\C-a" (lookup-key global-map "\C-a"))
+     (define-key org-mode-map "\C-e" (lookup-key global-map "\C-e"))
+
+     (add-hook 'org-agenda-mode-hook (lambda () (hl-line-mode 1)))))
 
 (eval-when-compile (require 'org-agenda))
 (set-key [(control f6)]
