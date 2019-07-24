@@ -267,6 +267,17 @@ perform stripping and behaves as plain `save-buffer'."
 (set-key "\C-d"          [(delete)])
 
 (set-key "\C-x1"         delete-other-windows-vertically)
+(set-key "\C-x3"
+         (split-window-right)
+         ;; Balance horizontally.  This is copied from balance-windows
+         (let* ((window (frame-root-window))
+                (frame  (window-frame window)))
+           (window--resize-reset (window-frame window) t)
+           (balance-windows-1 window t)
+           (when (window--resize-apply-p frame t)
+             (window-resize-apply frame t)
+             (window--pixel-to-total frame t))))
+
 
 (when (fboundp 'windmove-right)
   (set-key "\M-F"          windmove-right)
