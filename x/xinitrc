@@ -129,7 +129,7 @@ main() {
 		exec_xset
 		;;
 	'')
-		exec_x "$@" >>/tmp/x-${USER-anonymous}@${DISPLAY-no-display}.log 2>&1
+		exec_x "$@" >>${TMPDIR-/tmp}/x-${USER-anonymous}@${DISPLAY-no-display}.log 2>&1
 		;;
 	*)
 		echo "xinit: $1: unrecognised subcommand" >&2
