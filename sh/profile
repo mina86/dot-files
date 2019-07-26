@@ -10,6 +10,8 @@ elif [ -r ~/.shellrc ]; then
 fi
 
 # Start emacs daemon if not running
-if which emacs >/dev/null 2>/dev/null; then
-	[ -e /tmp/emacs$(id -u)/server ] || emacs --daemon >/dev/null 2>&1 &
-fi
+if which emacs && _uid=$(id -u) && [ "$_uid" -ne 0 ] &&
+   ! [ -e "${TMPDIR-/tmp}/emacs$_uid/server" ]; then
+	emacs --daemon
+fi </dev/null >/dev/null 2>&1 &
+disown
