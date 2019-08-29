@@ -80,15 +80,15 @@ sub file_argument {
 }
 
 
-my ($windmove, $stdin) = ('', 0);
+my ($windmove, $stdin) = (0, 0);
 my @args;
 
 while (@ARGV) {
 	my $arg = shift @ARGV;
 	if ($arg eq '-l') {
-		$windmove = 'left';
+		--$windmove;
 	} elsif ($arg eq '-r') {
-		$windmove = 'right';
+		++$windmove;
 	} elsif ($arg eq '-o') {
 		$windmove = 'other';
 	} elsif ($arg eq '--') {
@@ -110,7 +110,13 @@ if ($windmove eq 'other') {
   (error (windmove-left)))
 ELISP
 } elsif ($windmove) {
-	$windmove = "(condition-case nil (windmove-$windmove) (error nil))";
+	my $direction = $windmove < 0 ? 'left' : 'right';
+	$windmove = <<ELISP
+(condition-case nil
+    (dotimes (n (abs $windmove))
+      (windmove-$direction))
+  (error nil))
+ELISP
 }
 
 
