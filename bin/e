@@ -83,7 +83,8 @@ sub file_argument {
 my ($windmove, $stdin) = ('', 0);
 my @args;
 
-for my $arg (@ARGV) {
+while (@ARGV) {
+	my $arg = shift @ARGV;
 	if ($arg eq '-l') {
 		$windmove = 'left';
 	} elsif ($arg eq '-r') {
@@ -91,6 +92,7 @@ for my $arg (@ARGV) {
 	} elsif ($arg eq '-o') {
 		$windmove = 'other';
 	} elsif ($arg eq '--') {
+		push @args, @ARGV;
 		last;
 	} elsif ($arg eq '-') {
 		$stdin = 1;
