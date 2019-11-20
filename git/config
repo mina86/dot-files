@@ -90,3 +90,7 @@
 [pack]
 	window = 50
 	depth = 250
+[status]
+	showUntrackedFiles = no
+[advice]
+	detachedHead = false
