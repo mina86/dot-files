@@ -4,8 +4,33 @@ Kinesis Advantage
 Every now and then I end up having to configure a Kinesis Advantage
 keyboard to suit my taste.  Since I remap quite a few keys, this is
 getting progressively more annoying each time I do this.  To make it
-easier, here are the steps needed to configure a Kinesis Advantage
-keyboard the way I like:
+easier, here are the steps needed to configure Kinesis Advantage
+keyboard the way I like.
+
+Advantage2
+~~~~~~~~~~
+
+Advantage2 keyboard allows programming through the USB connection
+which simplifies setting things up.  To configure the keyboard:
+
+  - enable Power User Mode by pressing Program + Shift + Esc (LEDs
+    will flash four times) and V-drive by pressing Program + F1;
+
+  - a new USB storage device should show up, mount it;
+
+  - copy ``qwerty.txt`` and ``state.txt`` files into ``active``
+    directory on the keyboard (overwriting existing files);
+
+  - unmount the drive;
+
+  - disable V-drive by pressing Program + F1 and PUM by pressing
+    Program + Shift + Esc.
+
+Advantage
+~~~~~~~~~
+
+The original Advantage keyboard does not support programming through
+USB and requires all configuration to be done manually.
 
 Basic configuration
 -------------------
