@@ -80,6 +80,23 @@ sub file_argument {
 }
 
 
+sub read_process {
+	my ($cmd) = @_;
+	open my $fd, '-|', @_ or die "$cmd : $!\n";
+	my @lines;
+	while (defined(my $line = <$fd>)) {
+		chomp $line;
+		push @lines, $line;
+	}
+	close $fd;
+	check_exit_status($cmd);
+	if (!@lines) {
+		die "$cmd: exited with an empty result\n";
+	}
+	@lines
+}
+
+
 my ($windmove, $stdin) = (0, 0);
 my @args;
 
@@ -91,6 +108,9 @@ while (@ARGV) {
 		++$windmove;
 	} elsif ($arg eq '-o') {
 		$windmove = 'other';
+	} elsif ($arg =~ /^-(find|which)$/) {
+		push @args, read_process $1, @ARGV;
+		last;
 	} elsif ($arg eq '--') {
 		push @args, @ARGV;
 		last;
