@@ -586,9 +586,11 @@ If GLOBAL is non-nil, or with a prefix argument set global dictionary."
 (defun mn-turn-flyspell-on ()
   "Turn `flyspell-mode' or `flyspell-prog-mode' depending on major mode."
   (cond ((or (string-prefix-p " *" (buffer-name))
+             (string-prefix-p "*" (buffer-name))
              (minibufferp)
              (derived-mode-p 'notmuch-hello-mode 'notmuch-search-mode
-                             'notmuch-show-mode 'package-menu-mode)))
+                             'notmuch-show-mode 'package-menu-mode
+                             'dired-mode)))
         ((derived-mode-p 'prog-mode 'diff-mode) (flyspell-prog-mode))
         (t (flyspell-mode t))))
 
