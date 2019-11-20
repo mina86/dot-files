@@ -75,10 +75,10 @@ case $SSH_CLIENT$SSH_CONNECTION in ?*)
 	PS1="[$host]$PS1"
 esac
 
-unalias ls dir vdir ll l 2>/dev/null
+unalias dir vdir l 2>/dev/null
 unset LS_OPTIONS
-alias ls='ls -vhFT0 --si --color=auto'
-alias ll='ls -l'
+alias ls='/bin/ls -vHFT0 --si --color=auto --time-style=long-iso'
+alias ll='ls -o'
 
 unalias md 2>/dev/null
 md () {
