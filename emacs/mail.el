@@ -12,7 +12,6 @@
 (setq
  user-full-name "Michal Nazarewicz"
  user-mail-address (eval-when-compile (rot13-string "zvan86@zvan86.pbz"))
- message-from-style 'angels
  message-user-fqdn "mina86.com"
 
  message-subject-trailing-was-query t
@@ -27,6 +26,9 @@
            "\\(?:g\\?o2\\|tlen\\)\\.pl\\)\\>"))
 
  notmuch-mua-cite-function 'message-cite-original-without-signature)
+
+;; Since 27.1 message-from-style is obsolete; suppress warning.
+(with-no-warnings (setq message-from-style 'angels))
 
 (defun message-narrow-to-body ()
   (widen)
