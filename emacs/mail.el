@@ -42,28 +42,27 @@
 
 (defun mn-ack-patch ()
   (interactive)
-  (let ((p (point)))
-    (save-restriction
-      (message-narrow-to-body)
-      (let ((case-fold-search t)
-            (prefix (concat "^" message-cite-prefix-regexp "[[:blank:]]*"))
-            (p (point)))
-        (goto-char (point-min))
-        (beginning-of-line
-         (cond
-          ;; Insert Acked-by just below ‘> Cc: User’ if found.
-          ((re-search-forward (concat prefix "Cc:[[:blank:]]*"
-                                      (regexp-quote user-full-name))
-                              nil t) 2)
-          ;; Insert Acked-by above --- line separating message from diff.
-          ((re-search-forward (concat prefix "---$") nil t) 1)
-          ;; Insert Acked-by below diff stats line.
-          ((re-search-forward (concat prefix "[0-9]+ files? changed") nil t) 2)
-          ;; Lastly, try ‘diff <file-name>’ line in front of first hunk.
-          ((re-search-forward (concat prefix "diff ") nil t) 1)
-          ;; If even that fails, insert where we are (were).
-          ((goto-char p) 2))))
-      (insert "\nAcked-by: " user-full-name " <" user-mail-address ">\n\n"))))
+  (save-restriction
+    (message-narrow-to-body)
+    (let ((case-fold-search t)
+          (prefix (concat "^" message-cite-prefix-regexp "[[:blank:]]*"))
+          (p (point)))
+      (goto-char (point-min))
+      (beginning-of-line
+       (cond
+        ;; Insert Acked-by just below ‘> Cc: User’ if found.
+        ((re-search-forward (concat prefix "Cc:[[:blank:]]*"
+                                    (regexp-quote user-full-name))
+                            nil t) 2)
+        ;; Insert Acked-by above --- line separating message from diff.
+        ((re-search-forward (concat prefix "---$") nil t) 1)
+        ;; Insert Acked-by below diff stats line.
+        ((re-search-forward (concat prefix "[0-9]+ files? changed") nil t) 2)
+        ;; Lastly, try ‘diff <file-name>’ line in front of first hunk.
+        ((re-search-forward (concat prefix "diff ") nil t) 1)
+        ;; If even that fails, insert where we are (were).
+        ((goto-char p) 2))))
+    (insert "\nAcked-by: " user-full-name " <" user-mail-address ">\n\n")))
 
 (set-key message-mode-map "\C-ca" mn-ack-patch)
 
