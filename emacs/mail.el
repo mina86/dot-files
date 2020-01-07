@@ -9,23 +9,22 @@
 
 ;;{{{ Identify
 
-(setq
- user-full-name "Michal Nazarewicz"
- user-mail-address (eval-when-compile (rot13-string "zvan86@zvan86.pbz"))
- message-user-fqdn "mina86.com"
+(setq user-full-name "Michal Nazarewicz"
+      user-mail-address (eval-when-compile (rot13-string "zvan86@zvan86.pbz"))
+      message-user-fqdn "mina86.com"
 
- message-subject-trailing-was-query t
- message-subject-trailing-was-regexp
- "[ 	]*\\((*[Ww][Aa][Ss]:.*)\\|\\[*[Ww][Aa][Ss]:.*\\]\\)"
+      message-subject-trailing-was-query t
+      message-subject-trailing-was-regexp
+      "[ 	]*\\((*[Ww][Aa][Ss]:.*)\\|\\[*[Ww][Aa][Ss]:.*\\]\\)"
 
- message-dont-reply-to-names
- (eval-when-compile
-   ;; This matches way more than it should but it’s easier to write that way.
-   (concat "\\<m\\(?:ina86\\|n86\\|pn\\|nazarewicz\\)@"
-           "\\(?:\\(?:g\\(?:oogle\\|mail\\)\\|mina86\\)\\.com\\|"
-           "\\(?:g\\?o2\\|tlen\\)\\.pl\\)\\>"))
-
- notmuch-mua-cite-function 'message-cite-original-without-signature)
+      message-dont-reply-to-names
+      (eval-when-compile
+        ;; This matches way more than it should but it’s easier to write that
+        ;; way.
+        (concat "\\<m" (regexp-opt (list "ina86" "pn" "nazarewicz"))
+                "@" (regexp-opt (list "mina86" "gmail" "hudson-trading"))
+                "\\.com\\>"))
+      notmuch-mua-cite-function 'message-cite-original-without-signature)
 
 ;; Since 27.1 message-from-style is obsolete; suppress warning.
 (with-no-warnings (setq message-from-style 'angels))
@@ -66,48 +65,53 @@
 
 (set-key message-mode-map "\C-ca" mn-ack-patch)
 
-(defun mn-email-to-non-google ()
-  "Returns whether email message is being sent to some non-@google.com address."
+(defun mn-email-to-non-corp ()
+  "Returns whether email message is being sent to some non-corp address."
   (save-restriction
     (message-narrow-to-headers)
     (catch 'break
       (mapc (lambda (hdr-name)
               (let ((val (message-fetch-field hdr-name)))
                 (or (not val)
-                    (string-match "@\\(google\\.com\\|x\\.team\\)\\>" val)
+                    (string-match "@hudson-trading\\.com\\>" val)
                     (throw 'break t))))
             '("to" "cc" "bcc"))
       nil)))
 
-(when (eval-when-compile (load "gnus-alias" t))
-  (let ((has-corp (string-match "^mpn-glaptop" (system-name)))
-        ;; Yeah, I know the RFC describing OpenGPG header never came to
-        ;; fruition, but I might just as well use it instead of any other X-PGP
-        ;; headers which are not standardised.
-        (headers '(("OpenPGP" . "id=AC1F5F5CD41888F8CC8458582060401250751FF4; url=https://mina86.com/mina86.pub")))
-        (signature (expand-file-name "~/.mail/signature.txt")))
+(defun mn-load-face (face-png)
+  "Returns Face header encoding specified face image or nil on error."
+  (if (not (file-exists-p face-png))
+      (message "%s.png missing; no Face header will be used" face-png)
+    (with-temp-buffer
+      (insert-file-contents face-png)
+      (if (> (base64-encode-region (point-min) (point-max) t) 967)
+          (message "%s > 966 chars after encoding; no Face header will be used"
+                   face-png)
+        (cons "Face" (buffer-string))))))
 
-    (let ((face-png (expand-file-name "~/.mail/face.png")))
-      (if (not (file-exists-p face-png))
-          (message "~/.mail/face.png missing; no Face header will be used")
-        (with-temp-buffer
-          (insert-file-contents face-png)
-          (if (<= (base64-encode-region (point-min) (point-max) t) 967)
-              (push (cons "Face" (buffer-string)) headers)
-            (message "~/.mail/face.png > 966 chars after encoding; no Face header will be used")))))
-
+(when (load "gnus-alias" t)
+  (let ((signature (expand-file-name "~/.mail/signature.txt"))
+        (headers (if-let ((face-png (expand-file-name "~/.mail/face.png"))
+                          (face-hdr (mn-load-face face-png)))
+                     (cons face-hdr nil)))
+        (corp-organisation "Hudson River Trading"))
     (setq gnus-alias-identity-alist
-          `(("corp" nil ,(concat user-full-name " <mpn@google.com>")
-             "Google Inc" ,headers "\n" ,signature)
-            ("priv" nil ,(concat user-full-name " <" user-mail-address ">")
+          `(("priv" nil ,(concat user-full-name " <" user-mail-address ">")
              "https://mina86.com/" ,headers "\n" ,signature)))
-    (if has-corp
-        (setq gnus-alias-identity-rules
-              '(("non-google-address" mn-email-to-non-google "priv")))
-      (setq gnus-alias-identity-alist (cdr gnus-alias-identity-alist))))
+    (when (string-match "^ste" (system-name))
+      (let ((corp-from (concat user-full-name " <mpn@hudson-trading.com>"))
+            (priv-id (car gnus-alias-identity-alist)))
+        (setq gnus-alias-identity-alist
+              `(("corp" nil ,corp-from ,corp-organisation ,headers
+                 "\n" ,signature)
+                ("corp-ext" nil ,corp-from ,corp-organisation nil
+                 "\n" "Best regards\nMichał Nazarewicz")
+                ,priv-id)
+              gnus-alias-identity-rules
+              '(("non-corp-address" mn-email-to-non-corp "corp-ext")))))
 
   (setq gnus-alias-default-identity (caar gnus-alias-identity-alist))
-  (add-hook 'message-setup-hook 'gnus-alias-determine-identity))
+  (add-hook 'message-setup-hook 'gnus-alias-determine-identity)))
 
 ;;}}}
 ;;{{{ Message mode
@@ -126,7 +130,7 @@
       smtpmail-smtp-service 587)
 
 (add-lambda-hook 'message-mode-hook (flyspell-mode 1))
-(add-hook 'message-setup-hook 'mml-secure-sign-pgpmime)
+;(add-hook 'message-setup-hook 'mml-secure-sign-pgpmime)
 
 ;; Fix Subject in outgoing messages
 ;; http://www.emacswiki.org/cgi-bin/wiki/JorgenSchaefersGnusConfig
@@ -135,29 +139,29 @@
   (while (re-search-forward "^Subject: \\(\\([Oo][Dd][Pp]\\|[Rr][Ee]\\)\\(\\[[0-9]+\\]\\)?: \\)+" nil t)
     (replace-match "Subject: Re: ")))
 
-(autoload 'pgg-encrypt-region "pgg"
-  "Encrypt the current region." t)
-(autoload 'pgg-encrypt-symmetric-region "pgg"
-  "Encrypt the current region with symmetric algorithm." t)
-(autoload 'pgg-decrypt-region "pgg"
-  "Decrypt the current region." t)
-(autoload 'pgg-sign-region "pgg"
-  "Sign the current region." t)
-(autoload 'pgg-verify-region "pgg"
-  "Verify the current region." t)
-(autoload 'pgg-insert-key "pgg"
-  "Insert the ASCII armored public key." t)
-(autoload 'pgg-snarf-keys-region "pgg"
-  "Import public keys in the current region." t)
-
-(setq pgg-scheme 'gpg
-      pgg-gpg-user-id "mina86"
-      pgg-gpg-program "gpg2"
-;      pgg-gpg-use-agent nil
-;      pgg-cache-passphrase nil
-      gnus-treat-x-pgp-sig t
-      mm-verify-option 'known
-      mm-decrypt-option 'known)
+;(autoload 'pgg-encrypt-region "pgg"
+;  "Encrypt the current region." t)
+;(autoload 'pgg-encrypt-symmetric-region "pgg"
+;  "Encrypt the current region with symmetric algorithm." t)
+;(autoload 'pgg-decrypt-region "pgg"
+;  "Decrypt the current region." t)
+;(autoload 'pgg-sign-region "pgg"
+;  "Sign the current region." t)
+;(autoload 'pgg-verify-region "pgg"
+;  "Verify the current region." t)
+;(autoload 'pgg-insert-key "pgg"
+;  "Insert the ASCII armored public key." t)
+;(autoload 'pgg-snarf-keys-region "pgg"
+;  "Import public keys in the current region." t)
+;
+;(setq pgg-scheme 'gpg
+;      pgg-gpg-user-id "mina86"
+;      pgg-gpg-program "gpg2"
+;;      pgg-gpg-use-agent nil
+;;      pgg-cache-passphrase nil
+;      gnus-treat-x-pgp-sig t
+;      mm-verify-option 'known
+;      mm-decrypt-option 'known)
 
 ;;}}}
 ;;{{{ Notmuch
@@ -181,7 +185,7 @@
                                             notmuch-wash-elide-blank-lines
                                             notmuch-wash-excerpt-citations)
 
-      notmuch-message-replied-tags '("replied" "-unread")
+      notmuch-message-replied-tags (list "+replied" "-unread")
       notmuch-message-headers '("Subject" "To" "Cc" "Bcc" "Date")
 
       notmuch-hello-sections
@@ -190,11 +194,12 @@
         notmuch-hello-insert-alltags)
 
       notmuch-saved-searches
-      '(("to me"    . "tag:unread and not tag:linux and                      tag:me")
-        ("me+linux" . "tag:unread and     tag:linux and                      tag:me")
-        ("goog"     . "tag:unread and not tag:linux and     tag:goog and not tag:me")
-        ("linux"    . "tag:unread and     tag:linux and not tag:goog and not tag:me")
-        ("rest"     . "tag:unread and not tag:linux and not tag:goog and not tag:me"))
+      '(("asm"     . "is:unread and  is:asm and  is:me")
+        ("to me"   . "is:unread and -is:asm and  is:me and -is:foss")
+        ("me+foss" . "is:unread and -is:asm and  is:me and  is:foss")
+        ("corp"    . "is:unread and -is:asm and -is:me and -is:foss and  is:corp")
+        ("foss"    . "is:unread and -is:asm and -is:me and  is:foss and -is:corp")
+        ("rest"    . "is:unread and -is:asm and -is:me and -is:foss and -is:corp"))
 
       notmuch-tag-formats
       '(("unread" (propertize tag 'face '(:foreground "red")))
@@ -202,25 +207,22 @@
       notmuch-search-line-faces
       '(("unread" :weight bold)))
 
-(add-hook 'notmuch-hello-refresh-hook
-          (lambda ()
-            (if (and (eq (point) (point-min))
-                     (search-forward "Saved searches:" nil t))
-                (progn
-                  (forward-line)
-                  (widget-forward 1))
-              (if (eq (widget-type (widget-at)) 'editable-field)
-                  (beginning-of-line)))))
+(add-lambda-hook 'notmuch-hello-refresh-hook
+  (if (and (eq (point) (point-min))
+           (search-forward "Saved searches:" nil t))
+      (progn
+        (forward-line)
+        (widget-forward 1))
+    (if (eq (widget-type (widget-at)) 'editable-field)
+        (beginning-of-line))))
 
 ;(define-key notmuch-hello-mode-map [tab] 'widget-forward)
 
-(set-key notmuch-show-mode-map "h"
-         (unless (notmuch-show-next-open-message)
-           (notmuch-show-next-thread t)))
+(set-key notmuch-show-mode-map "h" (unless (notmuch-show-next-open-message)
+                                     (notmuch-show-next-thread t)))
 (set-key notmuch-show-mode-map "H" (notmuch-show-next-message t))
-(set-key notmuch-show-mode-map "t"
-         (unless (notmuch-show-previous-open-message)
-           (notmuch-show-previous-thread t)))
+(set-key notmuch-show-mode-map "t" (unless (notmuch-show-previous-open-message)
+                                     (notmuch-show-previous-thread-show)))
 (set-key notmuch-show-mode-map "T" (notmuch-show-previous-message))
 
 (define-key notmuch-search-mode-map "h" 'notmuch-search-next-thread)
@@ -239,9 +241,9 @@
 
 (dolist (x '(("V"    t   "+mute" "-unread")
              ("v"    t   "-unread")
-             ("b"    nil "+deleted" "-unread")
+             ("b"    nil "+trash" "-unread")
              ("u"    nil "+unread")
-             ("\M-u" nil "-deleted" "+unread")
+             ("\M-u" nil "-trash" "+unread")
              ("d"    nil "-unread")))
   (let ((key  (car  x))
         (all  (cadr x))
@@ -256,8 +258,8 @@
             (notmuch-search-tag tags)
             (notmuch-search-next-thread))))
 
-(add-lambda-hook '(notmuch-hello-mode-hook notmuch-search-hook)
-  (if (fboundp 'turn-off-fci-mode)
-      (turn-off-fci-mode)))
+;; (add-lambda-hook '(notmuch-hello-mode-hook notmuch-search-hook)
+;;   (if (fboundp 'turn-off-fci-mode)
+;;      (turn-off-fci-mode)))
 
 ;;}}}
