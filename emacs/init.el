@@ -428,24 +428,6 @@ In minibuffer run `minibuffer-complete', if `use-region-p' run
     (set-key :local [(tab)] indent-or-complete)))
 
 ;;}}}
-;;{{{   Filling
-
-;; Alt+q - Fill
-(defun my-fill ()
-  "Fills paragraph (or region) using a cyclic order alignment.
-If called once fills the paragraph to the left, twice - justifies,
-three times - to the right, four times - centers."
-  (interactive)
-  (fill-paragraph (seq-times-nth () () left full right center) t))
-
-(set-key "\M-q"          my-fill)
-
-(when (fboundp 'fill-single-char-nobreak-p)
-  (add-hook 'fill-nobreak-predicate 'fill-single-char-nobreak-p))
-
-(add-hook 'prog-mode-hook (lambda () (setq fill-column 80)))
-
-;;}}}
 ;;{{{   Fkeys
 
 ;;{{{     F1 - Help
@@ -1300,6 +1282,26 @@ it's not bound to space, the results may be somehow surprising."
 
 ;;}}}
 ;;{{{   Misc
+
+;; Alt+q - Fill
+(defun my-fill ()
+  "Fills paragraph (or region) using a cyclic order alignment.
+If called once fills the paragraph to the left, twice - justifies,
+three times - to the right, four times - centers."
+  (interactive)
+  (fill-paragraph (seq-times-nth () () left full right center) t))
+
+(set-key "\M-q"          my-fill)
+
+(when (fboundp 'fill-single-char-nobreak-p)
+  (add-hook 'fill-nobreak-predicate 'fill-single-char-nobreak-p))
+
+(add-hook 'prog-mode-hook (lambda () (setq fill-column 80)))
+
+(setq-default display-fill-column-indicator t
+              display-fill-column-indicator-character ?│
+              auto-fill-function 'do-auto-fill
+              comment-auto-fill-only-comments t)
 
 ;; Text mode
 (add-lambda-hook 'text-mode-hook

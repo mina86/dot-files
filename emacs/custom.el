@@ -29,6 +29,7 @@
  '(diff-removed ((t (:inherit diff-changed :foreground "red"))))
  '(diff-removed-face ((t (:foreground "red" :weight bold))) t)
  '(erc-action-face ((t (:foreground "magenta" :slant italic))))
+ '(fill-column-indicator ((t (:inherit shadow :stipple nil :foreground "#333366" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal))))
  '(font-lock-builtin-face ((t (:foreground "#99F"))))
  '(font-lock-comment-face ((t (:foreground "#0c0" :slant italic))))
  '(font-lock-constant-face ((t (:foreground "aquamarine"))))
