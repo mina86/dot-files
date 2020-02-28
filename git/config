@@ -73,6 +73,7 @@
 
 [gui]
 	spellingdictionary = en_GB
+	gcwarning = false
 
 [include]
 	path = ~/.config/git/local
