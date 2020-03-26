@@ -1,6 +1,6 @@
 ;;                                -*- mode: emacs-lisp; lexical-binding: t -*-
 ;; mail.el  -- Mail configuration file
-;; Copyright 2006-2013 by Michal Nazarewicz (mina86@mina86.com)
+;; Copyright 2006-2020 by Michal Nazarewicz (mina86@mina86.com)
 ;;
 
 (eval-when-compile (setq load-path (cons user-emacs-directory load-path)))
@@ -9,22 +9,39 @@
 
 ;;{{{ Identify
 
+(defconst alt-mail-address
+  (eval-when-compile (rot13-string "zanmnerjvpm@tznvy.pbz")))
+(defconst corp-mail-address
+  (eval-when-compile (rot13-string "zca@uhqfba-genqvat.pbz")))
+
 (setq user-full-name "Michal Nazarewicz"
       user-mail-address (eval-when-compile (rot13-string "zvan86@zvan86.pbz"))
       message-user-fqdn "mina86.com"
 
+      message-alternative-emails (regexp-opt (list user-mail-address
+                                                   alt-mail-address
+                                                   corp-mail-address)
+                                             nil)
+      message-dont-reply-to-names message-alternative-emails
+
       message-subject-trailing-was-query t
       message-subject-trailing-was-regexp
-      "[ 	]*\\((*[Ww][Aa][Ss]:.*)\\|\\[*[Ww][Aa][Ss]:.*\\]\\)"
+      "[ \t]*\\((*[Ww][Aa][Ss]:.*)\\|\\[*[Ww][Aa][Ss]:.*\\]\\)"
+      message-subject-re-regexp
+      (eval-when-compile (concat "^[ \t]*\\("
+                                   "\\(" "[Ff][Ww][Dd]?"
+                                   "\\|" "[Oo][Dd][Pp]"
+                                   "\\|" "[Rr][Ee]"
+                                   "\\)"
+                                   "\\(\\[[0-9]*\\]\\)*:[ \t]*"
+                                   "\\)*[ \t]*"))
 
-      message-dont-reply-to-names
-      (eval-when-compile
-        ;; This matches way more than it should but it’s easier to write that
-        ;; way.
-        (concat "\\<m" (regexp-opt (list "ina86" "pn" "nazarewicz"))
-                "@" (regexp-opt (list "mina86" "gmail" "hudson-trading"))
-                "\\.com\\>"))
-      notmuch-mua-cite-function 'message-cite-original-without-signature)
+      message-kill-buffer-on-exit t
+      message-citation-line-function 'message-insert-formatted-citation-line
+      message-citation-line-format   "On %a, %b %d %Y, %N wrote:"
+      send-mail-function    'message-smtpmail-send-it)
+(setq-default smtpmail-smtp-server  "smtp.gmail.com"
+              smtpmail-smtp-service 587)
 
 ;; Since 27.1 message-from-style is obsolete; suppress warning.
 (with-no-warnings (setq message-from-style 'angels))
@@ -65,18 +82,30 @@
 
 (set-key message-mode-map "\C-ca" mn-ack-patch)
 
-(defun mn-email-to-non-corp ()
-  "Returns whether email message is being sent to some non-corp address."
-  (save-restriction
-    (message-narrow-to-headers)
-    (catch 'break
-      (mapc (lambda (hdr-name)
-              (let ((val (message-fetch-field hdr-name)))
-                (or (not val)
-                    (string-match "@hudson-trading\\.com\\>" val)
-                    (throw 'break t))))
-            '("to" "cc" "bcc"))
-      nil)))
+(defun mn-determine-gnus-alias-identity ()
+  (let (has-priv has-corp has-non-corp)
+    (message-with-reply-buffer
+      (save-restriction
+        (mail-narrow-to-head)
+        (let ((priv-re (concat "\\<" (regexp-opt (list user-mail-address
+                                                       alt-mail-address)
+                                                 nil) "\\>"))
+              (corp-re "@hudson-trading\\.com\\>")
+              emails)
+          (setq emails (mapcar #'message-fetch-field
+                               '("from" "to" "cc" "bcc"))
+                emails (delq nil emails)
+                emails (mapcar #'message-tokenize-header emails)
+                emails (apply #'nconc emails)
+                emails (mapcar #'mail-strip-quoted-names emails))
+          (dolist (email emails)
+            (cond ((string-match priv-re email) (setq has-priv t))
+                  ((string-match corp-re email) (setq has-corp t))
+                  ((setq has-non-corp t)))))))
+    (gnus-alias-use-identity
+     (cond (has-corp (if (or has-priv has-non-corp) "ext" "corp"))
+           (has-priv "priv")
+           ((with-no-warnings gnus-alias-default-identity))))))
 
 (defun mn-load-face (face-png)
   "Returns Face header encoding specified face image or nil on error."
@@ -89,55 +118,27 @@
                    face-png)
         (cons "Face" (buffer-string))))))
 
-(when (load "gnus-alias" t)
+(when (eval-and-compile (load "gnus-alias" t))
   (let ((signature (expand-file-name "~/.mail/signature.txt"))
+        (ext-sign (concat "Best regards\nMichał Nazarewicz"))
         (headers (if-let ((face-png (expand-file-name "~/.mail/face.png"))
                           (face-hdr (mn-load-face face-png)))
                      (cons face-hdr nil)))
-        (corp-organisation "Hudson River Trading"))
+        (corp-org "Hudson River Trading")
+        (user-from (concat user-full-name " <" user-mail-address ">"))
+        (corp-from (concat user-full-name " <" corp-mail-address ">")))
     (setq gnus-alias-identity-alist
-          `(("priv" nil ,(concat user-full-name " <" user-mail-address ">")
-             "https://mina86.com/" ,headers "\n" ,signature)))
-    (when (string-match "^ste" (system-name))
-      (let ((corp-from (concat user-full-name " <mpn@hudson-trading.com>"))
-            (priv-id (car gnus-alias-identity-alist)))
-        (setq gnus-alias-identity-alist
-              `(("corp" nil ,corp-from ,corp-organisation ,headers
-                 "\n" ,signature)
-                ("corp-ext" nil ,corp-from ,corp-organisation nil
-                 "\n" "Best regards\nMichał Nazarewicz")
-                ,priv-id)
-              gnus-alias-identity-rules
-              '(("non-corp-address" mn-email-to-non-corp "corp-ext")))))
-
-  (setq gnus-alias-default-identity (caar gnus-alias-identity-alist))
-  (add-hook 'message-setup-hook 'gnus-alias-determine-identity)))
+          `(("corp" nil ,corp-from ,corp-org ,headers "\n" ,signature)
+            ("ext"  nil ,corp-from ,corp-org nil      "\n" ,ext-sign)
+            ("priv" nil ,user-from nil       ,headers "\n" ,signature))
+          gnus-alias-default-identity (caar gnus-alias-identity-alist)))
+  (add-hook 'message-setup-hook #'mn-determine-gnus-alias-identity))
 
 ;;}}}
 ;;{{{ Message mode
 
-(setq message-directory          (expand-file-name "~/.mail/Mail")
-      nndraft-directory          (expand-file-name "~/.mail/Drafts")
-      nnml-use-compressed-files  t
-
-      message-kill-buffer-on-exit t
-
-      message-citation-line-function 'message-insert-formatted-citation-line
-      message-citation-line-format   "On %a, %b %d %Y, %N wrote:"
-
-      send-mail-function    'message-smtpmail-send-it
-      smtpmail-smtp-server  "smtp.gmail.com"
-      smtpmail-smtp-service 587)
-
 (add-lambda-hook 'message-mode-hook (flyspell-mode 1))
 ;(add-hook 'message-setup-hook 'mml-secure-sign-pgpmime)
-
-;; Fix Subject in outgoing messages
-;; http://www.emacswiki.org/cgi-bin/wiki/JorgenSchaefersGnusConfig
-(add-hook 'message-header-setup-hook 'mn-fix-re-subject)
-(defun mn-fix-re-subject ()
-  (while (re-search-forward "^Subject: \\(\\([Oo][Dd][Pp]\\|[Rr][Ee]\\)\\(\\[[0-9]+\\]\\)?: \\)+" nil t)
-    (replace-match "Subject: Re: ")))
 
 ;(autoload 'pgg-encrypt-region "pgg"
 ;  "Encrypt the current region." t)
@@ -206,6 +207,9 @@
         ("flagged" (notmuch-tag-format-image-data tag (notmuch-tag-star-icon))))
       notmuch-search-line-faces
       '(("unread" :weight bold)))
+
+(setq-default notmuch-mua-cite-function
+              'message-cite-original-without-signature)
 
 (add-lambda-hook 'notmuch-hello-refresh-hook
   (if (and (eq (point) (point-min))
