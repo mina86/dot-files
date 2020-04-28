@@ -839,7 +839,8 @@ modified beforehand."
 (eval-when-compile (require 'compile))
 (setq compilation-auto-jump-to-first-error t)
 (setq line-move-visual nil) ;move by logical lines not screen lines
-
+(setq byte-count-to-string-function
+      (lambda (size) (file-size-human-readable size 'si " ")))
 (when (fboundp 'describe-char-eldoc)
   (setq-default eldoc-documentation-function #'describe-char-eldoc))
 
