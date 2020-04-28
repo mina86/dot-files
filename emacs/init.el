@@ -1427,29 +1427,6 @@ three times - to the right, four times - centers."
 (defvar tildify-pattern)
 (setq tildify-pattern "\\<[a-zA-Z]\\([ \t\n]+\\)")
 
-;;{{{   Folding
-
-(when (eval-when-compile (load "folding" t))
-  (require 'folding)
-  (defconst folding-default-keys-function
-    '(folding-bind-backward-compatible-keys))
-
-  (set-key folding-mode-map "\C-cf"                    folding-toggle-show-hide)
-  (set-key folding-mode-map [(control ?c) (return)]    folding-shift-in)
-  (set-key folding-mode-map [(control ?c) (delete)]    folding-shift-out)
-  (set-key folding-mode-map [(control ?c) (backspace)] folding-shift-out)
-  (set-key folding-mode-map "\C-c\C-f"                 folding-open-buffer)
-  (set-key folding-mode-map "\C-cF"                    folding-whole-buffer)
-  (set-key folding-mode-map "\C-e"                     my-end)
-
-  (folding-add-to-marks-list 'php-mode        "// {{{" "// }}}" nil t)
-  (folding-add-to-marks-list 'sawfish-mode    ";;{{{" ";;}}}" nil t)
-  (folding-add-to-marks-list 'javascript-mode "// {{{" "// }}}" nil t)
-  (folding-add-to-marks-list 'css-mode        "/* {{{" "/* }}}" " */" t)
-
-  (folding-mode-add-find-file-hook))
-
-;;}}}
 ;;{{{   Different cursor color depending on mode
 
 ;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
