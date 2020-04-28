@@ -227,23 +227,24 @@ while read pattern destination; do
 		fi
 	done
 done 3<&1 <<EOF
+aspell.en.pws      .@
+bin/*              .local/bin/@
 emacs/*            .emacs.d/@
-mail/*             .mail/@
 git/*              .config/git/@
 inputrc            .@
 irssi.theme        .irssi/mina.theme
-sawfishrc          .sawfish/rc
-statuses           .irssi/@
-bin/*              .local/bin/@
 libexec/*          .local/libexec/@
+mail/*             .mail/@
+sawfishrc          .sawfish/rc
 sh/*               .@
+statuses           .irssi/@
+x/80-char.png      .urxvt/@
 x/Xresources       .config/@
-x/gtkrc-2.0        .@
 x/gtk-3.0.ini      .config/gtk-3.0/settings.ini
-x/xinitrc          .@
-x/xsettingsd       .@
-x/xserverrc        .@
+x/gtkrc-2.0        .@
 x/local.keymap     .config/xkb/keymap/local
 x/local.symbols    .config/xkb/symbols/local
-x/80-char.png      .urxvt/@
+x/xinitrc          .@
+x/xserverrc        .@
+x/xsettingsd       .@
 EOF
