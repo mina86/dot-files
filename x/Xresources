@@ -72,6 +72,8 @@ URxvt.foreground:      #CCCCCC
 URxvt.colorBD:         #FFFFFF
 URxvt.cursorColor:     #FFFF00
 
+URxvt.print-pipe:      cat >$(TMPDIR=$HOME mktemp urxvt.XXXXXX)
+
 ! Terminal in urxvt
 Term.perl-ext-common:  matcher<C1>,tabbedex,searchable-scrollback<M-s>
 
