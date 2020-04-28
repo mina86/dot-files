@@ -538,7 +538,7 @@ Also wraps mouse to the centre of the window if not already above it."
       (#f   1600  (   0    0    80  160  1) (maximize . vertical)))
 
      ;; Some windows do not like alpha
-     ("^Gimp/|^MPlayer/|^openttd/|^Inkscape/"
+     ("^Gimp/|^MPlayer/|^openttd/|^Inkscape/|^[Vv]irt-manager/"
       ((alpha . 1)))
 
      ;; GIMP
