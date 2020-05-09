@@ -1,6 +1,6 @@
 ;; init.el  -- Emacs configuration file             -*- lexical-binding: t -*-
 
-;; Copyright 2004-2018 by Michal Nazarewicz (mina86@mina86.com)
+;; Copyright 2004-2020 by Michal Nazarewicz (mina86@mina86.com)
 ;; Some parts of the code may be © by their respective authors.
 
 ;;; Code:
@@ -133,51 +133,42 @@ list.  BODY is body of the lambda to be added."
 
 ;;   Sequence commands
 
-;; Sequence commands  1.4  by me, Michal Nazarewicz ;)
-;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
 (defvar seq-times 0
   "Number of times command was executed.
 Contains random data before `seq-times' macro is called.")
 
-(defmacro seq-times (&optional name max &rest body)
-  "Returns number of times command NAME was executed.
-Updates `seq-times' variable accordingly to keep track.  If NAME is
-Nil `this-command' will be used.  If MAX is specified the counter will
-wrap around at the value of MAX never reaching it.  If body is given
-it will be evaluated if the command is run for the first time in
-a sequence."
-  (declare (indent 2))
-  (let ((next (if (or (null max) (eq max 'nil))
+(defmacro seq-times (&optional max &rest body)
+  "Returns number of times ‘this-command’ was executed.
+Updates `seq-times' variable accordingly to keep track.  If MAX
+is specified the counter will wrap around at the value of MAX
+never reaching it.  If body is given it will be evaluated if the
+command is run for the first time in a sequence."
+  (declare (indent 1))
+  `(setq seq-times
+         (if (eq last-command this-command)
+             ,(if (or (null max) (eq max 'nil))
                   '(1+ seq-times)
-                `(% (1+ seq-times) ,max)))
-        (cnd (cond ((or (eq name 'last-command) (eq name 't)) t)
-                   ((or (null name) (eq name 'nil)) 'this-command)
-                   (`(or ,name this-command)))))
-    `(setq seq-times
-           ,(if (eq cnd t)
-                next
-              `(if (eq last-command ,cnd)
-                   ,next
-                 ,@body
-                 0)))))
+                `(% (1+ seq-times) ,max))
+           ,@body
+           0)))
 
-(defmacro seq-times-nth (name body &rest list)
-  "Return element of the LIST depending on number of times command was called.
-NAME and BODY has the same meaning as in `seq-times' function.  LIST
-is a list of values to return.  Depending how many times command was
-called, element with that index will be returned.  The counter will
-wrap around."
-  (declare (indent 2))
-  `(nth (seq-times ,name ,(length list) ,body) ',list))
+(defmacro seq-times-nth (body &rest list)
+  "Return element of the LIST depending on number of ‘times-command’ was called.
+BODY has the same meaning as in `seq-times' function.  LIST is
+a list of values from which to choose value to return.  Depending
+how many times command was called, element with that index will
+be returned.  The counter will wrap around."
+  (declare (indent 1))
+  `(nth (seq-times ,(length list) ,body) ',list))
 
-(defmacro seq-times-do (name body &rest commands)
+(defmacro seq-times-do (body &rest commands)
   "Evaluates command depending on number of times command was called.
-NAME and BODY has the same meaning as in `seq-times' function.
-COMMANDS is a list of sexps to evaluate.  Depending how many times
-command was called, sexp with that index will be evaluated.  The
-counter will wrap around."
-  (declare (indent 2))
-  `(eval (nth (seq-times ,name ,(length commands) ,body) ',commands)))
+BODY has the same meaning as in `seq-times' function.  COMMANDS
+is a list of sexps to evaluate.  Depending how many times command
+was called, sexp with that index will be evaluated.  The counter
+will wrap around."
+  (declare (indent 1))
+  `(eval (nth (seq-times ,(length commands) ,body) ',commands)))
 
 ;;   Home/End
 
@@ -188,7 +179,7 @@ counter will wrap around."
 When called once move point to beginning of line, twice - beginning of
 the buffer, thrice - back to where it was at the beginning."
    (interactive)
-   (seq-times-do nil (setq my-home-end--point (point))
+   (seq-times-do (setq my-home-end--point (point))
      (beginning-of-line)
      (goto-char (point-min))
      (goto-char my-home-end--point)))
@@ -209,7 +200,7 @@ Otherwise (when it’s in message body), the point goes
 to 1. beginning of line, 2. beginning of the message body
 and 3. wrap to it’s original position."
        (interactive)
-       (seq-times-do nil (setq my-home-end--point (point))
+       (seq-times-do (setq my-home-end--point (point))
 	 ;; First time:
 	 (progn
 	   (beginning-of-line)
@@ -231,7 +222,7 @@ and 3. wrap to it’s original position."
 When called once move point to end of line, twice - end of buffer,
 three times - back to where it was at the beginning."
   (interactive)
-  (seq-times-do nil (setq my-home-end--point (point))
+  (seq-times-do (setq my-home-end--point (point))
     (end-of-line)
     (goto-char (point-max))
     (goto-char my-home-end--point)))
@@ -1224,7 +1215,7 @@ it's not bound to space, the results may be somehow surprising."
 If called once fills the paragraph to the left, twice - justifies,
 three times - to the right, four times - centers."
   (interactive)
-  (fill-paragraph (seq-times-nth () () left full right center) t))
+  (fill-paragraph (seq-times-nth () left full right center) t))
 
 (set-key "\M-q"          my-fill)
 
