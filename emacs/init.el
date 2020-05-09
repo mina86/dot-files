@@ -40,8 +40,7 @@
   (auto-compile-on-save-mode))
 (setq load-prefer-newer t)
 
-;;}}}
-;;{{{ Utilities
+;; Utilities
 
 (defun set-key--current-local-map ()
   "Return current local map creating one if not set yet."
@@ -130,10 +129,9 @@ list.  BODY is body of the lambda to be added."
                      (cadr hook))))
     `(add-hook ,hook (lambda () ,@body))))
 
-;;}}}
-;;{{{ Bindings
+;; Bindings
 
-;;{{{   Sequence commands
+;;   Sequence commands
 
 ;; Sequence commands  1.4  by me, Michal Nazarewicz ;)
 ;; http://www.emacswiki.org/cgi-bin/wiki/DoubleKeyBinding
@@ -181,8 +179,7 @@ counter will wrap around."
   (declare (indent 2))
   `(eval (nth (seq-times ,name ,(length commands) ,body) ',commands)))
 
-;;}}}
-;;{{{   Home/End
+;;   Home/End
 
 ;; My home
 (defvar my-home-end--point 0)
@@ -235,15 +232,13 @@ When called once move point to end of line, twice - end of buffer,
 three times - back to where it was at the beginning."
   (interactive)
   (seq-times-do nil (setq my-home-end--point (point))
-    (if (bound-and-true-p folding-mode)
-        (folding-end-of-line) (end-of-line))
+    (end-of-line)
     (goto-char (point-max))
     (goto-char my-home-end--point)))
 
 (substitute-key-definition 'move-end-of-line 'my-end (current-global-map))
 
-;;}}}
-;;{{{   Save with no blanks
+;;   Save with no blanks
 
 ;; Save with no trailing whitespaces
 (defun save-no-blanks (&optional no-strip)
@@ -258,8 +253,7 @@ perform stripping and behaves as plain `save-buffer'."
 
 (substitute-key-definition 'save-buffer 'save-no-blanks (current-global-map))
 
-;;}}}
-;;{{{   Misc
+;;   Misc
 
 (when (fboundp 'save-buffers-kill-terminal)
   (set-key "\C-x\C-c"      save-buffers-kill-emacs)
@@ -281,7 +275,6 @@ perform stripping and behaves as plain `save-buffer'."
            (when (window--resize-apply-p frame t)
              (window-resize-apply frame t)
              (window--pixel-to-total frame t))))
-
 
 (when (fboundp 'windmove-right)
   (set-key "\M-F"          windmove-right)
@@ -324,8 +317,7 @@ perform stripping and behaves as plain `save-buffer'."
 (set-key minibuffer-local-map "\C-p" previous-history-element)
 (set-key minibuffer-local-map "\C-n" next-history-element)
 
-;;}}}
-;;{{{   Killing, yanking, X selection, etc
+;;   Killing, yanking, X selection, etc
 
 ;; Regions, selections and marks
 (setq mouse-yank-at-point t       ;mouse yank at point not at cursor   (X-win)
@@ -349,15 +341,13 @@ perform stripping and behaves as plain `save-buffer'."
   (add-hook 'browse-kill-ring-hook 'form-feed-mode)
   (browse-kill-ring-default-keybindings))
 
-;;}}}
-;;{{{   Just one space
+;;   Just one space
 
 (substitute-key-definition 'just-one-space
                            (lambda () (interactive) (cycle-spacing -1))
                            (current-global-map))
 
-;;}}}
-;;{{{   Tab - indent or complete
+;;   Tab - indent or complete
 
 (eval-when-compile (require 'hippie-exp))
 (setq hippie-expand-try-functions-list
@@ -401,25 +391,6 @@ In minibuffer run `minibuffer-complete', if `use-region-p' run
          (funcall indent-or-complete-complete-function nil))
         ((indent-for-tab-command))))
 
-(when (eval-when-compile (load "auto-complete-config" t))
-  (require 'auto-complete-config)
-  (add-to-list 'ac-dictionary-directories "~/.emacs.d/elisp/ac-dict")
-  (ac-config-default)
-
-  (setq ac-auto-start 3
-        ac-delay 0.1
-        ac-auto-show-menu 2
-        ac-ignore-case nil
-        ac-use-comphist t
-        indent-or-complete-complete-function 'auto-complete)
-
-  (set-key ac-completing-map "\M-o" ac-previous)
-  (set-key ac-completing-map "\M-p" ac-previous)
-  (set-key ac-completing-map "\M-n" ac-next)
-
-  (define-key (current-global-map) "\M-/"
-    indent-or-complete-complete-function))
-
 ;; (set-key "\t"    indent-or-complete)
 ;; (set-key [(tab)] indent-or-complete)
 
@@ -427,10 +398,9 @@ In minibuffer run `minibuffer-complete', if `use-region-p' run
   (unless (eq major-mode 'org-mode)
     (set-key :local [(tab)] indent-or-complete)))
 
-;;}}}
-;;{{{   Fkeys
+;;   Fkeys
 
-;;{{{     F1 - Help
+;;     F1 - Help
 
 (defun my-help ()
   "Show context dependent help.
@@ -447,8 +417,7 @@ If function given tries to `describe-function' otherwise uses
 
 (set-key [(f1)]      my-help)
 
-;;}}}
-;;{{{     F2 - find configuration files
+;;     F2 - find configuration files
 
 (set-key [(f2)]         (find-file
                          (if (string-match "\\.elc$" user-init-file)
@@ -458,8 +427,7 @@ If function given tries to `describe-function' otherwise uses
 (set-key [(meta f2)]    (find-file custom-file))
 (set-key [(shift f2)]   (find-file "~/.bashrc"))
 
-;;}}}
-;;{{{     F3/F4 - keyboard macros
+;;     F3/F4 - keyboard macros
 
 (eval-when-compile (require 'kmacro))
 (defun kmacro-end-or-call-possibly-on-region-lines (arg &optional no-repeat)
@@ -486,9 +454,7 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
 (set-key [(f3)] kmacro-start-macro-or-insert-counter)
 (set-key [(f4)] kmacro-end-or-call-possibly-on-region-lines)
 
-
-;;}}}
-;;{{{     F5 - Mail
+;;     F5 - Mail
 
 (when (file-exists-p (concat user-emacs-directory "mail.el"))
   (set-key [(f5)]
@@ -497,8 +463,7 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
              (set-key [(f5)] notmuch)
              (notmuch))))
 
-;;}}}
-;;{{{     F6 - notes
+;;     F6 - notes
 
 (require 'remember)
 (when (fboundp 'remember-notes)
@@ -509,8 +474,7 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
 
 (set-key [(f6)] remember-notes)
 
-;;}}}
-;;{{{     F7 - spell checking
+;;     F7 - spell checking
 
 (require 'ispell)
 
@@ -556,12 +520,10 @@ If GLOBAL is non-nil, or with a prefix argument set global dictionary."
      (or (cadr list) (car mn-spell-dictionaries)))
    global))
 
-
 (set-key [(f7)]         (mn-spell))
 (set-key [(control f7)] (mn-spell nil (point)))
 (set-key [(meta f7)]    mn-spell-switch-dictionary)
 (set-key [(shift f7)]   ispell-word)
-
 
 (define-globalized-minor-mode global-flyspell-mode
   flyspell-mode mn-turn-flyspell-on)
@@ -579,8 +541,7 @@ If GLOBAL is non-nil, or with a prefix argument set global dictionary."
 
 (global-flyspell-mode 1)
 
-;;}}}
-;;{{{     F9 - Compilation
+;;     F9 - Compilation
 
 (defconst -mn-compile-common
   " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Winline -Wdisabled-optimization -Wstrict-aliasing=2 -pedantic -DMINA86 -ggdb -O0 -Wpointer-arith -funit-at-a-time")
@@ -627,7 +588,6 @@ modified beforehand."
         (recompile)
       (call-interactively 'compile))))
 
-
 (set-key [(f9)]         mn-compile)
 (set-key [(control f9)] :args (a) "P" (mn-compile a t))
 (set-key [(meta f9)]    :args (a) "P" (mn-compile (not a) t t))
@@ -637,10 +597,7 @@ modified beforehand."
 (setq compilation-scroll-output 'first-error  ; scroll until first error
       compilation-window-height 12)           ; keep it readable
 
-;;}}}
-
-;;}}}
-;;{{{   ISearch mode ace-jump-mode
+;;   ISearch mode ace-jump-mode
 
 (add-hook 'isearch-mode-hook (lambda ()
  (set-key isearch-mode-map [(f1)]      isearch-mode-help)
@@ -661,8 +618,7 @@ modified beforehand."
  ace-jump-mode-move-keys
  (string-to-list "htnsueoagcrlp.,;mwvzkjq'difybx/-\\@#)(+}]{![*=&$"))
 
-;;}}}
-;;{{{   Copy/Kill
+;;   Copy/Kill
 
 ;; Make C-w, M-w work on word if no selection
 (set-key "\C-w" (call-interactively
@@ -673,10 +629,7 @@ modified beforehand."
     (kill-ring-save (point) (progn (forward-word 1) (point)))
     (setq this-command 'kill-region)))
 
-;;}}}
-
-;;}}}
-;;{{{ Syntax highlighting
+;; Syntax highlighting
 
 ;; Font lock
 (require 'font-lock)
@@ -720,10 +673,7 @@ modified beforehand."
               whitespace-big-indent-regexp "^\\(\t\\{4,\\}\\)")
 (global-whitespace-mode)
 
-;;}}}
-;;{{{ Misc small config
-
-(setq use-dialog-box nil)         ;never use dialog boxes
+;; Misc small config
 
 ;; Frame apperence
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
@@ -896,10 +846,9 @@ rules so it is likely not to work."
       scroll-error-top-bottom t
       scroll-preserve-screen-position t)
 
-;;}}}
-;;{{{ Major Modes
+;; Major Modes
 
-;;{{{   CC Mode
+;;   CC Mode
 
 (add-lambda-hook 'c-initialization-hook
   (c-add-style
@@ -909,11 +858,6 @@ rules so it is likely not to work."
      (indent-tabs-mode . t)           ; ...so use tabs
      (c-comment-only-line-offset . 0)  ; XXX no idea what it does
      (c-label-minimum-indentation . 1) ; no min. indention for labels
-
-     ;; Use block-comments
-     (comment-begin . "/* ")
-     (comment-end . " */")
-     (comment-style . multi-line)
 
      (c-cleanup-list                 ; Clean ups
       brace-else-brace                 ; "} else {" in one line
@@ -1067,27 +1011,16 @@ rules so it is likely not to work."
       (inher-intro            )
 
       (c-hanging-semi&comma-criteria
-       (mn-c-semi&comma-no-newlines-if-open-brace
-        c-semi&comma-no-newlines-before-nonblanks
+       (c-semi&comma-no-newlines-before-nonblanks
         c-semi&comma-inside-parenlist)))))
-
-  (defun mn-c-semi&comma-no-newlines-if-open-brace ()
-    "Prevents newline after semicolon if there is an open brace
-on the same line.  Function is a bit stupid and does not check if
-the open brace was real open brace or part of comment/string."
-    (when (let ((p (point))) (save-excursion (forward-line 0)
-                                             (search-forward "{" p t)))
-      'stop))
 
   (eval-when-compile (require 'cc-mode))
   (setq c-default-style '((awk-mode . "awk")
                           (other    . "mina86"))))
 
-;;}}}
-
 (setq-default python-fill-docstring-style 'pep-257-nn)
 
-;;{{{   HTML/XML & comapny Mode
+;;   HTML/XML & comapny Mode
 
 ;; Create a link out of the preceeding word if it appears to be a URL
 (defun mn-linkify-maybe ()
@@ -1118,7 +1051,6 @@ in a <a href=\"...\">...</a>.  Returns whether it happend."
           (let ((url (delete-and-extract-region (match-beginning 1)
                                                 (match-end 1))))
             (insert "<a href=\"" url "\">" url "</a>")))))))
-
 
 (defun mn-magick-self-insert-command (spec &optional default when-prefix)
   "If prefix argument is not nil calls WHEN-PREFIX with single
@@ -1215,8 +1147,7 @@ DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
   (if reset (rng-first-error))
   (rng-next-error arg))
 
-;;}}}
-;;{{{   (La)TeX and nroff mode
+;;   (La)TeX and nroff mode
 
 ;; Helper for tex-space
 (defmacro my-tex-looking-back (regexp len)
@@ -1259,7 +1190,6 @@ it's not bound to space, the results may be somehow surprising."
 (add-lambda-hook '(tex-mode-hook latex-mode-hook)
   (set-key tex-mode-map " " tex-space))
 
-
 ;; Insert '\ ' instead of ' ' in nroff when needed
 ;; Also removes '\' when 2nd space added
 (defun nroff-space (arg)
@@ -1286,8 +1216,7 @@ it's not bound to space, the results may be somehow surprising."
 (add-lambda-hook 'nroff-mode-hook
   (set-key nroff-mode-map " " nroff-space))
 
-;;}}}
-;;{{{   Misc
+;;   Misc
 
 ;; Alt+q - Fill
 (defun my-fill ()
@@ -1352,11 +1281,6 @@ three times - to the right, four times - centers."
                      (switch-to-buffer buffer)))
                (org-agenda nil "t")))))
 
-;; Assembler mode
-(add-lambda-hook 'asm-mode-hook
-  (set-tab 8)
-  (setq comment-column 40))
-
 ;; Lisp/Scheme mode
 (add-lambda-hook '(emacs-lisp-mode-hook lisp-mode-hook scheme-mode-hook)
   ;; No tabs! and if opening file with tabs, assume 8-char wide
@@ -1369,17 +1293,6 @@ three times - to the right, four times - centers."
 (autoload 'sawfish-mode "sawfish" "Mode for editing Sawfish config files")
 (add-to-list 'auto-mode-alist '("sawfish/?rc\\'" . sawfish-mode))
 (add-to-list 'auto-mode-alist '("\\.jl\\'" . sawfish-mode))
-
-;; Bison mode
-(when (eval-when-compile (load "bison-mode.el" t))
-  (autoload 'bison-mode "bison-mode.el")
-  (add-to-list 'auto-mode-alist '("\\.y$" . bison-mode))
-  (setq bison-decl-type-column   8)
-  (setq bison-decl-token-column 16))
-
-;; Flex
-(autoload 'flex-mode "flex-mode")
-(add-to-list 'auto-mode-alist '("\\.l$" . flex-mode))
 
 ;; Use cperl-mode for Perl
 (eval-when-compile (require 'cperl-mode))
@@ -1403,10 +1316,7 @@ three times - to the right, four times - centers."
 ;; csv-mode
 (add-hook 'csv-mode-hook 'turn-off-auto-fill)
 
-;;}}}
-
-;;}}}
-;;{{{ Various features
+;; Various features
 
 ;; uniquify
 (when (eval-when-compile (load "uniquify" t))
@@ -1414,42 +1324,12 @@ three times - to the right, four times - centers."
   (setq uniquify-buffer-name-style 'reverse
         uniquify-strip-common-suffix t))
 
-;; HTMLize
-;; http://fly.srk.fer.hr/~hniksic/emacs/htmlize.el
-(autoload 'htmlize-buffer "htmlize" "Convert buffer to HTML" t)
-(autoload 'htmlize-region "htmlize" "Convert region to HTML" t)
-
 ;; Tildify
 (defvar tildify-pattern)
 (setq tildify-pattern "\\<[a-zA-Z]\\([ \t\n]+\\)")
 
-;;{{{   Different cursor color depending on mode
-
-;; http://www.emacswiki.org/cgi-bin/wiki/EmacsNiftyTricks
-(defvar hcz-set-cursor-color--last nil)
-(defun hcz-set-cursor-color-according-to-mode ()
-  "Change cursor color according to some minor modes."
-  ;; set-cursor-color is somewhat costly, so we only call it when needed:
-  (let ((name (buffer-name))
-        (color (cond (buffer-read-only "blue")
-                     (overwrite-mode "red")
-                     ("yellow"))))
-    (unless (and hcz-set-cursor-color--last
-                 (string= (car hcz-set-cursor-color--last) color)
-                 (string= (cdr hcz-set-cursor-color--last) name))
-      (set-cursor-color color)
-      (setq hcz-set-cursor-color--last (cons color name)))))
-
-(add-hook 'post-command-hook 'hcz-set-cursor-color-according-to-mode)
-(set-cursor-color "yellow")
-
-;;}}}
-
-;; Start server
 (unless (and (fboundp 'daemonp) (daemonp))
   (server-start))
-
-;;}}}
 
 (provide 'init)
 

@@ -9,6 +9,7 @@
  '(auto-dim-other-buffers-face ((t :background "#112222")))
  '(completions-common-part ((t (:inherit default :foreground "yellow"))))
  '(completions-first-difference ((t (:inherit default :foreground "cyan" :weight bold))))
+ '(cursor ((t (:background "#FF0"))))
  '(custom-button ((t (:inherit widget-button))))
  '(custom-button-face ((t (:foreground "cyan"))))
  '(custom-documentation ((t (:foreground "yellow" :weight bold))))
