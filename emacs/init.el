@@ -112,8 +112,8 @@ lambdas are used."
           (let ((args        (if (eq :args (car def)) (cadr def)))
                 (interactive (if (eq :args (car def)) (list (car (cddr def)))))
                 (body        (if (eq :args (car def)) (cdr (cddr def)) def)))
-            `(function (lambda ,args (interactive . ,interactive) ,@body))))
-         ((symbolp (car def)) (list 'quote (car def)))
+            `(lambda ,args (interactive . ,interactive) ,@body)))
+         ((symbolp (car def)) `#',(car def))
          ((car def)))))
 
 (defmacro add-lambda-hook (hook &rest body)
@@ -125,10 +125,10 @@ list.  BODY is body of the lambda to be added."
   (if (and (listp hook) (eq (car hook) 'quote) (listp (cadr hook)))
       (let ((func (make-symbol "func")))
         `(let
-          ((,func (function (lambda () ,@body))))
+          ((,func (lambda () ,@body)))
           . ,(mapcar (lambda (h) `(add-hook (quote ,h) ,func))
                      (cadr hook))))
-    `(add-hook ,hook (function (lambda () ,@body)))))
+    `(add-hook ,hook (lambda () ,@body))))
 
 ;;}}}
 ;;{{{ Bindings
@@ -294,8 +294,8 @@ perform stripping and behaves as plain `save-buffer'."
 (set-key "\C-x\C-b"      (switch-to-buffer (other-buffer))) ; C-x C-b switch
 
 (when (fboundp 'shift-number-up)
-  (set-key "\M-+"        shift-number-up)
-  (set-key "\M--"        shift-number-down))
+  (with-no-warnings (set-key "\M-+" shift-number-up)
+                    (set-key "\M--" shift-number-down)))
 
 ;; Jump
 
@@ -341,7 +341,7 @@ perform stripping and behaves as plain `save-buffer'."
     (mouse-yank-primary nil)))
 
 ;; Use browse-kill-ring
-(when (fboundp 'browse-kill-ring)
+(when (fboundp 'browse-kill-ring-default-keybindings)
   (setq-default browse-kill-ring-display-duplicates nil
                 browse-kill-ring-highlight-current-entry t
                 browse-kill-ring-highlight-inserted-item t
@@ -493,8 +493,9 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
 (when (file-exists-p (concat user-emacs-directory "mail.el"))
   (set-key [(f5)]
            (load (concat user-emacs-directory "mail.el"))
-           (set-key [(f5)] notmuch)
-           (with-no-warnings (notmuch))))
+           (with-no-warnings
+             (set-key [(f5)] notmuch)
+             (notmuch))))
 
 ;;}}}
 ;;{{{     F6 - notes
@@ -804,9 +805,10 @@ modified beforehand."
 (when (fboundp 'global-num3-mode)
   (global-num3-mode t))
 
-(when (fboundp 'multiple-cursors-mode)
-  (set-key "\M-." mc/mark-next-like-this)
-  (set-key "\M-," mc/unmark-next-like-this))
+(when (fboundp 'mc/mark-next-like-this)
+  (with-no-warnings
+    (set-key "\M-." mc/mark-next-like-this)
+    (set-key "\M-," mc/unmark-next-like-this)))
 
 ;; Other
 (require 'icomplete)
@@ -1314,8 +1316,6 @@ three times - to the right, four times - centers."
   (setq word-wrap t))
 
 ;; Org mode
-(eval-when-compile (require 'org))
-(add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
 (setq-default
  org-insert-mode-line-in-empty-file t
  org-hide-leading-stars t
@@ -1327,25 +1327,17 @@ three times - to the right, four times - centers."
  org-agenda-restore-windows-after-quit t
  org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
  org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
+(eval-when-compile (require 'org))
 (eval-after-load "org"
   '(progn
-     (setq org-insert-mode-line-in-empty-file t
-	   org-hide-leading-stars t
-	   org-startup-indented t
-	   org-src-fontify-natively t
-	   org-catch-invisible-edits 'smart
-	   org-agenda-start-with-follow-mode t
-	   org-agenda-window-setup 'current-window
-	   org-agenda-restore-windows-after-quit t
-	   org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
-	   org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
-
-     (set-key org-mode-map "\M-p" org-backward-element)
-     (set-key org-mode-map "\M-n" org-forward-element)
-     (define-key org-mode-map "\C-a" (lookup-key global-map "\C-a"))
-     (define-key org-mode-map "\C-e" (lookup-key global-map "\C-e"))
-
-     (add-hook 'org-agenda-mode-hook (lambda () (hl-line-mode 1)))))
+     (with-no-warnings
+       (define-key org-mode-map "\M-p" #'org-backward-element)
+       (define-key org-mode-map "\M-n" #'org-forward-element))
+     (define-key org-mode-map "\C-a" nil)
+     (define-key org-mode-map "\C-e" nil)
+     (when (fboundp 'form-feed-mode)
+       (add-lambda-hook 'org-mode (form-feed-mode 1)))
+     (add-lambda-hook 'org-agenda-mode-hook (hl-line-mode 1))))
 
 (eval-when-compile (require 'org-agenda))
 (set-key [(control f6)]
