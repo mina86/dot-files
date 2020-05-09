@@ -297,10 +297,6 @@ perform stripping and behaves as plain `save-buffer'."
              (kill-buffer (current-buffer))
            (self-insert-command n)))
 
-(set-default 'browse-url-browser-function 'browse-url-generic)
-(set-default 'browse-url-generic-program "ff")
-
-
 ;; Minibuffer
 
 (set-key minibuffer-local-map "\C-c"  ; C-c clears minibuffer
