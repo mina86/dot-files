@@ -1082,6 +1082,9 @@ the open brace was real open brace or part of comment/string."
                           (other    . "mina86"))))
 
 ;;}}}
+
+(setq-default python-fill-docstring-style 'pep-257-nn)
+
 ;;{{{   HTML/XML & comapny Mode
 
 ;; Create a link out of the preceeding word if it appears to be a URL
