@@ -187,35 +187,6 @@ the buffer, thrice - back to where it was at the beginning."
 (substitute-key-definition 'move-beginning-of-line 'my-home
                            (current-global-map))
 
-(eval-when-compile (require 'message))
-(eval-after-load "message-mode"
-  '(progn
-     (defun my-message-home ()
-       "‘message-mode’-aware ‘my-home’.
-
-When point is on a header line, the point goes to 1. beginning of
-the header, 2. beginning and 3. wraps to it’s original position.
-
-Otherwise (when it’s in message body), the point goes
-to 1. beginning of line, 2. beginning of the message body
-and 3. wrap to it’s original position."
-       (interactive)
-       (seq-times-do (setq my-home-end--point (point))
-	 ;; First time:
-	 (progn
-	   (beginning-of-line)
-	   (when (message-point-in-header-p)
-	     (re-search-forward ": *" (point-at-eol) t)))
-	 ;; Second time:
-	 (if (message-point-in-header-p)
-	     (beginning-of-line)
-	   (message-goto-body))
-	 ;; Third time:
-	 (goto-char my-home-end--point)))
-
-     (substitute-key-definition 'message-beginning-of-line 'my-message-home
-				message-mode-map)))
-
 ;; My end
 (defun my-end ()
   "Go to end of line or buffer.
