@@ -23,7 +23,7 @@ esac
 case $USER in
 '')
 	case $LOGNAME in
-	'') USER=$(id -un) ;;
+	'') USER=$(id -un); LOGNAME=$USER ;;
 	*)  USER=$LOGNAME
 	esac
 	;;
