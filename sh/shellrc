@@ -7,8 +7,9 @@ case $HOST in
 '')
 	host=$(hostname 2>/dev/null)
 	if [ -z "$host" ]; then
-		# My OpenWRT is missing hostname and I don’t quite know where to
-		# get it from.  Fortunately it has Python so I can use it.
+		# My OpenWRT is missing hostname command and I don’t know where
+		# to get it from.  Fortunately it has Python which I can use
+		# instead.
 		host=$(python -c 'import socket; print socket.gethostname()')
 	fi
 	host=${host%%.*}
