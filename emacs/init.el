@@ -22,7 +22,7 @@
   (package-initialize))
 
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.milkbox.net/packages/"))
+                         ("melpa" . "https://melpa.org/packages/"))
       package-menu-hide-low-priority t
       package-archive-priorities '(("gnu" . 100)))
 
