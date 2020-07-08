@@ -775,7 +775,9 @@ modified beforehand."
 (setq byte-count-to-string-function
       (lambda (size) (file-size-human-readable size 'si " ")))
 (when (fboundp 'describe-char-eldoc)
-  (setq-default eldoc-documentation-function #'describe-char-eldoc))
+  (if (boundp 'eldoc-documentation-functions)
+      (add-hook 'eldoc-documentation-functions #'describe-char-eldoc -50)
+    (setq-default eldoc-documentation-function #'describe-char-eldoc)))
 
 ;; Saving etc
 (when (fboundp recentf-mode)
