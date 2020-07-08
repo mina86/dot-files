@@ -237,11 +237,10 @@ LANG=en_GB.UTF-8
 local -a 2>/dev/null | grep -q $LANG || LANG=en_US.UTF-8
 LC_COLLATE=C
 
-FIGNORE=".o:~:.bak"
 # /tmp is in RAM, don't save history between reboots
 HISTFILE=/tmp/.$(id -un)-history
 HISTCONTROL=ignorespace:erasedups
-export FIGNORE LANG LC_COLLATE HISTFILE HISTCONTROL
+export LANG LC_COLLATE HISTFILE HISTCONTROL
 unset MAILCHECK MAIL
 case $host in erwin|tuptus)
 	case $(uname -m) in
