@@ -190,14 +190,14 @@ ${MINA86RC:+return}
 MINA86RC=done
 export MINA86RC
 
-if [ -z "$EDITOR" ] && which nano >/dev/null 2>&1; then
+if which nano >/dev/null 2>&1; then
 	EDITOR=nano
 	VISUAL=nano
 	export EDITOR VISUAL
 fi
 
-if [ -n "$LESS" ] || which less >/dev/null 2>&1; then
-	PAGER=less
+if less=$(which less 2>&1) && [ -n "$less" ]; then
+	PAGER=$less
 	LESS=-FMSRj4
 	export PAGER LESS
 
@@ -227,6 +227,7 @@ if [ -n "$LESS" ] || which less >/dev/null 2>&1; then
 	export LESS_TERMCAP_md LESS_TERMCAP_mb LESS_TERMCAP_us LESS_TERMCAP_so
 	export LESS_TERMCAP_se LESS_TERMCAP_ue LESS_TERMCAP_me
 fi
+unset less
 
 if [ -z "$LS_COLORS" ] && [ -f ~/.dir_colors ]; then
 	eval "$(dircolors -b ~/.dir_colors)"
