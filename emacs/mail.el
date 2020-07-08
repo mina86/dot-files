@@ -43,6 +43,23 @@
 (setq-default smtpmail-smtp-server  "smtp.gmail.com"
               smtpmail-smtp-service 587)
 
+;; Get domain from the From address when generating Message-IDs
+(defun mn-message-make-fqdn ()
+  (if-let* ((addr (message-fetch-field "from"))
+            (addr (cadr (mail-extract-address-components addr))))
+      (and (string-match "@\\(.*\\)\\'" addr)
+           (match-string 1 addr))))
+(advice-add #'message-make-fqdn :before-until #'mn-message-make-fqdn)
+
+;; Use random left part of the Message-ID
+(defun mn-message-unique-id ()
+  (random t)
+  (let ((chars "0123456789abcdefghijklmnopqrstuvwxyz+") str)
+    (while (< (length str) 24)
+      (setq str (cons (aref chars (random (length chars))) str)))
+    (apply #'string str)))
+(advice-add #'message-unique-id :before-until #'mn-message-unique-id)
+
 ;; Since 27.1 message-from-style is obsolete; suppress warning.
 (with-no-warnings (setq message-from-style 'angels))
 
