@@ -126,8 +126,6 @@ fi
 if echo foo | grep --color=auto foo >/dev/null 2>/dev/null; then
 	alias grep='grep --color=auto'
 fi
-alias fgrep='grep -F'
-alias egrep='grep -E'
 
 # Powerful cd
 _cd_do() {
@@ -242,14 +240,6 @@ HISTFILE=/tmp/.$(id -un)-history
 HISTCONTROL=ignorespace:erasedups
 export LANG LC_COLLATE HISTFILE HISTCONTROL
 unset MAILCHECK MAIL
-case $host in erwin|tuptus)
-	case $(uname -m) in
-	x86_64) ARCH=x86_64 ;;
-	*)      ARCH=i686
-	esac
-	export ARCH
-	flags init
-esac
 
 # And finally, load local configuration.
 if [ -e ~/.config/sh/local ]; then
