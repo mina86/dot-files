@@ -691,52 +691,46 @@ modified beforehand."
 
 
 ;; Modeline
-(setq line-number-mode t          ;show line number in modeline
-      column-number-mode t)       ;show column number in modeline
+(defface mode-line-de-em
+  '((t (:foreground "#696")))
+  "Face used for de-emphasised elements on mode-line."
+  :group 'mode-line-faces)
 
-(setq mode-line-format
-      '("%e"
-        mode-line-mule-info
-        mode-line-modified
-        mode-line-frame-identification
-        mode-line-buffer-identification
-        "  "
-        mode-line-position
-        vc-mode
-        " "
-        mode-line-modes
-        (which-func-mode ("" which-func-format))
-        (global-mode-string ("" global-mode-string))
-        "%-")
+(defface mode-line-modified-buffer-id
+  '((t (:slant italic :inherit (mode-line-buffer-id))))
+  "Face used for buffer id part of the mode line when the buffer is modified."
+  :group 'mode-line-faces)
 
-      mode-line-position
-      '(:eval (let* ((min (point-min)) (max (point-max))
-                     (wide (and (= min 1) (= max (1+ (buffer-size))))))
-                (concat
-                 (if wide "(" "[")
-                 (if column-number-mode
-                     (if (> (current-column) 80)
-                         (concat (propertize "%02c" 'face 'error) ", ")
-                       "%02c, ")
-                   "")
-                 (if line-number-mode "%2l/" "")
-                 (number-to-string (1+ (count-lines min max)))
-                 (if wide ")" "]"))))
+(setq-default line-number-mode   t
+              column-number-mode t
 
-      mode-line-modes
-      '("("
-        (:propertize
-         ("" mode-name mode-line-process minor-mode-alist)
-         help-echo "mouse-1: major mode, mouse-2: major mode help, mouse-3: toggle minor modes"
-         mouse-face mode-line-highlight
-         local-map (keymap
-                    (header-line keymap
-                                 (down-mouse-3 . mode-line-mode-menu-1))
-                    (mode-line keymap
-                               (down-mouse-3 . mode-line-mode-menu-1)
-                               (mouse-2 . describe-mode)
-                               (down-mouse-1 . mouse-major-mode-menu))))
-        ") "))
+              mode-line-format
+              '((buffer-read-only (:propertize "» " face mode-line-de-em) "  ")
+                (:eval (concat
+                        (propertize
+                         "%14b  " 'face (if (buffer-modified-p)
+                                            'mode-line-modified-buffer-id
+                                          'mode-line-buffer-id))
+                        (if (> (current-column) 80)
+                            (propertize "%2c" 'face 'warning)
+                          "%2c")
+                        (propertize ":" 'face 'mode-line-de-em)
+                        "%l"))
+                (:eval (let ((min (point-min)) (max (point-max)))
+                         (and (= min 1)
+                              (= max (1+ (buffer-size)))
+                              (concat
+                               (propertize "/" 'face 'mode-line-de-em)
+                               (save-excursion
+                                 (goto-char (point-max))
+                                 (format-mode-line "%l"))))))
+                vc-mode
+                "  "
+                mode-name
+                " "
+                mode-line-process
+                minor-mode-alist
+                (:propertize " %-" face mode-line-de-em)))
 
 ;; Highlight groups of three digits
 (when (fboundp 'global-num3-mode)
