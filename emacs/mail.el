@@ -310,4 +310,35 @@ and 3. wrap to it’s original position."
 ;;   (if (fboundp 'turn-off-fci-mode)
 ;;      (turn-off-fci-mode)))
 
+(defun mn-prettify-subject (subject)
+  (save-match-data
+    (setq subject (if subject (string-trim subject) "(no subject)"))
+    (let ((start 0))
+      (while (string-match (eval-when-compile
+                             (let ((chrs "[:cntrl:]\x7f\u2028\u2029"))
+                               (concat "[ " chrs "]\\{2,\\}\\|[" chrs "]+")))
+                           subject start)
+        (setq subject (replace-match " " t t subject)
+              start (1+ (match-beginning 0)))))
+    (if (string-match
+         (concat "^\\[Differential] \\[[^]]+] \\(?:\\[[-+ ]+] \\)?\\|"
+                 "^\\[JIRA] Updates for ")
+                      subject)
+        (substring subject (match-end 0))
+      subject)))
+
+(defun mn-notmuch-search-insert-field-advice (orig field format-string result)
+  (if (string-equal field "subject")
+      (insert (propertize
+               (format format-string
+                       (mn-prettify-subject (plist-get result :subject)))
+               'face 'notmuch-search-subject))
+    (funcall orig field format-string result)))
+
+(add-function :around (symbol-function #'notmuch-search-insert-field)
+              #'mn-notmuch-search-insert-field-advice)
+(add-lambda-hook 'notmuch-show-hook
+  (when header-line-format
+    (setq header-line-format (mn-prettify-subject header-line-format))))
+
 ;;}}}
