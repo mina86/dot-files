@@ -761,6 +761,12 @@ modified beforehand."
 
 
 ;; Indention
+(defconst set-tab--variables
+  '(c-basic-offset perl-indent-level cperl-indent-level js-indent-level
+    sh-basic-offset python-indent-offset css-indent-offset
+    typescript-indent-level)
+  "List of variables which specify indent level in various modes.")
+
 (defun set-tab (tab)
   "Adjust `tab-width' indent level in current buffer.
 `tab-width' is set to absolute value of TAB.
@@ -777,19 +783,21 @@ rules so it is likely not to work."
   (interactive "nTab-width: ")
   (let ((negative (< tab 0)))
     (setq tab-width (abs tab))
-    (mapc
-     (lambda (var)
-       (when (boundp var)
-         (set (make-local-variable var) tab-width)))
-     '(c-basic-offset perl-indent-level cperl-indent-level  js-indent-level
-       sh-basic-offset sh-indentation python-indent-offset css-indent-offset
-       typescript-indent-level))
+    (mapc (lambda (var)
+            (when (boundp var)
+              (set (make-local-variable var) tab-width)))
+          set-tab--variables)
      (cond
       (negative (setq indent-tabs-mode nil))
       (prefix-arg (setq indent-tabs-mode t)))))
 
-(setq indent-tabs-mode t)         ;indent using tabs
-(set-tab 8)                       ;tab width and stop list
+(setq indent-tabs-mode t
+      tab-width 8)
+;; Don’t set-default 'c-basic-offset.  We want to take value from c-style and
+;; setting the default to something other than 'set-from-style prevents
+;; dir-local c-file-style variable to work.
+(dolist (var (cdr set-tab--variables))
+  (set-default var 8))
 (eval-when-compile (require 'tabify))
 (setq tabify-regexp "^\t* [ \t]+");tabify only at the beginning of line
 
@@ -1186,6 +1194,8 @@ three times - to the right, four times - centers."
   (add-hook 'fill-nobreak-predicate 'fill-single-char-nobreak-p))
 
 (add-hook 'prog-mode-hook (lambda () (setq fill-column 80)))
+(add-hook 'csv-mode-hook 'turn-off-auto-fill)
+(add-hook 'wdired-mode-hook 'turn-off-auto-fill)
 
 (setq-default display-fill-column-indicator t
               display-fill-column-indicator-character ?│
@@ -1194,8 +1204,6 @@ three times - to the right, four times - centers."
 
 ;; Text mode
 (add-lambda-hook 'text-mode-hook
-  (auto-fill-mode t)
-  (set-tab 8)
   (setq word-wrap t))
 
 ;; Org mode
@@ -1237,8 +1245,6 @@ three times - to the right, four times - centers."
 
 ;; Lisp/Scheme mode
 (add-lambda-hook '(emacs-lisp-mode-hook lisp-mode-hook scheme-mode-hook)
-  ;; No tabs! and if opening file with tabs, assume 8-char wide
-  (set-tab 8)
   (setq indent-tabs-mode nil)
   ;; Show ^L as a line
   (if (fboundp 'form-feed-mode) (form-feed-mode)))
@@ -1263,12 +1269,8 @@ three times - to the right, four times - centers."
       cperl-electric-backspace-untabify nil)
 
 ;; shell-script-mode
-(eval-when-compile (require 'sh-script))
-(setq sh-indent-for-case-label 0
-      sh-indent-for-case-alt '+)
-
-;; csv-mode
-(add-hook 'csv-mode-hook 'turn-off-auto-fill)
+(setq-default sh-indent-for-case-label 0
+              sh-indent-for-case-alt '+)
 
 ;; Various features
 
