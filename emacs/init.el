@@ -631,36 +631,6 @@ modified beforehand."
               whitespace-big-indent-regexp "^\\(\t\\{4,\\}\\)")
 (global-whitespace-mode)
 
-;; Misc small config
-
-;; Frame apperence
-(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-(if (fboundp 'tool-bar-mode)   (tool-bar-mode   -1))
-(if (fboundp 'menu-bar-mode)   (menu-bar-mode   -1))
-(setq default-frame-alist
-      '((font . "-adobe-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1")
-        (left . 0)
-        (top . 0)
-        (fullscreen . fullheight)
-        (width . 80)
-        (right-fringe . 4)
-        (left-fringe  . 4)
-        (menu-bar-lines . 0)
-        (tool-bar-lines . 0)
-        (vertical-scroll-bars)
-        (foreground-color . "gray")
-        (background-color . "black")
-        (background-mode . dark)
-        (wait-for-wm . nil))
-      initial-frame-alist
-      '((left . 0)
-        (top . 0)
-        (fullscreen . fullheight))
-      frame-resize-pixelwise t)
-(set-face-attribute
- 'default t :font "-adobe-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1")
-
-
 ;; Modeline
 (defface mode-line-de-em
   '((t (:foreground "#696")))
@@ -728,7 +698,6 @@ modified beforehand."
 (setq-default indicate-empty-lines t) ;show empty lines at the end of file
 (setq-default indicate-buffer-boundaries t) ;show buffer boundries on fringe
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
-(setq gc-cons-threshold 4000000)  ;bytes before garbage collection
 (eval-when-compile (require 'ange-ftp))
 (setq ange-ftp-try-passive-mode t);passive FTP
 (blink-cursor-mode -1)            ;do not blink cursor
