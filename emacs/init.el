@@ -6,9 +6,9 @@
 ;;; Code:
 
 ;; Mitigate Bug#28350 (security) in Emacs 25.2 and earlier.
-(eval-after-load "enriched"
-  '(defun enriched-decode-display-prop (start end &optional _param)
-     (list start end)))
+(with-eval-after-load "enriched"
+  (defun enriched-decode-display-prop (start end &optional _param)
+    (list start end)))
 
 (let ((dir (expand-file-name "~/.local/share/emacs/site-lisp")))
   (when (file-name-directory dir)
@@ -1188,16 +1188,15 @@ three times - to the right, four times - centers."
  org-blank-before-new-entry '((heading . t) (plain-list-item . auto))
  org-list-demote-modify-bullet '(("+" . "-") ("-" . "+") ("+" . "*")))
 (eval-when-compile (require 'org))
-(eval-after-load "org"
-  '(progn
-     (with-no-warnings
-       (define-key org-mode-map "\M-p" #'org-backward-element)
-       (define-key org-mode-map "\M-n" #'org-forward-element))
-     (define-key org-mode-map "\C-a" nil)
-     (define-key org-mode-map "\C-e" nil)
-     (when (fboundp 'form-feed-mode)
-       (add-lambda-hook 'org-mode (form-feed-mode 1)))
-     (add-lambda-hook 'org-agenda-mode-hook (hl-line-mode 1))))
+(with-eval-after-load "org"
+  (with-no-warnings
+    (define-key org-mode-map "\M-p" #'org-backward-element)
+    (define-key org-mode-map "\M-n" #'org-forward-element))
+  (define-key org-mode-map "\C-a" nil)
+  (define-key org-mode-map "\C-e" nil)
+  (when (fboundp 'form-feed-mode)
+    (add-lambda-hook 'org-mode (form-feed-mode 1)))
+  (add-lambda-hook 'org-agenda-mode-hook (hl-line-mode 1)))
 
 (eval-when-compile (require 'org-agenda))
 (set-key [(control f6)]
