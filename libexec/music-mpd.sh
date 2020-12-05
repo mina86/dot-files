@@ -61,8 +61,7 @@ mpd_ctl() {
 	tag)
 		file=$(_mpc_file)
 		if [ -z "$file" ]; then
-			echo "${0##*/}: nothing playing or could not connect" >&2
-			exit 1
+			die "nothing playing or could not connect"
 		fi
 		mpc sticker "$file" set tag yes
 		_mpc next

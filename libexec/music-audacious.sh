@@ -32,7 +32,7 @@ audacious_ctl() {
 		fi
 		;;
 	*)
-		echo "${0##*/}: $1: unknown or unsupported action" >&2
+		die "unknown or unsupported action"
 		return 1
 	esac
 }

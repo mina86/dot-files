@@ -2,6 +2,11 @@
 
 set -eu
 
+die() {
+	echo "${0##*/}: $*" >&2
+	exit 1
+}
+
 if [ $# -eq 0 ]; then
 	set -- show
 fi
@@ -12,7 +17,7 @@ if [ -x ~/.local/libexec/"music-pre-$1.sh" ]; then
 fi
 
 found=false
-for player in audacious mpd; do
+for player in deadbeef audacious mpd; do
 	if [ -x ~/.local/libexec/music-$player.sh ]; then
 		. ~/.local/libexec/music-$player.sh
 		if "${player}_query" >/dev/null 2>&1; then
@@ -23,13 +28,12 @@ for player in audacious mpd; do
 done
 
 if ! $found; then
-	echo "${0##*/}: unable to identify currently running music player" >&2
-	exit 1
+	die "unable to identify currently running music player"
 fi
 
 case ${1-} in if)
 	if [ $# -eq 1 ]; then
-		echo "${0##*/}: ‘if’ command requires an argument" >&2
+		die "‘if’ command requires an argument"
 		exit 1
 	elif [ x"$2" != x"$player" ]; then
 		echo "${0##*/}: running $player, not $2" >&2
