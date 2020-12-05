@@ -38,4 +38,9 @@
 ;; Ignore X resources.  Everything we care about is already set above.
 (advice-add #'x-apply-session-resources :override #'ignore)
 
+;; Ignore site-start and default initialisation files if they exist.  Whatever
+;; they include, we’re overriding or don’t care about.
+;(setq site-run-file        nil
+;      inhibit-default-init t)
+
 (provide 'early-init)
