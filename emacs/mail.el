@@ -11,16 +11,13 @@
 
 (defconst alt-mail-address
   (eval-when-compile (rot13-string "zanmnerjvpm@tznvy.pbz")))
-(defconst corp-mail-address
-  (eval-when-compile (rot13-string "zca@uhqfba-genqvat.pbz")))
 
 (setq user-full-name "Michal Nazarewicz"
       user-mail-address (eval-when-compile (rot13-string "zvan86@zvan86.pbz"))
       message-user-fqdn "mina86.com"
 
       message-alternative-emails (regexp-opt (list user-mail-address
-                                                   alt-mail-address
-                                                   corp-mail-address)
+                                                   alt-mail-address)
                                              nil)
       message-dont-reply-to-names message-alternative-emails
 
@@ -40,6 +37,7 @@
       message-citation-line-function 'message-insert-formatted-citation-line
       message-citation-line-format   "On %a, %b %d %Y, %N wrote:"
       send-mail-function    'message-smtpmail-send-it)
+
 (setq-default smtpmail-smtp-server  "smtp.gmail.com"
               smtpmail-smtp-service 587)
 
@@ -59,6 +57,7 @@
       (setq str (cons (aref chars (random (length chars))) str)))
     (apply #'string str)))
 (advice-add #'message-unique-id :before-until #'mn-message-unique-id)
+
 
 ;; Since 27.1 message-from-style is obsolete; suppress warning.
 (with-no-warnings (setq message-from-style 'angels))
@@ -99,31 +98,6 @@
 
 (set-key message-mode-map "\C-ca" mn-ack-patch)
 
-(defun mn-determine-gnus-alias-identity ()
-  (let (has-priv has-corp has-non-corp)
-    (message-with-reply-buffer
-      (save-restriction
-        (mail-narrow-to-head)
-        (let ((priv-re (concat "\\<" (regexp-opt (list user-mail-address
-                                                       alt-mail-address)
-                                                 nil) "\\>"))
-              (corp-re "@hudson-trading\\.com\\>")
-              emails)
-          (setq emails (mapcar #'message-fetch-field
-                               '("from" "to" "cc" "bcc"))
-                emails (delq nil emails)
-                emails (mapcar #'message-tokenize-header emails)
-                emails (apply #'nconc emails)
-                emails (mapcar #'mail-strip-quoted-names emails))
-          (dolist (email emails)
-            (cond ((string-match priv-re email) (setq has-priv t))
-                  ((string-match corp-re email) (setq has-corp t))
-                  ((setq has-non-corp t)))))))
-    (gnus-alias-use-identity
-     (cond (has-corp (if (or has-priv has-non-corp) "ext" "corp"))
-           (has-priv "priv")
-           ((with-no-warnings gnus-alias-default-identity))))))
-
 (defun mn-load-face (face-png)
   "Returns Face header encoding specified face image or nil on error."
   (if (not (file-exists-p face-png))
@@ -135,21 +109,16 @@
                    face-png)
         (cons "Face" (buffer-string))))))
 
-(when (eval-and-compile (load "gnus-alias" t))
-  (let ((signature (expand-file-name "~/.mail/signature.txt"))
-        (ext-sign (concat "Best regards\nMichał Nazarewicz"))
-        (headers (if-let ((face-png (expand-file-name "~/.mail/face.png"))
-                          (face-hdr (mn-load-face face-png)))
-                     (cons face-hdr nil)))
-        (corp-org "Hudson River Trading")
-        (user-from (concat user-full-name " <" user-mail-address ">"))
-        (corp-from (concat user-full-name " <" corp-mail-address ">")))
-    (setq gnus-alias-identity-alist
-          `(("corp" nil ,corp-from ,corp-org ,headers "\n" ,signature)
-            ("ext"  nil ,corp-from ,corp-org nil      "\n" ,ext-sign)
-            ("priv" nil ,user-from nil       ,headers "\n" ,signature))
-          gnus-alias-default-identity (caar gnus-alias-identity-alist)))
-  (add-hook 'message-setup-hook #'mn-determine-gnus-alias-identity))
+(require 'gnus-alias)
+(let ((signature (expand-file-name "~/.mail/signature.txt"))
+      (headers (if-let ((face-png (expand-file-name "~/.mail/face.png"))
+                        (face-hdr (mn-load-face face-png)))
+                   (cons face-hdr nil)))
+      (user-from (concat user-full-name " <" user-mail-address ">")))
+  (setq gnus-alias-identity-alist
+        `(("priv" nil ,user-from nil       ,headers "\n" ,signature))
+        gnus-alias-default-identity (caar gnus-alias-identity-alist)))
+(add-hook 'message-setup-hook 'gnus-alias-determine-identity)
 
 ;;}}}
 ;;{{{ Message mode
@@ -239,12 +208,10 @@ and 3. wrap to it’s original position."
         notmuch-hello-insert-alltags)
 
       notmuch-saved-searches
-      '(("asm"     . "is:unread and  is:asm and  is:me")
-        ("to me"   . "is:unread and -is:asm and  is:me and -is:foss")
+      '(("to me"   . "is:unread and -is:asm and  is:me and -is:foss")
         ("me+foss" . "is:unread and -is:asm and  is:me and  is:foss")
-        ("corp"    . "is:unread and -is:asm and -is:me and -is:foss and  is:corp")
-        ("foss"    . "is:unread and -is:asm and -is:me and  is:foss and -is:corp")
-        ("rest"    . "is:unread and -is:asm and -is:me and -is:foss and -is:corp"))
+        ("foss"    . "is:unread and -is:asm and -is:me and  is:foss and -is:hrt")
+        ("rest"    . "is:unread and -is:asm and -is:me and -is:foss and -is:hrt"))
 
       notmuch-tag-formats
       '(("unread" (propertize tag 'face '(:foreground "red")))
