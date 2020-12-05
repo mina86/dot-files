@@ -484,7 +484,8 @@ If GLOBAL is non-nil, or with a prefix argument set global dictionary."
 (set-key [(shift f7)]   ispell-word)
 
 (define-globalized-minor-mode global-flyspell-mode
-  flyspell-mode mn-turn-flyspell-on)
+  flyspell-mode mn-turn-flyspell-on
+  :group 'flyspell)
 
 (defun mn-turn-flyspell-on ()
   "Turn `flyspell-mode' or `flyspell-prog-mode' depending on major mode."
