@@ -21,7 +21,7 @@ init_screen() {
 init_kbd() {
 	layout=pl,pl
 	variant=dvp,
-	options=ctrl:nocaps,grp:shifts_toggle,grp_led:scroll,nbsp:level3n,compose:lctrl-altgr,compose:rctrl-algtgr
+	options=grp:shifts_toggle,grp_led:scroll,nbsp:level3n
 
 	dir=$HOME/.config/xkb
 	if [ -e "$dir/symbols/local" ]; then

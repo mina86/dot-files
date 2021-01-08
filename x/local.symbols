@@ -39,4 +39,11 @@ xkb_symbols "dvp" {
         type[Group1] = "TWO_LEVEL",
         symbols[Group1] = [ Shift_L, ISO_Prev_Group ]
     };
+
+    // ctrl:nocaps and compose:caps-algtgr options clash with each other (since
+    // they both override CAPS) so bake them in.  compose:ltcrl-altgr is related
+    // so bake it as well.
+    key <CAPS> { type[Group1]="FOUR_LEVEL", [ Control_L, Control_L, Multi_key, Multi_key ] };
+    key <LCTL> { type[Group1]="FOUR_LEVEL", [ Control_L, Control_L, Multi_key, Multi_key ] };
+    modifier_map  Control { <CAPS>, <LCTL> };
 };
