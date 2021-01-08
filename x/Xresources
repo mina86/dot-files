@@ -52,7 +52,6 @@ XTerm*colorUL:         #DD0000
 *color14:              #00FFFF
 *color15:              #FFFFFF
 
-
 ! All kinds of urxvt
 URxvt.scrollBar:       false
 URxvt.saveLines:       65535
@@ -71,6 +70,8 @@ URxvt.background:      #000000
 URxvt.foreground:      #CCCCCC
 URxvt.colorBD:         #FFFFFF
 URxvt.cursorColor:     #FFFF00
+
+URxvt*iso14755:        0
 
 URxvt.print-pipe:      cat >$(TMPDIR=$HOME mktemp urxvt.XXXXXX)
 
