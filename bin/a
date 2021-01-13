@@ -4,9 +4,7 @@ have() {
 	have=`which "$1" 2>/dev/null` && test -n "$have"
 }
 
-if [ -e /etc/slackware-version ]; then
-	cmd=slack
-elif have apt || have apt-get || have yum; then
+if have apt || have apt-get || have yum; then
 	cmd=$have
 else
 	echo "a: could not find package manager software" >&2
@@ -99,19 +97,6 @@ apt:purge)
 
 yum:?*|apt:?*)
 	set -- install "$@"
-	;;
-
-slack:remove|slack:purge)
-	shift
-	cmd=removepkg
-	;;
-slack:upgrade|slack:update)
-	shift
-	cmd=upgradepkg
-	;;
-slack:?*.t?z)
-	cmd=upgradepkg
-	set -- --install-new "$@"
 	;;
 
 *)
