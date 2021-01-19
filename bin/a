@@ -1,7 +1,7 @@
 #!/bin/sh
 
 have() {
-	have=`which "$1" 2>/dev/null` && test -n "$have"
+	have=$(which "$1" 2>/dev/null) && test -n "$have"
 }
 
 if have apt || have apt-get || have yum; then
@@ -104,8 +104,22 @@ yum:?*|apt:?*)
 	exit 1
 esac
 
-echo "+" "$cmd" "$@" >&2
-$sudo "$cmd" "$@"
-if [ $# -eq 1 ] && have apt-file && [ x"$1" = xupdate ]; then
-	exec $sudo apt-file update
+run() {
+	echo "+" "$@" >&2
+	$sudo "$@"
+}
+
+case "${normalised##*/}:$1" in apt:*install|apt:*upgrade)
+	age=$(( $(date +%s) - $(stat -c %Y /var/cache/apt/pkgcache.bin) ))
+	if [ $age -ge $((24 * 3600)) ]; then
+		run "$cmd" update
+		if have apt-file; then
+			run "$have" update
+		fi
+	fi
+esac
+
+run "$cmd" "$@"
+if [ $# -eq 1 ] && [ "$1" = update ] && have apt-file; then
+	run "$have" update
 fi
