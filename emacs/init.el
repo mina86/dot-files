@@ -377,13 +377,25 @@ If function given tries to `describe-function' otherwise uses
 
 ;;     F2 - find configuration files
 
-(set-key [(f2)]         (find-file
-                         (if (string-match "\\.elc$" user-init-file)
-                             (substring user-init-file 0 -1)
-                           user-init-file)))
-(set-key [(control f2)] (find-file (concat user-emacs-directory "/mail.el")))
-(set-key [(meta f2)]    (find-file custom-file))
-(set-key [(shift f2)]   (find-file "~/.bashrc"))
+(defvar mpn-find-file-map
+  (let ((map (make-sparse-keymap))
+        (lst `(("i" . ,(if (string-match "\\.elc$" user-init-file)
+                           (substring user-init-file 0 -1)
+                         user-init-file))
+                ("e" . ,(concat user-emacs-directory "/early-init.el"))
+                ("m" . ,(concat user-emacs-directory "/mail.el"))
+                ("b" . "~/.bashrc")
+                ("S" . "~/.shellrc")
+                ("s" . "~/.sawfish/rc"))))
+    (while lst
+      (when (file-exists-p (cdar lst))
+        (define-key map (caar lst)
+          (let ((path (cdar lst))) (lambda () (interactive) (find-file path))))
+        (setq lst (cdr lst))))
+    map)
+  "Keymap for characters following the F2 key.")
+
+(global-set-key [(f2)] mpn-find-file-map)
 
 ;;     F3/F4 - keyboard macros
 
