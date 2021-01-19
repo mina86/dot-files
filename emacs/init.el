@@ -365,15 +365,15 @@ In minibuffer run `minibuffer-complete', if `use-region-p' run
 If function given tries to `describe-function' otherwise uses
 `manual-entry' to display manpage of a `current-word'."
   (interactive)
-  (let ((var (variable-at-point)))
-    (if (symbolp var)
-        (describe-variable var)
+  (or (let ((var (variable-at-point)))
+        (when (symbolp var) (describe-variable var) t))
       (let ((fn (function-called-at-point)))
-        (if fn
-            (describe-function fn)
-          (man (current-word)))))))
+        (when fn (describe-function fn) t))
+      (man (current-word))))
 
-(set-key [(f1)]      my-help)
+(global-set-key [(f1)] help-map)
+(set-key help-map [(f1)] my-help)
+
 
 ;;     F2 - find configuration files
 
