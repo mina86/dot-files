@@ -129,7 +129,7 @@ happened."
 (require 'sawfish.wm.ext.auto-raise)
 (setq focus-mode             'enter-only
       focus-click-through    t
-      raise-windows-on-focus t
+      raise-windows-on-focus nil
       raise-window-timeout   200)
 
 ;; Moving and resizing
