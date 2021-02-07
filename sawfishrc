@@ -254,7 +254,7 @@ happened."
 
 (define (mn-toggle-opaque)
   (let ((wnd (input-focus)))
-    (window-alpha-put wnd (if (mn-window-opaque-p wnd) nil (1 0.7)))))
+    (window-alpha-put wnd (if (mn-window-opaque-p wnd) nil (cons 1 0.7)))))
 
 (add-window-menu-toggle "Opa_que" mn-toggle-opaque mn-window-opaque-p)
 
@@ -557,11 +557,11 @@ happened."
 
      ;; Some windows do not like alpha
      ("^Gimp/|^MPlayer/|^openttd/|^Inkscape/|^[Vv]irt-manager/"
-      ((alpha 1 0.7)))
+      ((alpha 1 . 0.7)))
 
      ;; GIMP
      (("^Gimp/gimp$" (WM_WINDOW_ROLE . "^gimp-[^s]"))
-      ((viewport 2 . 1) (group . Gimp) (alpha 1 0.7)))
+      ((viewport 2 . 1) (group . Gimp) (alpha 1 . 0.7)))
 
      (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
       (           (place-mode . centered) (depth . 16) (never-focus . #t)
@@ -569,7 +569,7 @@ happened."
 
      ;; Geeqie
      (((WM_ICON_NAME . "Geeqie$"))
-      (           (viewport 3 . 1) (alpha 1 0.7))
+      (           (viewport 3 . 1) (alpha 1 . 0.7))
       (1200 1600  (viewport 4 . 1))))))
 
 ;;}}}
