@@ -186,18 +186,27 @@ happened."
       window-alpha-max)))
 
 ;; Return's window's alpha property or `default-window-alpha'
-(defun window-alpha-property (w)
+(defun window-alpha-get (w)
   (or (window-get w 'alpha) default-window-alpha))
 
+(defun window-alpha-put (w #!optional alpha)
+  (when (if (not alpha)
+            (window-remprop w 'alpha)
+          (window-put w 'alpha alpha)
+          t)
+    (set-window-alpha w (or alpha default-window-alpha)
+                      (not (eq w (input-focus))))))
+
 ;; Sets window opacity.
-;; If alpha is nil uses `window-alpha-property'.
+;; If alpha is nil uses `window-alpha-get'.
 ;; Uses `window-alpha-value' to get alpha value from alpha and blur arguments.
-(defun set-window-alpha (w alpha #!optional blur)
-  (let ((a (window-alpha-value (or alpha (window-alpha-property w)) blur)))
-    (if (= a window-alpha-max)
-        (delete-x-property (window-frame-id w) '_NET_WM_WINDOW_OPACITY))
-    (set-x-property (window-frame-id w) '_NET_WM_WINDOW_OPACITY
-                    (make-vector 1 a) 'CARDINAL 32))
+(defun set-window-alpha (wnd alpha #!optional blur)
+  (let ((a (window-alpha-value (or alpha (window-alpha-get wnd)) blur))
+        (wid (window-frame-id wnd)))
+    (if (< a window-alpha-max)
+        (set-x-property wid '_NET_WM_WINDOW_OPACITY
+                        (make-vector 1 a) 'CARDINAL 32)
+      (delete-x-property wid '_NET_WM_WINDOW_OPACITY)))
   (sync-server))
 
 (add-hook 'focus-in-hook  (lambda (w fmode) (set-window-alpha w nil nil)))
@@ -240,13 +249,21 @@ happened."
             '(("_Windows" ("Yes" (mn-quit "reboot-w")))))
        '(("_Power Off"    ("Yes" (mn-quit "poweroff"))))))
 
+(define (mn-window-opaque-p wnd)
+  (>= (window-alpha-value (window-alpha-get wnd) nil) window-alpha-max))
+
+(define (mn-toggle-opaque)
+  (let ((wnd (input-focus)))
+    (window-alpha-put wnd (if (mn-window-opaque-p wnd) nil (1 0.7)))))
+
+(add-window-menu-toggle "Opa_que" mn-toggle-opaque mn-window-opaque-p)
+
 ;; Bindings
 (bind-keys root-window-keymap
            "Button3-Click"    popup-root-menu)
 
 (bind-keys window-keymap
-           "W-Space"         (lambda () (popup-window-menu (input-focus)))
-           "W-Return"        (lambda () (popup-window-menu (input-focus))))
+           "W-Space"         (lambda () (popup-window-menu (input-focus))))
 
 (mapc
  (lambda (spec)
@@ -533,11 +550,11 @@ happened."
 
      ;; Some windows do not like alpha
      ("^Gimp/|^MPlayer/|^openttd/|^Inkscape/|^[Vv]irt-manager/"
-      ((alpha . 1)))
+      ((alpha 1 0.7)))
 
      ;; GIMP
      (("^Gimp/gimp$" (WM_WINDOW_ROLE . "^gimp-[^s]"))
-      ((viewport 2 . 1) (group . Gimp) (alpha . 1)))
+      ((viewport 2 . 1) (group . Gimp) (alpha 1 0.7)))
 
      (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
       (           (place-mode . centered) (depth . 16) (never-focus . #t)
@@ -545,7 +562,7 @@ happened."
 
      ;; Geeqie
      (((WM_ICON_NAME . "Geeqie$"))
-      (           (viewport 3 . 1) (alpha . 1))
+      (           (viewport 3 . 1) (alpha 1 0.7))
       (1200 1600  (viewport 4 . 1))))))
 
 ;;}}}
