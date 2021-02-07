@@ -299,8 +299,6 @@ happened."
      ("XF86MonBrightnessUp"   . "xbacklight + 25")
      ("XF86MonBrightnessDown" . "xbacklight - 25"))))
 
-(bind-keys global-keymap "XF86AudioMute" (lambda ()))
-
 ;;; Looks for a web browser to select.  Switches to a window which currently
 ;;; doesn’t hold input focus prioritising windows as follows:
 ;;;
@@ -361,19 +359,28 @@ happened."
 (setq run-application:y-position 'top)
 (bind-keys global-keymap "W-r" 'run-application)
 
-(let ((map (make-keymap)))
+(let ((map (make-keymap))
+      (make-cmd (lambda (cmd)
+                  (lambda ()
+                    (when (numberp cmd)
+                      (setq cmd (format nil "Master %d%%" cmd)))
+                    (mn-run (concat "amixer set " cmd))))))
+  (let ((chars ";,.aoe'qjk") (i 0) ch)
+    (while (< i (length chars))
+      (setq ch (aref chars i) i (1+ i))
+      (bind-keys map
+                 (concat ""   ch) (make-cmd (- (* i 10) 5))
+                 (concat "W-" ch) (make-cmd (* i 10)))))
   (bind-keys map
-;             "W-'" (lambda () (mn-run "amixer set Master  15%"))
-             "W-q" (lambda () (mn-run "amixer set Master  15%"))
-             "W-j" (lambda () (mn-run "amixer set Master  20%"))
-             "W-k" (lambda () (mn-run "amixer set Master  25%"))
-             "W-x" (lambda () (mn-run "amixer set Master  30%"))
-;             "'"   (lambda () (mn-run "amixer set Master  40%"))
-             "q"   (lambda () (mn-run "amixer set Master  35%"))
-             "j"   (lambda () (mn-run "amixer set Master  40%"))
-             "k"   (lambda () (mn-run "amixer set Master  45%"))
-             "x"   (lambda () (mn-run "amixer set Master  50%")))
-  (bind-keys global-keymap "W-x" map))
+             "W-p" (make-cmd "Master toggle")
+             "u"   (make-cmd "Master 70%")
+             "W-u" (make-cmd "Master 50%"))
+  (bind-keys global-keymap
+             "W-u" map
+             "XF86AudioLowerVolume" (make-cmd "Master 10%-")
+             "XF86AudioRaiseVolume" (make-cmd "Master 10%+")
+             "XF86AudioMute"        (make-cmd "Master toggle")
+             "XF86AudioMicMute"     (make-cmd "Capture toggle")))
 
 ; Having Super-Tab bound seems to overwrite existing W-Tab binding.
 ; cabinet-switch is nice and all, but having it under W-Tab is not what I want.
