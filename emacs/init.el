@@ -437,12 +437,25 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
 
 (require 'remember)
 (when (fboundp 'remember-notes)
+  (defun remember-notes-initial-buffer ()
+    (if-let ((buf (find-buffer-visiting remember-data-file)))
+        ;; If notes are already open, simply return the buffer.  No further
+        ;; processing necessary.  This case is needed because with daemon mode,
+        ;; ‘initial-buffer-choice’ function can be called multiple times.
+        buf
+      (if-let ((buf (get-buffer remember-notes-buffer-name)))
+          (kill-buffer buf))
+      (save-current-buffer
+        (remember-notes t)
+        (condition-case nil
+            (cl-letf (((symbol-function 'yes-or-no-p) (lambda (&rest _) t)))
+              (recover-this-file))
+          (error)
+          (user-error))
+        (current-buffer))))
   (setq remember-notes-buffer-name "*scratch*"
-        initial-buffer-choice (lambda ()
-                                (kill-buffer remember-notes-buffer-name)
-                                (remember-notes))))
-
-(set-key [(f6)] remember-notes)
+        initial-buffer-choice #'remember-notes-initial-buffer)
+  (set-key [(f6)] remember-notes))
 
 ;;     F7 - spell checking
 
