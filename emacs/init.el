@@ -395,6 +395,7 @@ If function given tries to `describe-function' otherwise uses
                          user-init-file))
                 ("e" . ,(concat user-emacs-directory "/early-init.el"))
                 ("m" . ,(concat user-emacs-directory "/mail.el"))
+                ("c" . ,(concat user-emacs-directory "/customize.el"))
                 ("b" . "~/.bashrc")
                 ("S" . "~/.shellrc")
                 ("s" . "~/.sawfish/rc"))))
