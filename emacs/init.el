@@ -213,7 +213,18 @@ perform stripping and behaves as plain `save-buffer'."
       (delete-trailing-whitespace)))
   (save-buffer))
 
-(substitute-key-definition 'save-buffer 'save-no-blanks (current-global-map))
+(defun save-no-blanks-done (&optional no-strip)
+  "Save file and mark it done if there are any server clients."
+  (interactive "P")
+  (save-no-blanks no-strip)
+  (and (boundp 'server-buffer-clients)
+       (fboundp 'server-buffer-done)
+       server-buffer-clients
+       (server-buffer-done (current-buffer) t))
+  (kill-buffer (current-buffer)))
+
+(global-set-key [remap save-buffer] #'save-no-blanks)
+(set-key "\C-c\C-c" save-no-blanks-done)
 
 ;;   Misc
 
