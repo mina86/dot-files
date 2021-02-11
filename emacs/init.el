@@ -1021,93 +1021,89 @@ in a <a href=\"...\">...</a>.  Returns whether it happend."
                                                 (match-end 1))))
             (insert "<a href=\"" url "\">" url "</a>")))))))
 
-(defun mn-magick-self-insert-command (spec &optional default when-prefix)
-  "If prefix argument is not nil calls WHEN-PREFIX with single
-argument being a `prefix-numeric-value' or the `prefix-arg'.
 
-Otherwise looks through SPEC which is a list of 3-element
-lists (called rules):
-  (regexp length action)
-Rule is said to match if `point' is at least LENGTH characters from
-`point-min' and REGEXP matches starting at position LENGTH characters
-earlier then `point'.  ACTION of first rule that matches is performed.
-If no rule matches DEFAULT is treated as action to perform.
+(require 'sgml-mode)
+(setq-default sgml-quick-keyss 'close
+              sgml-specials ())
 
-If ACTION to perform is a string (DEFAULT may not be a string)
-then `replace-match' is called otherwise it is assumed ACTION is
-a function and it is called with single argument 1.
+(defvar mpn-sgml-never-close-regexp
+  (concat "\\`" (regexp-opt '("p" "tbody" "tr" "td" "th" "li" "dd" "dt") nil)
+          "\\'"))
 
-DEFAUTL and WHEN-PREFIX defaults to `self-insert-command'."
-  (if prefix-arg
-      (funcall (or when-prefix  'self-insert-command)
-               (prefix-numeric-value prefix-arg))
-    (let ((action (catch 'done
-                    (let ((dist (- (point) (point-min))))
-                      (dolist (rule spec)
-                        (when (>= dist (cadr rule))
-                          (save-excursion
-                            (backward-char (cadr rule))
-                            (when (looking-at (car rule))
-                              (throw 'done (cadr (cdr rule))))))))
-                    default)))
-      (if (stringp action) (replace-match action)
-        (funcall (or action 'self-insert-command) 1)))))
+(defun mpn-sgml-get-context-for-close ()
+  "Return context of a tag to be closed.
+This is like ‘sgml-get-context’ except it omits elements with
+optional closing tags.  For example, if buffer is
 
-(defsubst mn-magick-self-insert-define (map key spec
-                                        &optional default when-prefix)
-  (define-key map key
-    (function (lambda () (interactive "*")
-                (mn-magick-self-insert-command spec default when-prefix)))))
+    <div><p>
 
-(defun mn-xml-configure-bindings (mode-map)
-  (mapc
-   (function (lambda (args)
-               (apply 'mn-magick-self-insert-define mode-map args)))
-   (let* ((en-dash "–") (em-dash "—") (nbsp    " ") (thin-sp " ")
-          (nbsp-en      (concat nbsp en-dash))
-          (nbsp-en-nbsp (concat nbsp en-dash nbsp))
-          (thin-em      (concat thin-sp em-dash))
-          (thin-em-thin (concat thin-sp em-dash thin-sp)))
-     `((" "  (("[^<]\\b\\w"             2 ,(concat "\\&" nbsp))
-              ("^\\w"                   1 ,(concat "\\&" nbsp))
-              ("&nbsp;"                 6 " ")
-              ("&#160;"                 6 " ")
-              (,nbsp                    1 " ")
-              (,thin-sp                 1 " ")
-              (,nbsp-en                 2 ,nbsp-en-nbsp)
-              (,thin-em                 2 ,thin-em-thin))
-             ,(lambda (n) (mn-linkify-maybe) (self-insert-command n)))
-       ("<"  (("<"                      1 "&lt;")))
-       (">"  (("&#160;&#8211;"         13 " -->")
-              ("&nbsp;&#8211;"         13 " -->")
-              (,nbsp-en                 2 " -->")
-              (">"                      1 "&gt;")))
-       ("&"  (("&"                      1 "&amp;")))
-       ("."  (("\\.\\."                 2 "…")))
-       ("\"" (("\""                     1 "&quot;")))
-       ("~"  (("~"                      1 ,nbsp)))
-       ("-"  (("[-!]-"                  2 nil)
-              (" -"                     2 ,nbsp-en)
-              ("-"                      1 ,nbsp-en)
-              (,nbsp-en                 2 ,thin-em)
-              (,(concat nbsp "&#8211;") 8 ,thin-em)
-              (,en-dash                 1 ,em-dash)
-              ("&#8211;"                7 ,em-dash)))
-       ([(backspace)]
-             (("&lt;"                   4 "<")
-              ("&gt;"                   4 ">")
-              ("&amp;"                  5 "&")
-              ("&quot;"                 6 "\"")
-              ("&#8230;"                7 "..")
-              ("…"                      1 "..")
-              ("&.....;"                7 "")
-              ("&....;"                 6 "")
-              ("&...;"                  5 "")
-              ("&..;"                   4 ""))
-             delete-backward-char
-             delete-backward-char))))
-  (setq indent-tabs-mode nil
-        next-error-function 'nxml-next-error))
+return context for \"div\" tag rather than \"p\" since p’s close
+tag is optional."
+  (when-let ((ctx (save-excursion (sgml-get-context t))))
+    (setq ctx (nreverse ctx))
+    (while (and ctx (string-match-p mpn-sgml-never-close-regexp
+                                    (sgml-tag-name (car ctx))))
+      (setq ctx (cdr ctx)))
+    (car ctx)))
+
+(defun mpn-sgml-magic-self-insert-command (prefix char)
+  "Adds special handling when inserting <, >, & or / character.
+If called with a prefix argument (even if it’s just C-u 1), or
+for a character other than <, >, & or /, act like
+‘self-insert-command’.  Otherwise perform context-dependent
+action for each of the characters.  If no special action applies,
+simply insert the character."
+  (interactive (list current-prefix-arg last-command-event))
+  (when (cond (prefix)
+
+              ((eq char ?&) (insert "&amp;"))
+
+              ((and (eq char ?<) (eq (preceding-char) ?<))
+               (delete-char -1)
+               (insert "&lt;"))
+              ((and (eq char ?>) (not (eq 'tag (car (sgml-lexical-context)))))
+               (insert "&gt;"))
+
+              ((and (eq char ?/)
+                    (eq (preceding-char) ?<)
+                    (setq char (mpn-sgml-get-context-for-close)))
+               (delete-char -1)
+               (insert "</" (sgml-tag-name char) ">")
+               (indent-according-to-mode))
+
+              (t))
+    (self-insert-command (prefix-numeric-value prefix) char)))
+
+(defun mpn-sgml-magic-delete-backward-char (prefix)
+  (interactive "P")
+  (let* ((p (point))
+         (n (- p (point-min)))
+         (undo (lambda (str chr)
+                 (when (and (>= n (length str))
+                            (string-equal
+                             (buffer-substring (- p (length str)) p)
+                             str))
+                   (delete-region (- p (length str)) p)
+                   (insert chr)))))
+    (when (cond (prefix)
+                ((and (use-region-p) delete-active-region))
+                ((not (eq (preceding-char) ?\;)))
+                ((funcall undo "&amp;" ?&))
+                ((funcall undo "&lt;" ?<))
+                ((funcall undo "&gt;" ?>))
+                (t))
+      (with-suppressed-warnings ((interactive-only delete-backward-char))
+        (delete-backward-char (prefix-numeric-value prefix))))))
+
+(define-key sgml-mode-map " " nil)
+(define-key sgml-mode-map "&" #'mpn-sgml-magic-self-insert-command)
+(define-key sgml-mode-map "<" #'mpn-sgml-magic-self-insert-command)
+(define-key sgml-mode-map ">" #'mpn-sgml-magic-self-insert-command)
+(define-key sgml-mode-map "/" #'mpn-sgml-magic-self-insert-command)
+(define-key sgml-mode-map "\C-h" #'mpn-sgml-magic-delete-backward-char)
+(define-key sgml-mode-map [(backspace)]
+  #'mpn-sgml-magic-delete-backward-char)
+
 
 ;; http://github.com/nelhage/elisp/blob/master/dot-emacs
 (declare-function rng-first-error "rng-valid")
