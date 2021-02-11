@@ -1080,24 +1080,21 @@ character is not less than, call ‘self-insert-command’ instead."
     (self-insert-command (prefix-numeric-value prefix) ?/)))
 
 (defun mpn-sgml-magic-self-insert-command (prefix char)
-  "Adds special handling when inserting <, > or & character.
-If called with a prefix argument (even if it’s just C-u 1), or
-for a character other than <, > and &, act like
-‘self-insert-command’.  Otherwise perform context-dependent
-action for each of the characters.  If no special action applies,
-simply insert the character."
+  "Replace character with HTML entity if typed twice.
+If <, > or & is typed for the second time in a row (i.e. the
+preceding character is the same as the one being typed) replace
+it with corresponding HTML entity.  If called with prefix
+argument (even if it’s equal one) or preceding character is not
+the same as the one being inserted, call ‘self-insert-command’
+instead."
   (interactive (list current-prefix-arg last-command-event))
-  (when (cond (prefix)
-
-              ((eq char ?&) (insert "&amp;"))
-
-              ((and (eq char ?<) (eq (preceding-char) ?<))
-               (delete-char -1)
-               (insert "&lt;"))
-              ((and (eq char ?>) (not (eq 'tag (car (sgml-lexical-context)))))
-               (insert "&gt;"))
-
-              (t))
+  (if-let ((ent (and (eq char (preceding-char))
+                     (alist-get char '((?< . "&lt;")
+                                       (?> . "&gt;")
+                                       (?& . "&amp;"))))))
+      (progn
+        (delete-char -1)
+        (insert ent))
     (self-insert-command (prefix-numeric-value prefix) char)))
 
 (defun mpn-sgml-magic-delete-backward-char (prefix)
