@@ -37,6 +37,14 @@
         (package-install pkg t)
       (error (message (error-message-string err))))))
 
+;; Make sure ‘package-selected-packages’ list is sorted so that it’s easier to
+;; see a difference when the value is saved in customise.el.
+(advice-add #'package--save-selected-packages :filter-args
+            (lambda (args)
+              (list (sort (if args (car args) package-selected-packages)
+                          #'string-lessp)))
+            '(name sort))
+
 (when (fboundp 'auto-compile-on-save-mode)
   (auto-compile-on-save-mode))
 (setq load-prefer-newer t)
