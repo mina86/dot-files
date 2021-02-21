@@ -10,6 +10,11 @@
   (defun enriched-decode-display-prop (start end &optional _param)
     (list start end)))
 
+;; Emacs 26 and older does not load early-init.el so make sure it’s loaded.
+(let ((path (expand-file-name "early-init.el" user-emacs-directory)))
+  (when (file-exists-p path)
+    (require 'early-init path)))
+
 ;; Configure and activate packages
 (require 'package)
 
