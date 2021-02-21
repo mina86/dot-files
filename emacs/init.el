@@ -30,7 +30,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 ;; This is similar to ‘package-install-selected-packages’ except it doesn’t ask
-;; any questions.
+;; any questions and doesn’t stop on errors (merely reports them).
 (dolist (pkg package-selected-packages)
   (unless (package-installed-p pkg)
     (condition-case err
@@ -68,7 +68,7 @@ If DEF is a single unquoted symbol it will be quoted, otherwise if it is
 a single non-cons value it will not be quoted, otherwise it will be processed
 as a lambda (see below).  Thus the following do what one might expect:
     (set-key \"a\" self-insert-command)
-        ;; same as (global-set-key \"a\" 'self-insert-command)
+        ;; same as (global-set-key \"a\" #'self-insert-command)
     (set-key \"\\C-h\" [(backspace)])
         ;; same as (global-set-key \"\\C-h\" [(backspace)])
     (set-key \"\\C-d\" ())
@@ -76,7 +76,7 @@ as a lambda (see below).  Thus the following do what one might expect:
 However, the following will not work:
     (let ((callback 'self-insert-command))
       (set-key \"a\" callback))
-        ;; same as (global-set-key \"a\" 'callback)
+        ;; same as (global-set-key \"a\" #'callback)
 
 If DEF is a cons value, it's format is:
     ([:args ARGS INTERACTIVE] . BODY)
@@ -124,9 +124,8 @@ list.  BODY is body of the lambda to be added."
   (declare (indent 1))
   (if (and (listp hook) (eq (car hook) 'quote) (listp (cadr hook)))
       (let ((func (make-symbol "func")))
-        `(let
-          ((,func (lambda () ,@body)))
-          . ,(mapcar (lambda (h) `(add-hook (quote ,h) ,func))
+        `(let ((,func (lambda () ,@body)))
+           ,@(mapcar (lambda (h) `(add-hook (quote ,h) ,func))
                      (cadr hook))))
     `(add-hook ,hook (lambda () ,@body))))
 
@@ -334,7 +333,6 @@ perform stripping and behaves as plain `save-buffer'."
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol)
       hippie-expand-verbose nil)
-
 
 ;; Indent or complete
 (defvar indent-or-complete-complete-function 'hippie-expand
@@ -614,7 +612,6 @@ modified beforehand."
 
 (autoload 'ace-jump-mode "ace-jump-mode" "Emacs quick move minor mode" t)
 (set-key "\M-s" ace-jump-mode)
-(set-key [insert] ace-jump-mode)
 (setq-default
  ace-jump-mode-scope 'window
  ace-jump-mode-case-fold nil
@@ -734,7 +731,7 @@ modified beforehand."
 (setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
 (setq frame-title-format "Emacs") ;frame title format
 (setq history-delete-duplicates t)
-(setq inhibit-splash-screen   t   ;don't show splash screen
+(setq inhibit-startup-screen    t   ;don't show splash screen
       inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
                                   ; many files               (EMACS 21.4+)
 (setq paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
@@ -743,20 +740,16 @@ modified beforehand."
 (setq-default indicate-empty-lines t) ;show empty lines at the end of file
 (setq-default indicate-buffer-boundaries t) ;show buffer boundries on fringe
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
-(eval-when-compile (require 'ange-ftp))
-(setq ange-ftp-try-passive-mode t);passive FTP
 (blink-cursor-mode -1)            ;do not blink cursor
-(setq blink-cursor-alist '((t      . box)  ;seriously, don't blink,
-                           (box    . box)) ;blink-cursor-mode does not
-      cursor-type 'box)                    ;work for me.
-(setq-default cursor-type 'box)
-(setq visible-bell nil)           ;no visual bell
+(setq blink-cursor-alist '((t   . box)  ;seriously, don't blink, for some reason
+                           (box . box)) ;blink-cursor-mode dosn’t work for me.
+      cursor-type 'box)
 (setq ring-bell-function (lambda ()
                            (invert-face 'mode-line)
                            (run-with-timer 0.05 nil 'invert-face 'mode-line)))
 (setq line-move-visual nil) ;move by logical lines not screen lines
 (setq byte-count-to-string-function
-      (lambda (size) (file-size-human-readable size 'si " ")))
+      (lambda (size) (file-size-human-readable size 'si " ")))
 (when (fboundp 'describe-char-eldoc)
   (if (boundp 'eldoc-documentation-functions)
       (add-hook 'eldoc-documentation-functions #'describe-char-eldoc -50)
@@ -770,7 +763,7 @@ modified beforehand."
 (setq make-backup-files nil)      ;no backup
 (global-auto-revert-mode 1)       ;automaticly reload buffer when changed
 (setq vc-handled-backends nil)    ;I don't use vc-mode
-
+(setq auto-save-no-message t)
 
 ;; Indention
 (defconst set-tab--variables
