@@ -1196,6 +1196,15 @@ three times - to the right, four times - centers."
 (when (fboundp 'fill-single-char-nobreak-p)
   (add-hook 'fill-nobreak-predicate 'fill-single-char-nobreak-p))
 
+(setq-default tildify-pattern "\\<[a-zA-Z]\\([ \t\n]+\\)")
+(setq-default tildify-space-pattern "")
+
+(defun mn-tildify-space-needs-hard-space-p ()
+  (not (let ((ch (char-before (- (point) 2))))
+         (and ch (or (eq ?’ ch) (eq ?w (char-syntax ch)))))))
+
+(add-hook 'tildify-space-predicates #'mn-tildify-space-needs-hard-space-p)
+
 (add-hook 'prog-mode-hook (lambda () (setq fill-column 80)))
 (add-hook 'csv-mode-hook 'turn-off-auto-fill)
 (add-hook 'wdired-mode-hook 'turn-off-auto-fill)
@@ -1281,10 +1290,6 @@ three times - to the right, four times - centers."
   (require 'uniquify)
   (setq uniquify-buffer-name-style 'reverse
         uniquify-strip-common-suffix t))
-
-;; Tildify
-(defvar tildify-pattern)
-(setq tildify-pattern "\\<[a-zA-Z]\\([ \t\n]+\\)")
 
 (unless (and (fboundp 'daemonp) (daemonp))
   (server-start))
