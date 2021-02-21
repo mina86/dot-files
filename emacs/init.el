@@ -10,10 +10,6 @@
   (defun enriched-decode-display-prop (start end &optional _param)
     (list start end)))
 
-(let ((dir (expand-file-name "~/.local/share/emacs/site-lisp")))
-  (when (file-name-directory dir)
-    (push dir load-path)))
-
 ;; Configure and activate packages
 (require 'package)
 
