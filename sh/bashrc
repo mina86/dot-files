@@ -114,10 +114,10 @@ __git_prompt() {
 	fi
 
 	__GIT_PROMPT_PWD=$PWD
-	case $(stat -fLc %T .) in *nfs*|fuseblk)
-		# NFS and SSHFS is too slow to bother with the status.  SSHFS
-		# goes through FUSE hence ‘fuseblk’.  This may cause some false
-		# positives but so far none that I care about.
+	case $(stat -fLc %T .) in *nfs*|fuseblk|smb*)
+		# NFS, SSHFS and SMB are too slow to bother with the status.
+		# SSHFS goes through FUSE hence ‘fuseblk’.  This may cause some
+		# false positives but so far none that I care about.
 		__GIT_PROMPT=
 		return 0
 	esac
