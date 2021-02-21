@@ -820,6 +820,9 @@ rules so it is likely not to work."
       scroll-error-top-bottom t
       scroll-preserve-screen-position t)
 
+(when (fboundp 'auto-dim-other-buffers-mode)
+  (auto-dim-other-buffers-mode 1))
+
 ;; Major Modes
 
 ;;   CC Mode
