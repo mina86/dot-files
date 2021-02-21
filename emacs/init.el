@@ -256,11 +256,15 @@ perform stripping and behaves as plain `save-buffer'."
              (window-resize-apply frame t)
              (window--pixel-to-total frame t))))
 
-(when (fboundp 'windmove-right)
-  (set-key "\M-F"          windmove-right)
-  (set-key "\M-B"          windmove-left)
-  (set-key "\M-P"          windmove-up)
-  (set-key "\M-N"          windmove-down))
+(require 'windmove)
+(defun mpn-windmove (dir delete)
+  (if delete
+      (windmove-delete-in-direction dir)
+    (windmove-do-window-select dir)))
+(set-key "\M-F" :args (delete) "P" (mpn-windmove 'right delete))
+(set-key "\M-B" :args (delete) "P" (mpn-windmove 'left delete))
+(set-key "\M-P" :args (delete) "P" (mpn-windmove 'up delete))
+(set-key "\M-N" :args (delete) "P" (mpn-windmove 'down delete))
 
 (set-key "\C-xk"         kill-this-buffer)  ; don't ask which buffer to kill
 (set-key "\C-cr"         revert-buffer)     ; Reload buffer
