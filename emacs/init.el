@@ -589,9 +589,14 @@ modified beforehand."
 (set-key [(meta f9)]    :args (a) "P" (mn-compile (not a) t t))
 (set-key [(shift f9)]   next-error)
 
-(eval-when-compile (require 'compile))
+(require 'compile)
 (setq compilation-scroll-output 'first-error  ; scroll until first error
-      compilation-window-height 12)           ; keep it readable
+      compilation-window-height 12            ; keep it readable
+      compilation-auto-jump-to-first-error t)
+
+(require 'ansi-color)
+(add-lambda-hook 'compilation-filter-hook
+  (ansi-color-apply-on-region compilation-filter-start (point)))
 
 ;;   ISearch mode ace-jump-mode
 
@@ -747,8 +752,6 @@ modified beforehand."
 (setq ring-bell-function (lambda ()
                            (invert-face 'mode-line)
                            (run-with-timer 0.05 nil 'invert-face 'mode-line)))
-(eval-when-compile (require 'compile))
-(setq compilation-auto-jump-to-first-error t)
 (setq line-move-visual nil) ;move by logical lines not screen lines
 (setq byte-count-to-string-function
       (lambda (size) (file-size-human-readable size 'si " ")))
