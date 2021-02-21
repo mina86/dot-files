@@ -147,8 +147,8 @@ and 3. wrap to it’s original position."
     ;; Third time:
     (goto-char mn-message-home--point)))
 
-(substitute-key-definition 'message-beginning-of-line 'mn-message-home
-                           message-mode-map)
+(define-key message-mode-map [remap message-beginning-of-line]
+  #'mn-message-home)
 
 (add-lambda-hook 'message-mode-hook (flyspell-mode 1))
 ;(add-hook 'message-setup-hook 'mml-secure-sign-pgpmime)

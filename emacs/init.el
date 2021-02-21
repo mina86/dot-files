@@ -192,8 +192,7 @@ the buffer, thrice - back to where it was at the beginning."
      (goto-char (point-min))
      (goto-char my-home-end--point)))
 
-(substitute-key-definition 'move-beginning-of-line 'my-home
-                           (current-global-map))
+(global-set-key [remap move-beginning-of-line] #'my-home)
 
 ;; My end
 (defun my-end ()
@@ -206,7 +205,7 @@ three times - back to where it was at the beginning."
     (goto-char (point-max))
     (goto-char my-home-end--point)))
 
-(substitute-key-definition 'move-end-of-line 'my-end (current-global-map))
+(global-set-key [remap move-end-of-line] #'my-end)
 
 ;;   Save with no blanks
 
@@ -321,9 +320,8 @@ perform stripping and behaves as plain `save-buffer'."
 
 ;;   Just one space
 
-(substitute-key-definition 'just-one-space
-                           (lambda () (interactive) (cycle-spacing -1))
-                           (current-global-map))
+(global-set-key [remap just-one-space]
+                (lambda () (interactive) (cycle-spacing -1)))
 
 ;;   Tab - indent or complete
 
