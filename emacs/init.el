@@ -308,7 +308,8 @@ perform stripping and behaves as plain `save-buffer'."
                 browse-kill-ring-highlight-current-entry t
                 browse-kill-ring-highlight-inserted-item t
                 browse-kill-ring-separator "\x0C")
-  (add-hook 'browse-kill-ring-hook 'form-feed-mode)
+  (when (fboundp 'form-feed-mode)
+    (add-hook 'browse-kill-ring-hook #'form-feed-mode))
   (browse-kill-ring-default-keybindings))
 
 ;;   Just one space
@@ -449,26 +450,27 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
 ;;     F6 - notes
 
 (require 'remember)
-(when (fboundp 'remember-notes)
-  (defun remember-notes-initial-buffer ()
-    (if-let ((buf (find-buffer-visiting remember-data-file)))
-        ;; If notes are already open, simply return the buffer.  No further
-        ;; processing necessary.  This case is needed because with daemon mode,
-        ;; ‘initial-buffer-choice’ function can be called multiple times.
-        buf
-      (if-let ((buf (get-buffer remember-notes-buffer-name)))
-          (kill-buffer buf))
-      (save-current-buffer
-        (remember-notes t)
-        (condition-case nil
-            (cl-letf (((symbol-function 'yes-or-no-p) (lambda (&rest _) t)))
-              (recover-this-file))
-          (error)
-          (user-error))
-        (current-buffer))))
-  (setq remember-notes-buffer-name "*scratch*"
-        initial-buffer-choice #'remember-notes-initial-buffer)
-  (set-key [(f6)] remember-notes))
+
+(defun remember-notes-initial-buffer ()
+  (if-let ((buf (find-buffer-visiting remember-data-file)))
+      ;; If notes are already open, simply return the buffer.  No further
+      ;; processing necessary.  This case is needed because with daemon mode,
+      ;; ‘initial-buffer-choice’ function can be called multiple times.
+      buf
+    (if-let ((buf (get-buffer remember-notes-buffer-name)))
+        (kill-buffer buf))
+    (save-current-buffer
+      (remember-notes t)
+      (condition-case nil
+          (cl-letf (((symbol-function 'yes-or-no-p) (lambda (&rest _) t)))
+            (recover-this-file))
+        (error)
+        (user-error))
+      (current-buffer))))
+
+(setq remember-notes-buffer-name "*scratch*"
+      initial-buffer-choice #'remember-notes-initial-buffer)
+(set-key [(f6)] remember-notes)
 
 ;;     F7 - spell checking
 
@@ -601,13 +603,12 @@ modified beforehand."
 
 ;;   ISearch mode ace-jump-mode
 
-(add-hook 'isearch-mode-hook (lambda ()
- (set-key isearch-mode-map [(f1)]      isearch-mode-help)
- (set-key isearch-mode-map "\C-t"      isearch-toggle-regexp)
- (set-key isearch-mode-map "\C-c"      isearch-toggle-case-fold)
- (set-key isearch-mode-map "\C-j"      isearch-edit-string)
- (set-key isearch-mode-map "\C-h"      isearch-del-char)
- (set-key isearch-mode-map [backspace] isearch-del-char)))
+(set-key isearch-mode-map [(f1)]      isearch-mode-help)
+(set-key isearch-mode-map "\C-t"      isearch-toggle-regexp)
+(set-key isearch-mode-map "\C-c"      isearch-toggle-case-fold)
+(set-key isearch-mode-map "\C-j"      isearch-edit-string)
+(set-key isearch-mode-map "\C-h"      isearch-del-char)
+(set-key isearch-mode-map [backspace] isearch-del-char)
 
 (setq search-whitespace-regexp "[ \t\r]+")
 
@@ -1290,13 +1291,12 @@ three times - to the right, four times - centers."
 ;; Various features
 
 ;; uniquify
-(when (eval-when-compile (load "uniquify" t))
-  (require 'uniquify)
-  (setq uniquify-buffer-name-style 'reverse
-        uniquify-strip-common-suffix t))
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'reverse
+      uniquify-strip-common-suffix t)
 
-(unless (and (fboundp 'daemonp) (daemonp))
-  (server-start))
+(unless (daemonp)
+ (server-start))
 
 (provide 'init)
 
