@@ -22,10 +22,11 @@
 (unless package--initialized
   (package-initialize))
 
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/"))
+(setq package-archives '(("gnu"    . "https://elpa.gnu.org/packages/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+                         ("melpa"  . "https://melpa.org/packages/"))
       package-menu-hide-low-priority t
-      package-archive-priorities '(("gnu" . 100)))
+      package-archive-priorities '(("gnu" . 100) ("nongnu" . 50)))
 
 (unless package-archive-contents
   (package-refresh-contents))
