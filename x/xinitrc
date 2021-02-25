@@ -28,7 +28,7 @@ init_kbd() {
 		layout=local,pl
 		setxkbmap -I"$dir" -print >$dir/keymap/local \
 		          "$layout" "$variant" "$options"
-		xkbcomp -w0 -I"$dir" "$dir/keymap/local" $DISPLAY
+		xkbcomp -w0 -I"$dir" "$dir/keymap/local" "$DISPLAY"
 	else
 		setxkbmap "$layout" "$variant" "$options"
 	fi
@@ -62,32 +62,51 @@ exec_background_tasks() {
 	exec_xset
 }
 
+ssh_agent_running() {
+	set -- "$@" "${SSH_AUTH_SOCK:-}"
+	test -S "$1" || return 1
+	SSH_AUTH_SOCK=$1 ssh-add -l >/dev/null 2>&1
+	test $? -ne 2
+}
+
 start_wm() {
+	export SAWFISH_QUIT_CMD_FILE
+	SAWFISH_QUIT_CMD_FILE=$1
+	set --
+
+	sock=
+	if ! ssh_agent_running; then
+		if sock=$(xdg-user-dir RUNTIME)/ssh-agent;
+		   ssh_agent_running "$sock"; then
+			export SSH_AUTH_SOCK
+			SSH_AUTH_SOCK=$sock
+			sock=
+		else
+			test -e "$sock" && rm -- "$sock"
+			set -- ssh-agent -a "$sock"
+		fi
+	fi
+
 	cd ~
-	if ! has sawfish; then
+	if has sawfish; then
+		set -- "$@" sawfish
+	else
 		echo '!!!'
 		echo '!!! Sawfish not found; running xterm instead.'
 		echo '!!!'
-		unset SAWFISH_QUIT_CMD_FILE
-		xterm
-		return
+		set -- "$@" xterm
 	fi
+	"$@"
 
-	SAWFISH_QUIT_CMD_FILE=$1
-	export SAWFISH_QUIT_CMD_FILE
-	if has ssh-agent; then
-		ssh-agent sawfish
-	elif has gpg-agent; then
-		gpg-agent --daemon sawfish
-	else
-		sawfish
+	if ssh_agent_running "$sock"; then
+		rm -- "$sock"
 	fi
-	unset SAWFISH_QUIT_CMD_FILE
+	unset sock
 }
 
 exec_quit_cmd() {
 	case ${1-} in
-	poweroff|reboot) exec /sbin/$1 ;;
+	poweroff|reboot) exec "/sbin/$1" ;;
 	reboot-w)        exec /usr/local/sbin/reboot-w
 	esac
 	exit
@@ -129,7 +148,9 @@ main() {
 		exec_xset
 		;;
 	'')
-		exec_x "$@" >>${TMPDIR-/tmp}/x-${USER-anonymous}@${DISPLAY-no-display}.log 2>&1
+		dir=${TMPDIR-/tmp}/.sawfish-${USER-anonymous}
+		mkdir -p "$dir"
+		exec_x "$@" >>$dir/log${DISPLAY-no-display} 2>&1
 		;;
 	*)
 		echo "xinit: $1: unrecognised subcommand" >&2
