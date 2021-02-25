@@ -65,6 +65,7 @@
  '(notmuch-search-non-matching-authors ((t (:inherit default :foreground "dim grey"))))
  '(notmuch-search-subject ((t (:inherit default :foreground "cyan"))))
  '(num3-face-even ((t (:foreground "#CFF"))))
+ '(pulse-highlight-start-face ((t (:background "#c8dff8"))))
  '(secondary-selection ((((type x-toolkit)) (:background "SkyBlue4")) (t (:inverse-video t))))
  '(tooltip ((t (:inherit variable-pitch :background "lightyellow" :foreground "black"))))
  '(whitespace-big-indent ((t (:inherit whitespace-tab :foreground "firebrick"))))

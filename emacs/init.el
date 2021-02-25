@@ -208,6 +208,13 @@ three times - back to where it was at the beginning."
 
 (global-set-key [remap move-end-of-line] #'my-end)
 
+;; Pulse on recenter
+(setq-default pulse-delay 0.05
+              pulse-iterations 10)
+(advice-add #'recenter-top-bottom :after
+            (lambda (&rest _args)
+              (pulse-momentary-highlight-one-line (point))))
+
 ;;   Save with no blanks
 
 ;; Save with no trailing whitespaces
@@ -261,7 +268,12 @@ perform stripping and behaves as plain `save-buffer'."
 (defun mpn-windmove (dir delete)
   (if delete
       (windmove-delete-in-direction dir)
-    (windmove-do-window-select dir)))
+    (windmove-do-window-select dir)
+    (let ((start (point-at-bol))
+          (end   (point-at-eol)))
+      (pulse-momentary-highlight-region
+       (max start (- (point) 10))
+       (min end   (+ (point) 10))))))
 (set-key "\M-F" :args (delete) "P" (mpn-windmove 'right delete))
 (set-key "\M-B" :args (delete) "P" (mpn-windmove 'left delete))
 (set-key "\M-P" :args (delete) "P" (mpn-windmove 'up delete))
