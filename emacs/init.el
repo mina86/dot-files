@@ -1222,8 +1222,12 @@ three times - to the right, four times - centers."
 (setq-default tildify-space-pattern "")
 
 (defun mn-tildify-space-needs-hard-space-p ()
-  (not (let ((ch (char-before (- (point) 2))))
-         (and ch (or (eq ?’ ch) (eq ?w (char-syntax ch)))))))
+  (not (or (<= ?0 (char-before (1- (point))) ?9)
+           (let ((ch (char-before (- (point) 2))))
+             (and ch (or (eq ?’ ch) (eq ?w (char-syntax ch)))))
+           (and (derived-mode-p 'sgml-mode)
+                (fboundp 'sgml-lexical-context)
+                (not (eq 'text (car (sgml-lexical-context))))))))
 
 (add-hook 'tildify-space-predicates #'mn-tildify-space-needs-hard-space-p)
 
