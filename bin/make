@@ -1,0 +1,13 @@
+#!/bin/sh
+
+jobs=
+if [ -z "$MAKEFLAGS" ] && jobs=$(grep -c ^processor /proc/cpuinfo); then
+	jobs=--jobs=$((jobs + jobs / 2))
+fi
+
+nice=
+if [ "$(nice)" -le 0 ]; then
+	nice=nice
+fi
+
+exec $nice /usr/bin/make $jobs "$@"

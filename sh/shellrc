@@ -102,7 +102,6 @@ l () {
 }
 
 alias rmd=rmdir
-alias make='nice make'
 
 if [ -x /usr/bin/ncal ]; then
 	ncal() {
