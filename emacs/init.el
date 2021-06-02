@@ -46,6 +46,12 @@
                           #'string-lessp)))
             '(name sort))
 
+(when (fboundp 'auto-package-update-maybe)
+  (setq-default auto-package-update-delete-old-versions t)
+  (run-at-time "03:00" 86400
+               #'run-with-idle-timer 1 nil
+               #'auto-package-update-maybe))
+
 (when (fboundp 'auto-compile-on-save-mode)
   (auto-compile-on-save-mode))
 (setq load-prefer-newer t)
