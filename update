@@ -229,7 +229,7 @@ while read pattern destination; do
 done 3<&1 <<EOF
 aspell.en.pws      .@
 bin/*              .local/bin/@
-emacs/*            .emacs.d/@
+emacs/*            .config/emacs/@
 git/*              .config/git/@
 inputrc            .@
 irssi.theme        .irssi/mina.theme
