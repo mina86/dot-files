@@ -7,16 +7,20 @@ deadbeef_query() {
 _deadbeef_path() {
 	deadbeef --nowplaying-tf %path%
 }
+_deadbeef_is_playing() {
+	deadbeef --nowplaying-tf '%isplaying%' 2>/dev/null | grep -q 1
+}
 
 deadbeef_ctl() {
 	case ${1:-show} in
 	is-playing)
-		deadbeef_query
+		_deadbeef_is_playing
 		;;
 	play|pause|stop|prev|next)
 		deadbeef --$1
 		;;
 	pause-maybe)
+		_deadbeef_is_playing || return 1
 		deadbeef --pause
 		;;
 	toggle)
