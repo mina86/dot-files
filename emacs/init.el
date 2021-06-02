@@ -568,54 +568,21 @@ If GLOBAL is non-nil, or with a prefix argument set global dictionary."
 
 ;;     F9 - Compilation
 
-(defconst -mn-compile-common
-  " -Wall -Wextra -Wfloat-equal -Wshadow -Wwrite-strings -Winline -Wdisabled-optimization -Wstrict-aliasing=2 -pedantic -DMINA86 -ggdb -O0 -Wpointer-arith -funit-at-a-time")
-
-(defvar mn-compile-vars
-  `((("CFLAGS"   "-std=c99 -Werror-implicit-function-declaration -Wunreachable-code -Wstrict-prototypes -Wold-style-definition")
-     ("CXXFLAGS" "-std=c++98")
-     ("CPPFLAGS" ,-mn-compile-common)
-     ("LDFLAGS"  nil))
-
-    (("CFLAGS"   "-std=c89 -Werror-implicit-function-declaration -Wunreachable-code -Wstrict-prototypes -Wold-style-definition")
-     ("CXXFLAGS" "-std=c++98 -Wstrict-null-sentinel -Wctor-dtor-privacy -Woverloaded-virtual")
-     ("CPPFLAGS" ,-mn-compile-common)
-     ("LDFLAGS"  nil)))
-
-  "Enviroment variables set by `mn-compile' priory to compilation.
-The car of the list is a list of default enviroment variables to be
-set and cadr is a list is a list of alternative enviroment variables.
-Each list is a list of two element lists which car is a enviroment
-variables name and cadr is value.")
-
-(defun mn-compile (&optional alt recompile touch)
+(defun mn-compile (&optional recompile)
   "Compile current file.
-If ALT is omited or nil sets CFLAGS, CXXFLAGS, CPPFLAGS and
-LDFLAGS enviroment variables to `mn-cflags', `mn-cxxflags',
-`mn-cppflags', `mn-ldflags' respectively.
-
-If ALT is non-nil (or when called interactive with any prefix
-argument) sets CFLAGS, CXXFLAGS, CPPFLAGS and LDFLAGS enviroment
-variables to `mn-alt-cflags', `mn-alt-cxxflags',
-`mn-alt-cppflags', `mn-alt-ldflags' respectively.
-
 Executes `recompile' function if RECOMPILE is non-nill or
 `compile' otherwise.  If TOUCH is non-nil marks buffer as
 modified beforehand."
   (interactive "P")
-  (if touch (set-buffer-modified-p t))
   (save-buffer)
   (if (derived-mode-p 'emacs-lisp-mode)
       (byte-compile-file (buffer-file-name))
-    (let (v (vars (if alt (cadr mn-compile-vars) (car mn-compile-vars))))
-      (while (set 'v (pop vars)) (setenv (car v) (cadr v))))
     (if (and recompile (fboundp 'recompile))
         (recompile)
       (call-interactively 'compile))))
 
 (set-key [(f9)]         mn-compile)
-(set-key [(control f9)] :args (a) "P" (mn-compile a t))
-(set-key [(meta f9)]    :args (a) "P" (mn-compile (not a) t t))
+(set-key [(control f9)] (mn-compile t))
 (set-key [(shift f9)]   next-error)
 
 (require 'compile)
