@@ -7,8 +7,12 @@ if m pause-maybe; then
 	exec ln -sf ~/.local/bin/m "$playing_file"
 fi &
 
-if [ -e ~/.local/libexec/slock ]; then
+sleep 0.1
+
+if [ -x ~/.local/libexec/slock ]; then
 	~/.local/libexec/slock
+elif [ -x /usr/bin/slock ]; then
+	slock
 else
 	xlock -mode blank -bg black -fg gray3
 fi
