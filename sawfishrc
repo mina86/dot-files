@@ -265,7 +265,13 @@ Windows are matched in most recently focused first order."
                      ("opera"         . 1)
                      ("chromium"      . 2)
                      ("Google-chrome" . 3)))
+        (focused (input-focus))
         (best-pri 1000) best found-firefox)
+    ;; If focused window is outside of current viewport pretend it’s not
+    ;; focused.  This is needed if we switch to far away viewport while
+    ;; retaining focus in a browser window.
+    (when (window-outside-viewport-p focused)
+      (setq focused nil))
     (map-windows
      (lambda (wnd)
        (let* ((cls  (get-x-text-property wnd 'WM_CLASS))
@@ -273,15 +279,17 @@ Windows are matched in most recently focused first order."
                          (cdr (assoc (aref cls 0) instances)))))
          (when (= pri 0)
            (setq found-firefox t))
-         (when (and pri (not (memq (input-focus) (transient-group wnd))))
+         (when (and pri
+                    (not (and focused
+                              (memq focused (transient-group wnd)))))
            (when (window-outside-viewport-p wnd) (setq pri (+ pri 10 )))
            (when (window-iconified-p        wnd) (setq pri (+ pri 100)))
            (when (< pri best-pri)
              (setq best-pri pri best wnd))))
-         (/= best-pri 0)))
-     (if best
-         (display-window (or (last (transient-children best t)) best))
-       (or found-firefox (mn-run "firefox")))))
+       (/= best-pri 0)))
+    (if best
+        (display-window (or (last (transient-children best t)) best))
+      (or found-firefox (mn-run "firefox")))))
 
 (bind-keys global-keymap "W-," mn-get-browser)
 
