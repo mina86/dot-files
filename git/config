@@ -95,3 +95,5 @@
 	showUntrackedFiles = no
 [advice]
 	detachedHead = false
+[init]
+	defaultBranch = master
