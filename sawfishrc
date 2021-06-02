@@ -65,53 +65,6 @@ Windows are matched in most recently focused first order."
     (mn-run command)
     ()))
 
-(define (mn-warp-cursor-to-window-maybe wnd)
-  "Warps cursor to centre of the window unless it’s already under cursor."
-  (unless (eq wnd (query-pointer-window))
-    (let* ((pos (window-position wnd))
-           (lft (car pos))
-           (top (cdr pos))
-           (dim (window-dimensions wnd))
-           (rht (+ lft (car dim)))
-           (btm (+ top (cdr dim))))
-      (when (let ((pos (query-pointer)))
-              ;; If WND is (or used to be) covered, `query-pointer-window'
-              ;; returns window above it.  Check cursor position.
-              (or (< (car pos) lft) (> (car pos) rht)
-                  (< (cdr pos) top) (> (cdr pos) btm)))
-        (setq lft (max lft 0) top (max top 0))
-        (let ((dim (screen-dimensions)))
-          (setq rht (min rht (car dim)) btm (min btm (cdr dim))))
-        (warp-cursor (+ lft (quotient (- rht lft) 2))
-                     (+ top (quotient (- btm top) 2)))
-        (allow-events 'sync-both)))))
-
-(define (mn-display-window wnd #!optional warp)
-  "Displays and activates WND window.
-
-Does what `display-window' does but fixes window not being
-focused when viewport is changed and mouse is over another
-window.
-
-It also provides optional WARP argument.  If true, cursor will be
-warped to the window even if no workspace or viewport change
-happened."
-  (when wnd
-    (when (window-iconified-p wnd)
-      (uniconify-window wnd))
-    (unless (window-in-workspace-p wnd current-workspace)
-      (setq warp t)
-      (select-workspace
-       (nearest-workspace-with-window wnd current-workspace) t))
-    (when (window-outside-viewport-p wnd)
-      (setq warp t)
-      (move-viewport-to-window wnd))
-    (when (window-get wnd 'shaded)
-      (unshade-window w))
-    (when warp
-      (mn-warp-cursor-to-window-maybe wnd))
-    (activate-window wnd)))
-
 ;;}}}
 ;;{{{ Misc
 
@@ -274,7 +227,7 @@ happened."
       (let ((spec (cdr spec)))
         (if (listp spec)
             (lambda ()
-              (mn-display-window (apply mn-run-unless spec)))
+              (display-window (apply mn-run-unless spec)))
           (lambda ()
             (mn-run spec)))))))
 
@@ -327,30 +280,34 @@ happened."
              (setq best-pri pri best wnd))))
          (/= best-pri 0)))
      (if best
-         (mn-display-window (or (last (transient-children best t)) best))
+         (display-window (or (last (transient-children best t)) best))
        (or found-firefox (mn-run "firefox")))))
 
 (bind-keys global-keymap "W-," mn-get-browser)
 
+;;; Returns t if given window is a terminal window.  More specifically, whether
+;;; window’s WM_CLASS is Term.
+(define (mpn-terminal-window-p wnd)
+  (let ((cls (get-x-text-property wnd 'WM_CLASS)))
+    (and cls (string-equal "Term" (aref cls 0)))))
+
 ;;; Selects terminal window in current view-port or starts a terminal.
 ;;;
-;;; Also wraps mouse to the centre of the window if not already above it."
+;;; Also warps mouse to the centre of the window if not already above it."
 (define (mn-get-term)
-  (let ((terms (delete-if-not
-                (lambda (wnd)
-                  (let ((cls (get-x-text-property wnd 'WM_CLASS)))
-                    (and cls (string-equal "Term" (aref cls 0)))))
-                (window-order current-workspace t))))
-    (if (null terms)
-        ;; No terminal windows, start a new one.
+  (let ((terms (delete-if-not mpn-terminal-window-p
+                              (window-order current-workspace t))))
+    (if terms
+        ;; If there are at least two terminal windows and the first one has
+        ;; input focus, display the second one.  Otherwise, display the first
+        ;; one.
+        (display-window
+         (or (and (eq (car terms) (input-focus)) (cadr terms)) (car terms)))
+      ;; No terminal windows, start a new one.
+      (mn-run xterm-program))))
 
-        (mn-run xterm-program)
-      ;; If there are at least two terminal windows and the first one has
-      ;; input focus, display the second one.  Otherwise, display the first
-      ;; one.
-      (let ((wnd (if (and (cdr terms) (eq (car terms) (input-focus)))
-                     (cadr terms) (car terms))))
-        (mn-display-window wnd t)))))
+(setq warp-to-window-enabled t
+      warp-to-window-offset (cons 50 50))
 
 (bind-keys global-keymap "W-$" mn-get-term)
 
