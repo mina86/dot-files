@@ -226,6 +226,8 @@ EXEC 01;32     # This is for files with execute permission:
 .VOB  01;35
 .wav  01;35
 .WAV  01;35
+.webp 01;35
+.WEBP 01;35
 .wma  01;35
 .WMA  01;35
 .wmv  01;35
