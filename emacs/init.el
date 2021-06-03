@@ -1062,10 +1062,27 @@ tag is optional."
       (setq ctx (cdr ctx)))
     (car ctx)))
 
+(defun mpn-sgml-magic-slash (prefix)
+  "Close tag if ‘</’ has been typed; otherwise insert slash.
+If point is just after a less than sign, instead of inserting
+slash, close the element.  Omits close tags for elements with
+optional close tags (see ‘mpn-sgml-never-close-regexp’).  If
+called with prefix argument (even if it’s equal one) or preceding
+character is not less than, call ‘self-insert-command’ instead."
+  (interactive (list current-prefix-arg))
+  (if-let ((context (and (not prefix)
+                         (eq (preceding-char) ?<)
+                         (mpn-sgml-get-context-for-close)))
+           (tag-name (sgml-tag-name context)))
+      (progn
+        (insert "/" tag-name ">")
+        (indent-according-to-mode))
+    (self-insert-command (prefix-numeric-value prefix) ?/)))
+
 (defun mpn-sgml-magic-self-insert-command (prefix char)
-  "Adds special handling when inserting <, >, & or / character.
+  "Adds special handling when inserting <, > or & character.
 If called with a prefix argument (even if it’s just C-u 1), or
-for a character other than <, >, & or /, act like
+for a character other than <, > and &, act like
 ‘self-insert-command’.  Otherwise perform context-dependent
 action for each of the characters.  If no special action applies,
 simply insert the character."
@@ -1079,13 +1096,6 @@ simply insert the character."
                (insert "&lt;"))
               ((and (eq char ?>) (not (eq 'tag (car (sgml-lexical-context)))))
                (insert "&gt;"))
-
-              ((and (eq char ?/)
-                    (eq (preceding-char) ?<)
-                    (setq char (mpn-sgml-get-context-for-close)))
-               (delete-char -1)
-               (insert "</" (sgml-tag-name char) ">")
-               (indent-according-to-mode))
 
               (t))
     (self-insert-command (prefix-numeric-value prefix) char)))
@@ -1115,7 +1125,7 @@ simply insert the character."
 (define-key sgml-mode-map "&" #'mpn-sgml-magic-self-insert-command)
 (define-key sgml-mode-map "<" #'mpn-sgml-magic-self-insert-command)
 (define-key sgml-mode-map ">" #'mpn-sgml-magic-self-insert-command)
-(define-key sgml-mode-map "/" #'mpn-sgml-magic-self-insert-command)
+(define-key sgml-mode-map "/" #'mpn-sgml-magic-slash)
 (define-key sgml-mode-map "\C-h" #'mpn-sgml-magic-delete-backward-char)
 (define-key sgml-mode-map [(backspace)]
   #'mpn-sgml-magic-delete-backward-char)
