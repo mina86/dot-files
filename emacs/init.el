@@ -250,16 +250,16 @@ perform stripping and behaves as plain `save-buffer'."
 ;;   Misc
 
 (when (fboundp 'save-buffers-kill-terminal)
-  (set-key "\C-x\C-c"      save-buffers-kill-emacs)
-  (set-key "\C-xc"         save-buffers-kill-terminal))
+  (set-key ctl-x-map "\C-c"      save-buffers-kill-emacs)
+  (set-key ctl-x-map "c"         save-buffers-kill-terminal))
 
 (set-key "\C-h"          [(backspace)])
 (set-key [(backspace)]   delete-backward-char)
 (set-key [(delete)]      delete-forward-char)
 (set-key "\C-d"          [(delete)])
 
-(set-key "\C-x1"         delete-other-windows-vertically)
-(set-key "\C-x3"
+(set-key ctl-x-map "1"   delete-other-windows-vertically)
+(set-key ctl-x-map "3"
          (split-window-right)
          ;; Balance horizontally.  This is copied from balance-windows
          (let* ((window (frame-root-window))
@@ -285,9 +285,9 @@ perform stripping and behaves as plain `save-buffer'."
 (set-key "\M-P" :args (delete) "P" (mpn-windmove 'up delete))
 (set-key "\M-N" :args (delete) "P" (mpn-windmove 'down delete))
 
-(set-key "\C-xk"         kill-this-buffer)  ; don't ask which buffer to kill
-(set-key "\C-cr"         revert-buffer)     ; Reload buffer
-(set-key "\C-x\C-b"      (switch-to-buffer (other-buffer))) ; C-x C-b switch
+(set-key ctl-x-map "k"    kill-this-buffer)  ; don't ask which buffer to kill
+(set-key "\C-cr"          revert-buffer)     ; Reload buffer
+(set-key ctl-x-map "\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
 
 (when (fboundp 'shift-number-up)
   (with-no-warnings (set-key "\M-+" shift-number-up)
@@ -301,7 +301,7 @@ perform stripping and behaves as plain `save-buffer'."
 
 (set-key [(control return)]        my-jump)
 (set-key [(control shift mouse-1)] ffap-at-mouse)
-(set-key "\C-x\C-f"                ffap)
+(set-key ctl-x-map "\C-f"          ffap)
 
 ;; Make q close current buffer if it's read-only
 (set-key "q" :args (n) "p"
@@ -1308,5 +1308,9 @@ three times - to the right, four times - centers."
 
 ;; Local
 (load (concat user-emacs-directory "local.el") t)
+
+(global-set-key "\C-u" ctl-x-map)
+(global-set-key "\C-x" (lambda () (interactive)
+                         (error "Did you mean C-u?")))
 
 ;;; init.el ends here
