@@ -96,6 +96,8 @@ l () {
 		less -- "$1"
 	elif [ $# -eq 2 -a x"$1" = x-- -a -f "$2" ]; then
 		less -- "$2"
+	elif [ $# -eq 0 -a ! -t 0 ]; then
+		less
 	else
 		ls "$@"
 	fi
