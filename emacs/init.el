@@ -770,7 +770,7 @@ modified beforehand."
 (defconst set-tab--variables
   '(c-basic-offset perl-indent-level cperl-indent-level js-indent-level
     sh-basic-offset python-indent-offset css-indent-offset
-    typescript-indent-level)
+    typescript-indent-level rust-indent-offset)
   "List of variables which specify indent level in various modes.")
 
 (defun set-tab (tab)
@@ -1264,6 +1264,11 @@ three times - to the right, four times - centers."
                        (select-window window)
                      (switch-to-buffer buffer)))
                (org-agenda nil "t")))))
+
+;; Rust mode
+(add-lambda-hook 'rust-mode-hook
+  (setq indent-tabs-mode nil
+        rust-indent-offset 4))
 
 ;; Lisp/Scheme mode
 (add-lambda-hook '(emacs-lisp-mode-hook lisp-mode-hook scheme-mode-hook)
