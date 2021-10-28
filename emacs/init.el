@@ -1278,9 +1278,11 @@ three times - to the right, four times - centers."
   (if (fboundp 'form-feed-mode) (form-feed-mode)))
 
 ;; Sawfish mode
-(autoload 'sawfish-mode "sawfish" "Mode for editing Sawfish config files")
-(add-to-list 'auto-mode-alist '("sawfish/?rc\\'" . sawfish-mode))
-(add-to-list 'auto-mode-alist '("\\.jl\\'" . sawfish-mode))
+(let ((filename "/usr/share/emacs/site-lisp/sawfish/sawfish.el"))
+  (when (file-exists-p filename)
+    (autoload 'sawfish-mode filename "Mode for editing Sawfish config files")
+    (add-to-list 'auto-mode-alist '("sawfish/?rc\\'" . sawfish-mode))
+    (add-to-list 'auto-mode-alist '("\\.jl\\'" . sawfish-mode))))
 
 ;; Use cperl-mode for Perl
 (eval-when-compile (require 'cperl-mode))
