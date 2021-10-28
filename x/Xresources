@@ -83,6 +83,13 @@ URxvt.backgroundPixmap:    HOME/.urxvt/80-char.png;0x0+0+0:tile
 #else
 #  warning "HOME not set, won't configure urxvt background"
 #endif
+URxvt.background.border: true
+! TW / TW is there to signal that the image depends on terminal width.
+URxvt.background.expr: extend merge \
+    solid(64 * 6, TW / TW, [0, 0, 0]),                    \
+    pad(move 64 * 6, 0, solid 8 * 6, 1, [0.05, 0.05, 0]), \
+    pad(move 72 * 6, 0, solid 8 * 6, 1, [0.06, 0.00, 0]), \
+    pad(move 80 * 6, 0, solid 8 * 6, 1, [0.09, 0, 0]);
 
 URxvt.tabbed.tabbedex-rs-prefix: %
 URxvt.tabbedex.new-button:   0
