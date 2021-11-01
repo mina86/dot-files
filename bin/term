@@ -20,4 +20,5 @@ while [ $# != 0 ]; do
 	esac
 done
 
+# shellcheck disable=SC2086
 exec "$cmd" $opts "$@"

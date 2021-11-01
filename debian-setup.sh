@@ -48,14 +48,15 @@ EOF
 
 # Auto login
 dir=/etc/systemd/system/getty@tty1.service.d
-mkdir -p "/etc/systemd/system/getty@tty1.service.d"
-echo >/etc/systemd/system/getty@tty1.service.d/override.conf "
+mkdir -p "$dir"
+echo >$dir/override.conf "
 [Service]
 ExecStart=
 ExecStart=-/sbin/agetty --autologin $user --noclear %I 38400 linux
 TTYVTDisallocate=no"
 
 # Fun issue file
+# shellcheck disable=SC2018
 >/etc/issue printf '
  _____ _____ _____                              _____ _____ _____ _____
 |   | |   __|  _  | ... %shemtrails %sontrol ... |   __|     |  |  |     |

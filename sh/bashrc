@@ -1,9 +1,11 @@
 ## .bashrc                                              -*- shell-script -*-
+# shellcheck shell=bash
 
 # Not interactive?
 case $- in *i*) : ;; *) return; esac
 
 # ~/.shellrc has common stuff between shells so source it as well.
+# shellcheck source=shellrc
 . ~/.shellrc
 
 # Disable completion.
@@ -57,7 +59,8 @@ else
 	__PS1+='\w'
 fi >/dev/null 2>&1
 
-__PS1+='\[\e[0;37;44m\]'$__close'\[\e[0;1;3$(($??5:3))m\]\$\[\e[0m\] '
+# shellcheck disable=SC2016
+__PS1+='\[\e[0;37;44m\]'"$__close"'\[\e[0;1;3$(($??5:3))m\]\$\[\e[0m\] '
 
 # urxvt-tabbedex has nice handling of bell
 # See https://github.com/mina86/urxvt-tabbedex for latest copy
@@ -68,7 +71,7 @@ esac
 # Add title to terminals
 __tsl=$(tput tsl 2>/dev/null)
 if [ -n "$__tsl" ]; then
-	__PS1='\['$__tsl$USER@$host$(tput fsl)'\]'$__PS1
+	__PS1='\['"$__tsl$USER@$host$(tput fsl)"'\]'$__PS1
 fi
 
 unset __tsl __close __sp __ellipsis
@@ -79,10 +82,11 @@ PROMPT_COMMAND='PS1=${__PS1//"{{}}"/"$(eval "$PS1_COMMANDS")"}'
 ## Show times on the right, behaves a bit like zsh's right prompt, but
 ## not exactly the same way.
 ##
-__COMMAND_RPROMPT_CACHE=
 __COMMAND_RPROMPT_TIMEZONES='NYC:US/Eastern LON:Europe/London ZRH:Europe/Zurich TOK:Asia/Tokyo'
 __command_rprompt() {
-	local n=$((COLUMNS - 4)) current=$(date +%H:%M)
+	local n current
+	n=$((COLUMNS - 4))
+	current=$(date +%H:%M)
 	if [ ":$__COMMAND_RPROMPT_CACHE_KEY" != ":$n:$current" ]; then
 		local times="\e[36;1m${current%:*}\e[0;36m${current#*:}\e[0m"
 		local tz tm
@@ -91,7 +95,7 @@ __command_rprompt() {
 			tm=$(TZ=${tz#*:} date +%H:%M)
 			if [ "$tm" != "$current" ]; then
 				times+=" \e[30;1m${tz%%:*}\e[0;36m${tm%:*}\e[0m"
-				n=$(( $n - 6 ))
+				n=$(( n - 6 ))
 			fi
 		done
 		__COMMAND_RPROMPT_CACHE_KEY=:$n:$current
@@ -108,7 +112,7 @@ which git >/dev/null 2>&1 || return
 
 __GIT_PROMPT=
 __git_prompt() {
-	if [ "x$PWD" = "x$__GIT_PROMPT_PWD" ]; then
+	if [ "$PWD" = "$__GIT_PROMPT_PWD" ]; then
 		printf '%s ' "$__GIT_PROMPT"
 		return 0
 	fi
@@ -129,10 +133,10 @@ __git_prompt() {
 		return 0
 	fi
 
-	__GIT_PROMPT_GITDIR=$(realpath $__GIT_PROMPT_GITDIR)
+	__GIT_PROMPT_GITDIR=$(realpath "$__GIT_PROMPT_GITDIR")
 	test "$dir" = "$__GIT_PROMPT_GITDIR" && return 0
 
-	local branch state E ps
+	local branch state
 	state=
 	dir=$__GIT_PROMPT_GITDIR
 	if   [ -d "$dir/rebase-apply" ] ; then
@@ -152,8 +156,8 @@ __git_prompt() {
 		branch=$(git symbolic-ref HEAD 2>/dev/null)
 	else
 		[ -f "$dir/BISECT_LOG" ] && state="bisect"
-		branch=$(git symbolic-ref HEAD 2>/dev/null) || \
-			branch=$(git describe --exact-match HEAD 2>/dev/null) || \
+		branch=$(git symbolic-ref HEAD 2>/dev/null) ||
+			branch=$(git describe --exact-match HEAD 2>/dev/null) ||
 			branch=$(cut -c1-7 "$dir/HEAD")...
 	fi
 	branch=${branch#refs/heads/}
@@ -182,7 +186,7 @@ __git_prompt() {
 g() {
 	local cmds='rebase|commit|branch|checkout|cherry-pick|start'
 	cmds=$cmds"|''"$(git config --get-regexp 'alias\..*' | awk -F '[. ]' '
-		$2 ~ /^[-_a-zA-Z0-9]+$/ && $3 ~ /'"$lst"'/ { lst = lst "|" $2 }
+		$2 ~ /^[-_a-zA-Z0-9]+$/ && $3 ~ /'"$cmds"'/ { lst = lst "|" $2 }
 		END { print lst }
 	')
 

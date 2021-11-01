@@ -17,7 +17,7 @@ deadbeef_ctl() {
 		_deadbeef_is_playing
 		;;
 	play|pause|stop|prev|next)
-		deadbeef --$1
+		deadbeef "--$1"
 		;;
 	pause-maybe)
 		_deadbeef_is_playing || return 1
@@ -39,6 +39,7 @@ deadbeef_ctl() {
 		deadbeef --nowplaying-tf %path% && echo
 		;;
 	dir)
+		# shellcheck disable=SC2016
 		deadbeef --nowplaying-tf '$directory_path(%path%)' && echo
 		;;
 	tag)

@@ -11,7 +11,7 @@ else
 	exit 1
 fi
 
-if [ 0 -eq $(id -u) ]; then
+if [ 0 -eq "$(id -u)" ]; then
 	sudo=
 elif have sudo; then
 	sudo=sudo

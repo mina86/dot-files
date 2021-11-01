@@ -1,9 +1,10 @@
 ## .shellrc                                             -*- shell-script -*-
+# shellcheck shell=sh
 
 # Not interactive?
 case $- in *i*) : ;; *) return; esac
 
-case $HOST in
+case ${HOST:-} in
 '')
 	host=$(hostname 2>/dev/null)
 	if [ -z "$host" ]; then
@@ -48,6 +49,9 @@ case ":$PATH:" in
 	if [ -d ~/.local/bin ]; then
 		PATH=$HOME/.local/bin:$PATH
 	fi
+	if [ -d ~/.npm/packages/bin ]; then
+		PATH=$HOME/.npm/packages/bin:$PATH
+	fi
 	PATH=$(echo ":$PATH:" | sed -e 's~::*\(\([^/:][^:]*\)\?:\)*~:~g' \
 	                            -e 's/^::*//' -e 's/::*$//')
 esac
@@ -87,16 +91,16 @@ md () {
 		echo usage: 'md dir [ dir ... ]' >&2
 		return 1
 	fi
-	mkdir -p -- "$@" && \cd "$1"
+	mkdir -p -- "$@" && \cd "$1" || return
 }
 
 # List directory or contents of a file
 l () {
-	if [ $# -eq 1 -a -f "$1" ]; then
+	if [ $# -eq 1 ] && [ -f "$1" ]; then
 		less -- "$1"
-	elif [ $# -eq 2 -a x"$1" = x-- -a -f "$2" ]; then
+	elif [ $# -eq 2 ] && [ "$1" = -- ] && [ -f "$2" ]; then
 		less -- "$2"
-	elif [ $# -eq 0 -a ! -t 0 ]; then
+	elif [ $# -eq 0 ] && [ ! -t 0 ]; then
 		less
 	else
 		ls "$@"
@@ -138,7 +142,7 @@ _cd_do() {
 	if [ x"$2" != x- ] && [ -e "$2" ] && ! [ -d "$2" ]; then
 		set -- "$1" "$(dirname "$2")"
 	fi
-	command cd "$1" -- "$2"
+	command cd "$1" -- "$2" || return
 }
 
 cd() {
@@ -156,10 +160,10 @@ cd [-P | --] (<dir> | <file> | -) <command> [<args> ...]
 EOF
 		;;
 	0:|1:--)
-		command cd
+		command cd || return
 		;;
 	1:-P)
-		command cd -P "${PWD}"
+		command cd -P "${PWD}" || return
 		;;
 	1:*)
 		_cd_do "-L" "$1"
@@ -171,10 +175,10 @@ EOF
 		_cd_do "-P" "$2"
 		;;
 	*)
-		if [ x"$1" = x-- ]; then
+		if [ "$1" = -- ]; then
 			shift
 			set -- -L "$@"
-		elif [ x"$1" != x-P ]; then
+		elif [ "$1" != -P ]; then
 			set -- -L "$@"
 		fi
 		( _cd_do "$1" "$2" && shift 2 && exec "$@" )
@@ -184,15 +188,29 @@ EOF
 # it so silence the warning.
 alias -- -='cd -' 2>/dev/null
 
-alias +='git add'
-alias +u='git add -u'
-alias +p='git add -p'
+alias '+=git add'
+alias '+u=git add -u'
+alias '+p=git add -p'
 
 alias @='for i in'
 
+cargo() {
+	set -- nice ~/.local/bin/cargo "$@"
+	case $PWD in
+	*/code/near/*)
+		CARGO_PROFILE_RELEASE_LTO=false \
+		CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64 \
+		CARGO_PROFILE_DEV_DEBUG=false \
+			"$@"
+		;;
+	*)
+		CARGO_PROFILE_DEV_DEBUG=false "$@"
+	esac
+}
+
 # No need to set environment if it has already been set.
 ${MINA86RC:+return}
-MINA86RC=done
+MINA86RC='done'
 export MINA86RC
 
 if which nano >/dev/null 2>&1; then
@@ -207,7 +225,7 @@ if less=$(which less 2>&1) && [ -n "$less" ]; then
 	export PAGER LESS
 
 	if [ -x ~/.local/bin/lesspipe ]; then
-		eval $(~/.local/bin/lesspipe --install-lesspipe)
+		eval "$(~/.local/bin/lesspipe --install-lesspipe)"
 	fi
 
 	if which tput >/dev/null 2>&1; then
@@ -252,5 +270,6 @@ unset MAILCHECK MAIL
 
 # And finally, load local configuration.
 if [ -e ~/.config/sh/local ]; then
+	# shellcheck source=/dev/null
 	. ~/.config/sh/local
 fi

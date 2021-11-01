@@ -12,13 +12,13 @@ if [ $# -eq 0 ]; then
 fi
 
 if [ -x ~/.local/libexec/"music-pre-$1.sh" ]; then
-	source ~/.local/libexec/"music-pre-$1.sh" "$@"
-	exit $?
+	exec /bin/sh ~/.local/libexec/"music-pre-$1.sh" "$@"
 fi
 
 found=false
 for player in deadbeef audacious mpd; do
 	if [ -x ~/.local/libexec/music-$player.sh ]; then
+		# shellcheck source=/dev/null
 		. ~/.local/libexec/music-$player.sh
 		if "${player}_query" >/dev/null 2>&1; then
 			found=true

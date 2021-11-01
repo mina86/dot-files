@@ -18,4 +18,5 @@ else
 fi
 
 set -- toggle
+# shellcheck source=/dev/null
 . "$playing_file"

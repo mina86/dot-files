@@ -7,7 +7,7 @@ audacious_query() {
 audacious_ctl() {
 	case $1 in
 	play|pause|stop)
-		audacious --$1
+		audacious "--$1"
 		;;
 	toggle)
 		audacious --play-pause

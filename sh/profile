@@ -1,17 +1,21 @@
 ## .profile                                             -*- shell-script -*-
+# shellcheck shell=sh
 
 ENV=~/.shellrc
 export ENV
 
 if [ -n "$BASH_VERSION" ] && [ -r ~/.bashrc ]; then
+	# shellcheck source=shellrc
 	. ~/.bashrc
+
+	# Start emacs daemon if not running
+	if which emacs && _uid=$(id -u) && [ "$_uid" -ne 0 ] &&
+	   ! [ -e "${TMPDIR-/tmp}/emacs$_uid/server" ]; then
+		emacs --daemon
+	fi </dev/null >/dev/null 2>&1 &
+	# shellcheck disable=SC3044
+	disown
 elif [ -r ~/.shellrc ]; then
+	# shellcheck source=shellrc
 	. ~/.shellrc
 fi
-
-# Start emacs daemon if not running
-if which emacs && _uid=$(id -u) && [ "$_uid" -ne 0 ] &&
-   ! [ -e "${TMPDIR-/tmp}/emacs$_uid/server" ]; then
-	emacs --daemon
-fi </dev/null >/dev/null 2>&1 &
-disown

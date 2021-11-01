@@ -26,7 +26,7 @@ init_kbd() {
 	dir=$HOME/.config/xkb
 	if [ -e "$dir/symbols/local" ]; then
 		layout=local,pl
-		setxkbmap -I"$dir" -print >$dir/keymap/local \
+		setxkbmap -I"$dir" -print >"$dir/keymap/local" \
 		          "$layout" "$variant" "$options"
 		xkbcomp -w0 -I"$dir" "$dir/keymap/local" "$DISPLAY"
 	else
@@ -87,7 +87,7 @@ start_wm() {
 		fi
 	fi
 
-	cd ~
+	cd ~ || exit 1
 	if has sawfish; then
 		set -- "$@" sawfish
 	else
@@ -128,7 +128,7 @@ exec_x() {
 
 	start_wm "$tmp"
 
-	[ -s "$tmp" ] && read cmd <$tmp || cmd=
+	[ -s "$tmp" ] && read -r cmd <"$tmp" || cmd=
 	rm -f -- "$tmp"
 	trap '' 0
 
@@ -150,7 +150,7 @@ main() {
 	'')
 		dir=${TMPDIR-/tmp}/.sawfish-${USER-anonymous}
 		mkdir -p "$dir"
-		exec_x "$@" >>$dir/log${DISPLAY-no-display} 2>&1
+		exec_x "$@" >>"$dir/log${DISPLAY-no-display}" 2>&1
 		;;
 	*)
 		echo "xinit: $1: unrecognised subcommand" >&2

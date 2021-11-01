@@ -2,7 +2,7 @@
 
 _mpc() {
 	exec 3>&1
-	return $(
+	return "$(
 		exec 4>&1 >&3
 		{
 			mpc --format '[[[%artist% <&%album%> ]|[%artist% - ]|[<%album%> ]]%title%]|[%file%]' "$@" || echo $? >&4
@@ -18,7 +18,7 @@ _mpc() {
 			x
 			p
 		}
-	')
+	')"
 }
 
 _mpc_file() {
