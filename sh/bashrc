@@ -169,15 +169,8 @@ __git_prompt() {
 		__GIT_PROMPT+="\[\e[0;32;44m\]$state"
 		__GIT_PROMPT+="\[\e[0;37;44m\])"
 		;;
-	*)                               # dir:branch
-		__GIT_PROMPT=
-		local fulldir=$(git rev-parse --show-toplevel)
-		dir=${fulldir##*/}
-		if [ ${#dir} -le 4 -a x"$fulldir" != x"$PWD" ]; then
-			__GIT_PROMPT+="\[\e[0;37;44m\]$dir"
-			__GIT_PROMPT+="\[\e[1;30;44m\]:"
-		fi
-		__GIT_PROMPT+="\[\e[0;32;44m\]$branch"
+	*)                               # branch
+		__GIT_PROMPT="\[\e[0;32;44m\]$branch"
 	esac
 
 	printf '%s ' "$__GIT_PROMPT"
