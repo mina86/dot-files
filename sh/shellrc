@@ -149,9 +149,9 @@ cd
     Move to home directory.
 cd -P
     Resolve all symbolic links in \$PWD.
-cd [-P] (<dir> | <file> | -)
+cd [-P | --] (<dir> | <file> | -)
     Move to <dir>, dirname(<file>), or \$OLDPWD; -P resolves all symlinks.
-cd [-P] (<dir> | <file> | -) <command> [<args> ...]
+cd [-P | --] (<dir> | <file> | -) <command> [<args> ...]
     Run <command> in the directory and then come back.
 EOF
 		;;
@@ -171,7 +171,7 @@ EOF
 		_cd_do "-P" "$2"
 		;;
 	*)
-		if [ x"$1" == x-- ]; then
+		if [ x"$1" = x-- ]; then
 			shift
 			set -- -L "$@"
 		elif [ x"$1" != x-P ]; then
@@ -182,7 +182,7 @@ EOF
 }
 # Bash interprets ’-=…’ as a flag so ‘--’ is needed but BusyBox complains about
 # it so silence the warning.
-alias -- -='command cd -' 2>/dev/null
+alias -- -='cd -' 2>/dev/null
 
 alias +='git add'
 alias +u='git add -u'
