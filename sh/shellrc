@@ -105,6 +105,10 @@ l () {
 
 alias rmd=rmdir
 
+# Locale for en_GB changed such that date started showing 12-hour time which is
+# a moronic.  Force C locale when running date.
+alias date='LANG=C date'
+
 if [ -x /usr/bin/ncal ]; then
 	ncal() {
 		[ $# -gt 0 ] || set -- -B1 -A2
