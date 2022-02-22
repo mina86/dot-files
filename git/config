@@ -18,6 +18,7 @@
 	b      = branch
 	br     = branch -v
 	ci     = "!f() { git commit ${1+-m} \"$@\"; }; f"
+	eci    = "!VISUAL=emacsclient git commit"
 	amend  = commit --amend
 	fix    = "!f() { if [ $# -eq 0 ]; then git commit --amend -C HEAD; else git commit --fixup \"$@\"; fi; }; f"
 	wip    = commit -m wip
