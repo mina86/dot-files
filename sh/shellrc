@@ -238,8 +238,10 @@ if [ -z "$LS_COLORS" ] && [ -f ~/.dir_colors ]; then
 	eval "$(dircolors -b ~/.dir_colors)"
 fi
 
-LANG=en_GB.UTF-8
-local -a 2>/dev/null | grep -q $LANG || LANG=en_US.UTF-8
+# The encoding is ‘UTF-8’ on some systems and ‘utf8’ on others.  Furthermore, on
+# some en_GB is not available but en_US is.  Pick locale which is available.
+LANG=$(locale -a 2>/dev/null |grep -i '^en_\(GB\|US\)\.utf-\?8$'|sort|head -n1)
+[ -n "$LANG" ] || LANG=C.UTF-8
 LC_COLLATE=C
 
 # /tmp is in RAM, don't save history between reboots
