@@ -11,13 +11,16 @@
 
 (defconst alt-mail-address
   (eval-when-compile (rot13-string "zanmnerjvpm@tznvy.pbz")))
+(defconst corp-mail-address
+  (eval-when-compile (rot13-string "zvpuny@arne.bet")))
 
 (setq user-full-name "Michal Nazarewicz"
       user-mail-address (eval-when-compile (rot13-string "zvan86@zvan86.pbz"))
       message-user-fqdn "mina86.com"
 
       message-alternative-emails (regexp-opt (list user-mail-address
-                                                   alt-mail-address)
+                                                   alt-mail-address
+                                                   corp-mail-address)
                                              nil)
       message-dont-reply-to-names message-alternative-emails
 
@@ -114,10 +117,14 @@
       (headers (if-let ((face-png (expand-file-name "~/.mail/face.png"))
                         (face-hdr (mn-load-face face-png)))
                    (cons face-hdr nil)))
-      (user-from (concat user-full-name " <" user-mail-address ">")))
+      (user-from (concat user-full-name " <" user-mail-address ">"))
+      (corp-from (concat user-full-name " <" corp-mail-address ">")))
   (setq gnus-alias-identity-alist
-        `(("priv" nil ,user-from nil       ,headers "\n" ,signature))
-        gnus-alias-default-identity (caar gnus-alias-identity-alist)))
+        `(("priv" nil    ,user-from nil               ,headers "\n" ,signature)
+          ("near" nil    ,corp-from "Near Collective" ,headers "\n" ,signature))
+        gnus-alias-default-identity (caar gnus-alias-identity-alist)
+        gnus-alias-identity-rules
+        '(("to Near" ("to" "@near.org") "near"))))
 (add-hook 'message-setup-hook 'gnus-alias-determine-identity)
 
 ;;}}}
@@ -208,10 +215,10 @@ and 3. wrap to it’s original position."
         notmuch-hello-insert-alltags)
 
       notmuch-saved-searches
-      '(("to me"   . "is:unread and -is:asm and  is:me and -is:foss")
-        ("me+foss" . "is:unread and -is:asm and  is:me and  is:foss")
-        ("foss"    . "is:unread and -is:asm and -is:me and  is:foss and -is:hrt")
-        ("rest"    . "is:unread and -is:asm and -is:me and -is:foss and -is:hrt"))
+      '(("to me"   . "is:unread and  is:me and -is:near")
+        ("near me" . "is:unread and  is:me and  is:near")
+        ("near"    . "is:unread and -is:me and  is:near")
+        ("rest"    . "is:unread and -is:me and -is:near"))
 
       notmuch-tag-formats
       '(("unread" (propertize tag 'face '(:foreground "red")))
