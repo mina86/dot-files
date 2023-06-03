@@ -100,6 +100,10 @@ sub read_process {
 my ($windmove, $stdin) = (0, 0);
 my @args;
 
+if (@ARGV && $ARGV[0] eq 'e') {
+	shift @ARGV;
+}
+
 while (@ARGV) {
 	my $arg = shift @ARGV;
 	if ($arg eq '-l') {
