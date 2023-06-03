@@ -1318,7 +1318,6 @@ three times - to the right, four times - centers."
 (load (concat user-emacs-directory "local.el") t)
 
 (global-set-key "\C-u" ctl-x-map)
-(global-set-key "\C-x" (lambda () (interactive)
-                         (error "Did you mean C-u?")))
+(global-set-key "\C-x" 'universal-argument)
 
 ;;; init.el ends here
