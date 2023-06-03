@@ -210,7 +210,7 @@ cargo() {
 
 # No need to set environment if it has already been set.
 ${MINA86RC:+return}
-MINA86RC='done'
+MINA86RC=done
 export MINA86RC
 
 if which nano >/dev/null 2>&1; then

@@ -7,7 +7,7 @@ fi
 
 nice=
 if [ "$(nice)" -le 0 ]; then
-	nice='nice'
+	nice=nice
 fi
 
 exec $nice /usr/bin/make $jobs "$@"
