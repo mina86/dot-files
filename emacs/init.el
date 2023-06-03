@@ -343,8 +343,7 @@ perform stripping and behaves as plain `save-buffer'."
 
 ;;   Just one space
 
-(global-set-key [remap just-one-space]
-                (lambda () (interactive) (cycle-spacing -1)))
+(set-key "\M- " (cycle-spacing -1))
 
 ;;   Tab - indent or complete
 
