@@ -688,7 +688,9 @@ modified beforehand."
               column-number-mode t
 
               mode-line-format
-              '((buffer-read-only (:propertize "» " face mode-line-de-em) "  ")
+              '((:propertize (buffer-read-only "» " " ")
+                             face mode-line-de-em
+                             display (min-width (10.0)))
                 (:eval (concat
                         (propertize
                          "%14b  " 'face (if (buffer-modified-p)
@@ -712,8 +714,7 @@ modified beforehand."
                 mode-name
                 " "
                 mode-line-process
-                minor-mode-alist
-                (:propertize " %-" face mode-line-de-em)))
+                minor-mode-alist))
 
 ;; Highlight groups of three digits
 (when (fboundp 'global-num3-mode)

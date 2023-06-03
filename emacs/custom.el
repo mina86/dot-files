@@ -3,7 +3,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:background "black" :foreground "gray" :height 75 :width normal :foundry "adobe" :family "courier"))))
  '(Man-overstrike ((t (:foreground "#33CC33"))))
  '(Man-reverse ((t (:foreground "#CC3333"))))
  '(auto-dim-other-buffers-face ((t :background "#112222")))
@@ -56,10 +55,12 @@
  '(link ((t (:foreground "#0CF" :underline t))))
  '(link-visited ((t (:inherit link :foreground "#96F"))))
  '(match ((t (:background "RoyalBlue3"))))
- '(mode-line ((t (:background "#009" :foreground "#FFF"))))
+ '(mode-line ((t (:background "#009" :foreground "#fff" :slant normal :foundry "GOOG" :family "Noto Sans"))))
+ '(mode-line-active ((t (:inherit mode-line))))
  '(mode-line-buffer-id ((t (:foreground "#9FF" :weight bold))))
  '(mode-line-highlight ((t (:background "#00F"))))
  '(mode-line-inactive ((t (:inherit mode-line :background "#333" :foreground "#CCC"))))
+ '(mode-line-modified-buffer-id ((t (:inherit mode-line-buffer-id :slant italic))))
  '(notmuch-search-date ((t (:inherit notmuch-search-non-matching-authors))))
  '(notmuch-search-matching-authors ((t (:inherit default))))
  '(notmuch-search-non-matching-authors ((t (:inherit default :foreground "dim grey"))))
