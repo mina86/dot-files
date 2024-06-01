@@ -1,7 +1,0 @@
-#!/bin/sh
-
-if [ $# -eq 0 ]; then
-	exec perldoc perlfunc
-else
-	exec perldoc -f "$@"
-fi
