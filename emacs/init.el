@@ -1127,9 +1127,11 @@ instead."
 ;; Helper for tex-space
 (defmacro my-tex-looking-back (regexp len)
   "Return non-nil if REGEXP prefixed with \\b matches LEN chars backward."
-  `(save-excursion
-     (backward-char ,len)
-     (looking-at ,(concat "\\b" regexp))))
+  `(and
+    (>= (- (point) (point-min)) ,len)
+    (save-excursion
+      (backward-char ,len)
+      (looking-at ,(concat "\\b" regexp)))))
 
 ;; insert '~' or '\ ' instead of ' ' in LaTeX when needed
 ;; Also removes '~' when 2nd space added
