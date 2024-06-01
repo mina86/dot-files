@@ -116,6 +116,14 @@ Windows are matched in most recently focused first order."
   (bind-keys window-keymap
              (concat "W-" (elt keys i))
              (lambda () (set-window-viewport (input-focus) i 0))))
+(bind-keys global-keymap
+           "W-Button4-Click"
+           (lambda ()
+             (set-screen-viewport (% (1+ (car (screen-viewport))) 10) 0)))
+(bind-keys global-keymap
+           "W-Button5-Click"
+           (lambda ()
+             (set-screen-viewport (% (+ 9 (car (screen-viewport))) 10) 0)))
 
 ;;}}}
 ;;{{{ Transparency
