@@ -39,7 +39,7 @@ XTerm*colorUL:         #DD0000
 *color1:               #CC0000
 *color2:               #00CC00
 *color3:               #bd5e01
-*color4:               #0000CC
+*color4:               #6161ec
 *color5:               #CC00CC
 *color6:               #00CCCC
 *color7:               #CCCCCC
@@ -76,7 +76,7 @@ URxvt*iso14755:        0
 URxvt.print-pipe:      cat >$(TMPDIR=$HOME mktemp urxvt.XXXXXX)
 
 ! Terminal in urxvt
-Term.perl-ext-common:  matcher<C1>,tabbedex,searchable-scrollback<M-s>
+Term.perl-ext-common:  matcher<C1>,tabbedex,searchable-scrollback<M-s>,background
 
 #ifdef HOME
 URxvt.backgroundPixmap:    HOME/.urxvt/80-char.png;0x0+0+0:tile
