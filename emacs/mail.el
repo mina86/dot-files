@@ -9,18 +9,16 @@
 
 ;;{{{ Identify
 
-(defconst alt-mail-address
-  (eval-when-compile (rot13-string "zanmnerjvpm@tznvy.pbz")))
-(defconst corp-mail-address
-  (eval-when-compile (rot13-string "zvpuny@arne.bet")))
+(defconst corp-mail-address (eval-when-compile (rot13-string "zca@pbzcbfnoyr.svanapr")))
 
 (setq user-full-name "Michal Nazarewicz"
       user-mail-address (eval-when-compile (rot13-string "zvan86@zvan86.pbz"))
       message-user-fqdn "mina86.com"
 
       message-alternative-emails (regexp-opt (list user-mail-address
-                                                   alt-mail-address
-                                                   corp-mail-address)
+                                                   corp-mail-address
+                                                   (rot13-string "zanmnerjvpm@tznvy.pbz")
+                                                   (rot13-string "zvpuny@arne.bet"))
                                              nil)
       message-dont-reply-to-names message-alternative-emails
 
@@ -120,11 +118,11 @@
       (user-from (concat user-full-name " <" user-mail-address ">"))
       (corp-from (concat user-full-name " <" corp-mail-address ">")))
   (setq gnus-alias-identity-alist
-        `(("priv" nil    ,user-from nil               ,headers "\n" ,signature)
-          ("near" nil    ,corp-from "Near Collective" ,headers "\n" ,signature))
+        `(("priv" nil    ,user-from nil                  ,headers "\n" ,signature)
+          ("comp" nil    ,corp-from "Composable Finance" ,headers "\n" ,signature))
         gnus-alias-default-identity (caar gnus-alias-identity-alist)
         gnus-alias-identity-rules
-        '(("to Near" ("to" "@near.org") "near"))))
+        '(("to Composable" ("to" "@composable.finance") "comp"))))
 (add-hook 'message-setup-hook 'gnus-alias-determine-identity)
 
 ;;}}}
@@ -215,10 +213,12 @@ and 3. wrap to it’s original position."
         notmuch-hello-insert-alltags)
 
       notmuch-saved-searches
-      '(("to me"   . "is:unread and  is:me and -is:near")
-        ("near me" . "is:unread and  is:me and  is:near")
-        ("near"    . "is:unread and -is:me and  is:near")
-        ("rest"    . "is:unread and -is:me and -is:near"))
+      '(("to me"   . "is:unread and  is:me and -is:corp")
+        ("comp me" . "is:unread and  is:me and  is:comp")
+        ("comp"    . "is:unread and -is:me and  is:comp")
+        ;; ("near me" . "is:unread and  is:me and  is:near")
+        ;; ("near"    . "is:unread and -is:me and  is:near")
+        ("rest"    . "is:unread and -is:me and -is:corp"))
 
       notmuch-tag-formats
       '(("unread" (propertize tag 'face '(:foreground "red")))
@@ -227,7 +227,8 @@ and 3. wrap to it’s original position."
       '(("unread" :weight bold)))
 
 (setq-default notmuch-mua-cite-function
-              'message-cite-original-without-signature)
+              'message-cite-original-without-signature
+              notmuch-search-oldest-first nil)
 
 (add-lambda-hook 'notmuch-hello-refresh-hook
   (if (and (eq (point) (point-min))
