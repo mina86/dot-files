@@ -599,9 +599,9 @@ modified beforehand."
 (add-lambda-hook 'compilation-filter-hook
   (ansi-color-apply-on-region compilation-filter-start (point)))
 
-;;   ISearch mode ace-jump-mode
+;;   Search and jumping
 
-(set-key isearch-mode-map [(f1)]      isearch-mode-help)
+(set-key isearch-mode-map [(f1)]      isearch-describe-mode)
 (set-key isearch-mode-map "\C-t"      isearch-toggle-regexp)
 (set-key isearch-mode-map "\C-c"      isearch-toggle-case-fold)
 (set-key isearch-mode-map "\C-j"      isearch-edit-string)
@@ -610,13 +610,11 @@ modified beforehand."
 
 (setq search-whitespace-regexp "[ \t\r]+")
 
-(autoload 'ace-jump-mode "ace-jump-mode" "Emacs quick move minor mode" t)
-(set-key "\M-s" ace-jump-mode)
+(set-key "\M-s" avy-goto-char-timer)
 (setq-default
- ace-jump-mode-scope 'window
- ace-jump-mode-case-fold nil
- ace-jump-mode-move-keys
- (string-to-list "htnsueoagcrlp.,;mwvzkjq'difybx/-\\@#)(+}]{![*=&$"))
+ avy-background t
+ avy-timeout-seconds 0.3
+ avy-keys (string-to-list "htnsueoagcrlp.,;mwvzkjq'difybx/-\\@#)(+}]{![*=&$"))
 
 ;;   Copy/Kill
 

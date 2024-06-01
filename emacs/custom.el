@@ -81,4 +81,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(ace-jump-mode apache-mode ascii-art-to-unicode auto-compile auto-dim-other-buffers auto-package-update bison-mode browse-kill-ring csv-mode form-feed gitattributes-mode gitconfig-mode gitignore-mode gnu-elpa-keyring-update gnus-alias google-c-style haskell-mode magit magit-filenotify markdown-mode multiple-cursors notmuch num3-mode rust-mode sed-mode shift-number typescript-mode)))
+   '(apache-mode ascii-art-to-unicode auto-compile auto-dim-other-buffers
+                 auto-package-update avy bison-mode browse-kill-ring csv-mode
+                 dash-functional evil form-feed gitattributes-mode gitconfig-mode
+                 gitignore-mode gnu-elpa-keyring-update gnus-alias google-c-style
+                 haskell-mode magit magit-filenotify markdown-mode
+                 multiple-cursors notmuch num3-mode protobuf-mode rust-mode s
+                 sed-mode shift-number typescript-mode)))
