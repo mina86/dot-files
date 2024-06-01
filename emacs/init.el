@@ -414,11 +414,20 @@ If function given tries to `describe-function' otherwise uses
 
 (defvar mpn-find-file-map
   (let ((map (make-sparse-keymap))
-        (lst `(("i" . ,(cond ((not user-init-file) ; Called with -Q
-			      "init.el")
-			     ((string-match "\\.elc$" user-init-file)
-                              (substring user-init-file 0 -1))
-			     (user-init-file)))
+        (lst `(("i" . ,(cond
+                        ;; Called with -Q
+                        ((not user-init-file)
+                         "init.el")
+                        ;; Compiled file.  Open the source.
+                        ((string-match "\\.elc$" user-init-file)
+                         (substring user-init-file 0 -1))
+                        ;; Native compiled file.  Finding the source isn’t as
+                        ;; simple as changing extension from .eln to .el.  Just
+                        ;; open init.el.
+                        ((string-match "\\.eln$" user-init-file)
+                         "init.el")
+                        ;; Open whatever init file we’re loading.
+                        (user-init-file)))
                ("e" . "early-init.el")
                ("m" . "mail.el")
                ("c" . "customize.el")
