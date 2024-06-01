@@ -260,6 +260,22 @@ Windows are matched in most recently focused first order."
      ("XF86MonBrightnessUp"   . "xbacklight + 25")
      ("XF86MonBrightnessDown" . "xbacklight - 25"))))
 
+(define (mn-get-browser-priority wnd)
+  (let ((cls (get-x-text-property wnd 'WM_CLASS)))
+    (when (> (length cls) 1)
+      (catch 'return
+        (mapc (lambda (spec)
+                (and (string= (car spec) (aref cls 0))
+                     (or (not (cadr spec))
+                         (string= (cadr spec) (aref cls 1)))
+                     (throw 'return (cddr spec))))
+              '(("Navigator"     "Firefox-esr" . 0)
+                ("Navigator"     "Firefox"     . 0)
+                ("opera"         ()            . 1)
+                ("chromium"      ()            . 2)
+                ("Google-chrome" ()            . 3)
+                ("Navigator"     ()            . 4)))))))
+
 ;;; Looks for a web browser to select.  Switches to a window which currently
 ;;; doesn’t hold input focus prioritising windows as follows:
 ;;;
@@ -269,11 +285,7 @@ Windows are matched in most recently focused first order."
 ;;;
 ;;; If no browser window is found starts Firefox.
 (define (mn-get-browser)
-  (let ((instances '(("Navigator"     . 0) ; Firefox
-                     ("opera"         . 1)
-                     ("chromium"      . 2)
-                     ("Google-chrome" . 3)))
-        (focused (input-focus))
+  (let ((focused (input-focus))
         (best-pri 1000) best found-firefox)
     ;; If focused window is outside of current viewport pretend it’s not
     ;; focused.  This is needed if we switch to far away viewport while
@@ -282,9 +294,7 @@ Windows are matched in most recently focused first order."
       (setq focused nil))
     (map-windows
      (lambda (wnd)
-       (let* ((cls  (get-x-text-property wnd 'WM_CLASS))
-              (pri  (and (> (length cls) 1)
-                         (cdr (assoc (aref cls 0) instances)))))
+       (let ((pri (mn-get-browser-priority wnd)))
          (when (= pri 0)
            (setq found-firefox t))
          (when (and pri
