@@ -1270,6 +1270,7 @@ three times - to the right, four times - centers."
                (org-agenda nil "t")))))
 
 ;; Rust mode
+(defvar rust-indent-offset)
 (add-lambda-hook 'rust-mode-hook
   (setq indent-tabs-mode nil
         rust-indent-offset 4))
