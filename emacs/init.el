@@ -73,7 +73,7 @@ In KEYMAP, define key sequence KEY as DEF.
 KEYMAP can be :global (to mean global keymap, the default), :local (to mean
 the local keymap) or an unquoted symbol (to mean a keymap in given variable).
 
-KEY is anything `define-key' accepts as a key except that if KEYMAP was not
+KEY is anything ‘define-key’ accepts as a key except that if KEYMAP was not
 given, KEY cannot be an unquoted symbol, i.e.:
     (let ((key \"a\"))
       (set-key         key self-insert-command)  ; will *not* work
@@ -83,17 +83,17 @@ If DEF is a single unquoted symbol it will be quoted, otherwise if it is
 a single non-cons value it will not be quoted, otherwise it will be processed
 as a lambda (see below).  Thus the following do what one might expect:
     (set-key \"a\" self-insert-command)
-        ;; same as (global-set-key \"a\" #'self-insert-command)
+        ;; same as (global-set-key \"a\" #\\='self-insert-command)
     (set-key \"\\C-h\" [(backspace)])
         ;; same as (global-set-key \"\\C-h\" [(backspace)])
     (set-key \"\\C-d\" ())
         ;; same as (global-set-key \"\\C-h\" ())
 However, the following will not work:
-    (let ((callback 'self-insert-command))
+    (let ((callback \\='self-insert-command))
       (set-key \"a\" callback))
-        ;; same as (global-set-key \"a\" #'callback)
+        ;; same as (global-set-key \"a\" #\\='callback)
 
-If DEF is a cons value, it's format is:
+If DEF is a cons value, it’s format is:
     ([:args ARGS INTERACTIVE] . BODY)
 and results in the following lambda:
     (lambda ARGS (interactive INTERACTIVE) . BODY)
@@ -108,8 +108,8 @@ For example:
         ;;           (lambda (n) (interactive \"P\")
         ;;             (goto-char (- (point) (* 2 n)))))
 
-This macro is not designed to be a complete replacement for `define-key',
-`global-set-key' or `local-set-key', since it is not capable of dealing with
+This macro is not designed to be a complete replacement for ‘define-key’,
+‘global-set-key’ or ‘local-set-key’, since it is not capable of dealing with
 some forms of DEFs that those functions accept, but instead it is meant as
 a helper to use in user configuration file to save on typing especially when
 lambdas are used."
