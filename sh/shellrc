@@ -138,54 +138,12 @@ if echo foo | grep --color=auto foo >/dev/null 2>/dev/null; then
 fi
 
 # Powerful cd
-_cd_do() {
-	if [ x"$2" != x- ] && [ -e "$2" ] && ! [ -d "$2" ]; then
-		set -- "$1" "$(dirname "$2")"
-	fi
-	command cd "$1" -- "$2" || return
-}
-
-cd() {
-	case "$#:$1" in
-	1:-h)
-		cat <<EOF
-cd
-    Move to home directory.
-cd -P
-    Resolve all symbolic links in \$PWD.
-cd [-P | --] (<dir> | <file> | -)
-    Move to <dir>, dirname(<file>), or \$OLDPWD; -P resolves all symlinks.
-cd [-P | --] (<dir> | <file> | -) <command> [<args> ...]
-    Run <command> in the directory and then come back.
-EOF
-		;;
-	0:|1:--)
-		command cd || return
-		;;
-	1:-P)
-		command cd -P "${PWD}" || return
-		;;
-	1:*)
-		_cd_do "-L" "$1"
-		;;
-	2:--)
-		_cd_do "-L" "$2"
-		;;
-	2:-P)
-		_cd_do "-P" "$2"
-		;;
-	*)
-		if [ "$1" = -- ]; then
-			shift
-			set -- -L "$@"
-		elif [ "$1" != -P ]; then
-			set -- -L "$@"
-		fi
-		( _cd_do "$1" "$2" && shift 2 && exec "$@" )
-	esac
-}
-# Bash interprets ’-=…’ as a flag so ‘--’ is needed but BusyBox complains about
-# it so silence the warning.
+if [ -e ~/.local/bin/pcd.sh ]; then
+	# shellcheck source=../bin/pcd.sh
+	. ~/.local/bin/pcd.sh
+fi
+# Bash interprets ’-=…’ as a flag so ‘--’ is needed
+# but BusyBox complains about it so silence the warning.
 alias -- -='cd -' 2>/dev/null
 
 alias '+=git add'
