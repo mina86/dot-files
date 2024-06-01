@@ -55,7 +55,7 @@
 [rebase]
 	autosquash = yes
 [interactive]
-	singleKey = true
+	singleKey = yes
 
 [url "github:"]
 	pushInsteadOf = git://github.com/
@@ -97,5 +97,14 @@
 	showUntrackedFiles = no
 [advice]
 	detachedHead = false
+	skippedCherryPicks = false
 [init]
 	defaultBranch = master
+[blame]
+	coloring = repeatedLines
+[column]
+	ui = auto dense
+[diff]
+	algorithm = minimal
+[rerere]
+	enabled = true
