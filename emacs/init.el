@@ -463,7 +463,7 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
        (kmacro-end-macro arg)))
    ((and (eq this-command 'kmacro-view-macro)  ;; We are in repeat mode!
          kmacro-view-last-item)
-    (kmacro-exec-ring-item (car kmacro-view-last-item) arg))
+    (funcall (car kmacro-view-last-item) arg))
    ((and arg (listp arg))
     (with-no-warnings (kmacro-call-ring-2nd 1)))
    ((use-region-p)
@@ -646,6 +646,7 @@ modified beforehand."
 
 ;; Other
 (show-paren-mode t)               ;show matching parenthesis.
+(setq show-paren-context-when-offscreen t)
 
 (defface my-fixme-face
   '((t :background "red" :foreground "white" :weight bold))
@@ -733,7 +734,6 @@ modified beforehand."
 (icomplete-mode 1)                ;nicer completion in minibuffer
 (setq icomplete-prospects-height 2) ; don't spam my minibuffer
 (setq suggest-key-bindings 3)     ;suggestions for shortcut keys for 3 seconds
-(setq frame-title-format "Emacs") ;frame title format
 (setq history-delete-duplicates t)
 (setq inhibit-startup-screen    t   ;don't show splash screen
       inhibit-startup-buffer-menu t) ;don't show buffer menu when oppening
@@ -741,6 +741,7 @@ modified beforehand."
 (setq paragraph-start    " *\\([*+-]\\|\\([0-9]+\\|[a-zA-Z]\\)[.)]\\|$\\)"
       require-final-newline t)    ;always end file with NL
 (fset 'yes-or-no-p 'y-or-n-p)     ;make yes/no be y/n
+(setq use-short-answers t)
 (setq-default indicate-empty-lines t) ;show empty lines at the end of file
 (setq-default indicate-buffer-boundaries t) ;show buffer boundries on fringe
 (setq x-alt-keysym 'meta)         ;treat Alt as Meta even if real Meta found
@@ -758,6 +759,9 @@ modified beforehand."
   (if (boundp 'eldoc-documentation-functions)
       (add-hook 'eldoc-documentation-functions #'describe-char-eldoc -50)
     (setq-default eldoc-documentation-function #'describe-char-eldoc)))
+
+; Don’t warn when undo is discarded in large buffers
+(add-to-list 'warning-suppress-types '(undo discard-info))
 
 ;; Saving etc
 (when (fboundp recentf-mode)
