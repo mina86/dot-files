@@ -275,11 +275,7 @@ perform stripping and behaves as plain `save-buffer'."
   (if delete
       (windmove-delete-in-direction dir)
     (windmove-do-window-select dir)
-    (let ((start (point-at-bol))
-          (end   (point-at-eol)))
-      (pulse-momentary-highlight-region
-       (max start (- (point) 10))
-       (min end   (+ (point) 10))))))
+    (pulse-momentary-highlight-one-line)))
 (set-key "\M-F" :args (delete) "P" (mpn-windmove 'right delete))
 (set-key "\M-B" :args (delete) "P" (mpn-windmove 'left delete))
 (set-key "\M-P" :args (delete) "P" (mpn-windmove 'up delete))
