@@ -250,7 +250,7 @@ Windows are matched in most recently focused first order."
      ("W-a" "GIMP"           "gimp")
      ("W-o" "Geeqie"         "geeqie")
      ("Pause"               . ,(sh-maybe libexec "xlocker"))
-     ("Scroll_Lock"         . ,(sh-maybe libexec "xlocker"))
+     ("Scroll_Lock"         . "killall xcompmgr")
      ("Print"               . ,(sh-maybe libexec "xlocker"))
      ("W-\""                . "m rewind")
      ("W-'"                 . "m prev")
@@ -373,6 +373,7 @@ Windows are matched in most recently focused first order."
 (unbind-keys global-keymap "C-Tab")
 
 ;; Window manipulations
+(setq grow-is-maximize nil)
 (bind-keys window-keymap
            ;; Move to an edge
            "W-c"   'pack-window-up
@@ -404,9 +405,7 @@ Windows are matched in most recently focused first order."
                (lambda (spec)
                  (when (string-looking-at (car spec) sn)
                    (apply mn-run-unless (cdr spec))))
-               `((""                  "^Emacs/emacs$" "e")
-                 ("erwin|pikus"       "/IRC$"         ,mn-irssi-command)
-                 ("erwin"             "/MPD$"         ,mn-mpdshow-command)))
+               `((""                  "^Emacs/emacs$" "e")))
             (set-screen-viewport 0 0))))
 
 ;;}}}
