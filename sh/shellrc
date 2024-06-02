@@ -82,7 +82,7 @@ esac
 
 unalias dir vdir l 2>/dev/null
 unset LS_OPTIONS
-alias ls='ls -vHFT0 --si --color=auto --time-style=long-iso'
+alias ls='ls -vFT0 --si --color=auto --time-style=long-iso'
 alias ll='ls -o'
 
 unalias md 2>/dev/null
@@ -110,7 +110,7 @@ l () {
 alias rmd=rmdir
 
 # Locale for en_GB changed such that date started showing 12-hour time which is
-# a moronic.  Force C locale when running date.
+# moronic.  Force C locale when running date.
 alias date='LANG=C date'
 
 if [ -x /usr/bin/ncal ]; then
@@ -149,22 +149,38 @@ alias -- -='cd -' 2>/dev/null
 alias '+=git add'
 alias '+u=git add -u'
 alias '+p=git add -p'
+alias gg='git grep -n'
 
 alias @='for i in'
 
+alias c=cargo
 cargo() {
 	set -- nice ~/.local/bin/cargo "$@"
+	#set -- nice /usr/bin/cargo "$@"
 	case $PWD in
-	*/code/near/*)
+	*/code/near/rust-rocksdb/*)
 		CARGO_PROFILE_RELEASE_LTO=false \
 		CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64 \
 		CARGO_PROFILE_DEV_DEBUG=false \
+			"$@"
+		;;
+	*/code/near/*|*/code/comp/composable/*)
+		CARGO_PROFILE_RELEASE_LTO=false \
+		CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64 \
+		CARGO_PROFILE_DEV_DEBUG=false \
+		ROCKSDB_LIB_DIR=/usr/lib/x86_64-linux-gnu \
 			"$@"
 		;;
 	*)
 		CARGO_PROFILE_DEV_DEBUG=false "$@"
 	esac
 }
+
+if [ -s ~/.nvm/nvm.sh ]; then
+	export NVM_DIR
+	NVM_DIR="$HOME/.nvm"
+	. ~/.nvm/nvm.sh
+fi
 
 # No need to set environment if it has already been set.
 ${MINA86RC:+return}
