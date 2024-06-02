@@ -413,29 +413,29 @@ Windows are matched in most recently focused first order."
 
 ;; Desktop background
 
-(when (file-exists-p (concat (getenv "HOME") "/.local/libexec/set-bg"))
-  (require 'rep.io.timers)
+(let ((set-bg-script (concat (getenv "HOME") "/.local/libexec/set-bg")))
+  (when (file-exists-p set-bg-script)
+    (require 'rep.io.timers)
 
-  (define set-bg--timer (make-timer (lambda (_) (set-bg))))
+    (define set-bg--timer (make-timer (lambda (_) (set-bg))))
 
-  (define (set-bg--state-func proc)
-    (set-timer set-bg--timer (if (= (process-exit-value proc) 0) 900 10)))
+    (define (set-bg--state-func proc)
+      (set-timer set-bg--timer (if (= (process-exit-value proc) 0) 900 10)))
 
-  (define (set-bg)
-    (delete-timer set-bg--timer)
-    (start-process (let ((proc (make-process)))
-                     (set-process-output-stream proc standard-output)
-                     (set-process-error-stream proc standard-error)
-                     (set-process-function proc set-bg--state-func)
-                     (set-process-dir proc "/")
-                     (set-process-prog proc (concat (getenv "HOME")
-                                                    "/.local/libexec/set-bg"))
-                     proc))
-    ())
+    (define (set-bg)
+      (delete-timer set-bg--timer)
+      (start-process (let ((proc (make-process)))
+                       (set-process-output-stream proc standard-output)
+                       (set-process-error-stream proc standard-error)
+                       (set-process-function proc set-bg--state-func)
+                       (set-process-dir proc "/")
+                       (set-process-prog proc set-bg-script)
+                       proc))
+      ())
 
-  (set-bg)
-  (add-hook 'randr-change-notify-hook set-bg)
-  (bind-keys root-window-keymap "Button1-Click2" set-bg))
+    (set-bg)
+    (set-hook 'randr-change-notify-hook set-bg)
+    (bind-keys root-window-keymap "Button1-Click2" set-bg)))
 
 ;;{{{ Matcher
 
