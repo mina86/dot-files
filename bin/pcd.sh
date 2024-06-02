@@ -1,5 +1,35 @@
 # shellcheck shell=sh disable=SC2164
 
+# Powerful cd, a cd command replacement
+# Copyright 2024 Michał Nazarewicz <mina86@mina86.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the “Software”), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
+# A ‘cd’ command replacement with additional features.  To use source this file
+# and proceed using ‘cd’ as you’ve been doing before.  To install permanently,
+# add sourcing of the file to ~/.bashrc, ~/.shellrc or equivalent for your
+# choice of shell.
+#
+# See https://mina86.com/2024/powerful-cd/ for more detailed description.
+
+
 cd() {
 	case $#:$1 in
 	0:)
@@ -44,6 +74,7 @@ EOF
 		( _cd_do "$1" "$2" && shift 2 && exec "$@" )
 	fi
 }
+
 
 _cd_do() {
 	case $2 in
