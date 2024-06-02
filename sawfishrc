@@ -472,88 +472,68 @@ Windows are matched in most recently focused first order."
       (when (and y h (= y 0) (= h (screen-height)))
         (window-put wnd 'queued-horizontal-maximize #t)))))
 
-(define-match-window-setter 'sticky-and-skip
-  (lambda (w prop value)
-    (declare (unused prop))
-    (mapc (lambda (prp) (window-put w prp value))
-          '(sticky sticky-viewport cycle-skip window-list-skip task-list-skip))))
-
-
 ;; (define-match-window-matcher 'screen
 ;;   (lambda (w _prop value)
 ;;     (and (let ((w) (car value)) (or (not w) (= (screen-width ) w)))
 ;;          (let ((h) (car value)) (or (not h) (= (screen-height) h))))))
 
 
-(let ((match-width
-       (lambda (_wnd w)
-         (= w (screen-width))))
-      (match-height
-       (lambda (_wnd h)
-         (= h (screen-height)))))
-  (mapc
-   (lambda (wnd-rule)
-     (let ((matches (car wnd-rule)))
-       (cond ((stringp matches)
-              (setq matches (list (cons 'WM_CLASS  matches))))
-             ((stringp (car matches))
-              (setq matches `((WM_CLASS . ,(car matches)) . ,(cdr matches)))))
-       (mapc
-        (lambda (rule)
-          (let ((m matches))
-            (unless (consp (car rule))
-              (let ((w (car rule)) (h (cadr rule)))
-                (when h (setq m (cons (list match-height h) m)))
-                (when w (setq m (cons (list match-width  w) m)))
-                (setq rule (cddr rule))))
-            (when (numberp (caar rule))
-              (setq rule (cons (cons 'location (car rule))
-                               (cdr rule))))
-            (setq match-window-profile (cons (cons m rule)
-                                             match-window-profile))))
-        (cdr wnd-rule))))
-   '(("/Term$"
-      (1920 1080  (1200  110   120   97)))
+(let ((match-screen (lambda (_wnd width height)
+                      (and (or (eq t width)
+                               (= width (screen-width)))
+                           (or (eq t height)
+                               (= height (screen-height))))))
+      (first-term-p (lambda (wnd)
+                      (and (mpn-terminal-window-p wnd)
+                           (do ((wnds (managed-windows) (cdr wnds)))
+                               ((or (null wnds)
+                                    (and (not (eq (car wnds) wnd))
+                                         (mpn-terminal-window-p (car wnds))))
+                                (null wnds)))))))
+  (setq match-window-profile
+        (apply nconc
+               (mapcar
+                (lambda (profile-set)
+                  (when (stringp (caar profile-set))
+                    (setcar (car profile-set)
+                            (cons 'WM_CLASS (caar profile-set))))
+                  (mapcar (lambda (profile)
+                            (let ((matches (car profile-set)))
+                              (when (or (numberp (car profile))
+                                        (eq t (car profile)))
+                                (setq matches (cons (list match-screen
+                                                          (car profile)
+                                                          (cadr profile))
+                                                    matches)
+                                      profile (cddr profile)))
+                              (cons matches profile)))
+                          (cdr profile-set)))
+                `((("^Emacs/emacs$")
+                   (4160 2560  (location  136    0  1464 2560  1)))
 
-     ("/IRC$"
-      (1920 1080  (1200   10   120   10))
-      (           (sticky . #t) (sticky-viewport . #t)))
+                  (((,first-term-p))
+                   (4160 2560  (location 1600    0   906 1440)))
 
-     ("/MPD$"
-      (1920 1080  (1200    0   120   1))
-      (           (focus-when-mapped . #f) (focus-mode . click)
-                  (sticky-and-skip . #t)))
+                  (("^Firefox(-esr)?/Navigator$")
+                   (4160 2560  (location 2506    0  1654 1440  1)))
 
-     ("^Firefox(-esr)?/Navigator$"
-      (1920 1080  (   0    0  1920 1080  2))
-      )
+                  (("^MPlayer/|^mpv/|^openttd/|^Inkscape/|^[Vv]irt-manager/|^gzdoom/")
+                   (           (alpha 1 . 1)))
+                  (("^Gimp/|^Inkscape/")
+                   (           (alpha 1 . 0.7)))
 
-     ;; Emacs
-     ("^Emacs"
-      (1680 1050  (   0    0    80  105  1) (maximize . vertical))
-      (1920 1080  (   0    0   162  107  1) (maximize . vertical))
-      (1600 1200  (   0    0    80  120  1) (maximize . vertical))
-      (3200 1200  (  72    0   170  118  1) (maximize . vertical))
-      (2400 1920  (   0    0    80  192  1) (maximize . vertical))
-      (3600 1080  (1920    0   160  105  1) (maximize . vertical))
-      (#f   1600  (   0    0    80  160  1) (maximize . vertical)))
+                  ;; GIMP
+                  (("^Gimp/gimp$" (WM_WINDOW_ROLE . "^gimp-[^s]"))
+                   (           (viewport 2 . 1) (group . Gimp)))
 
-     ;; Some windows do not like alpha
-     ("^Gimp/|^MPlayer/|^openttd/|^Inkscape/|^[Vv]irt-manager/"
-      ((alpha 1 . 0.7)))
+                  (("^Gimp/gimp$" (WM_WINDOW_ROLE . "^gimp-startup$"))
+                   (           (place-mode . centered) (depth . 16)
+                               (never-focus . #t) (focus-when-mapped . #f)
+                               (sticky-and-skip . #t)))
 
-     ;; GIMP
-     (("^Gimp/gimp$" (WM_WINDOW_ROLE . "^gimp-[^s]"))
-      ((viewport 2 . 1) (group . Gimp) (alpha 1 . 0.7)))
-
-     (((WM_CLASS . "^Gimp/gimp$") (WM_WINDOW_ROLE . "^gimp-startup$"))
-      (           (place-mode . centered) (depth . 16) (never-focus . #t)
-                  (focus-when-mapped . #f) (sticky-and-skip . #t)))
-
-     ;; Geeqie
-     (((WM_ICON_NAME . "Geeqie$"))
-      (           (viewport 3 . 1) (alpha 1 . 0.7))
-      (1200 1600  (viewport 4 . 1))))))
+                  ;; Geeqie
+                  (((WM_ICON_NAME . "Geeqie$"))
+                   (           (viewport 3 . 1) (alpha 1 . 1))))))))
 
 ;;}}}
 
