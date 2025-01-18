@@ -90,20 +90,20 @@ EXEC 01;32     # This is for files with execute permission:
 # List any file extensions like '.gz' or '.tar' that you would like ls
 # to colorize below. Put the extension, a space, and the color init string.
 # (and any comments you want to add after a '#')
- 
+
 # DOS-style executables (bright green)
-.bat  01;32
-.BAT  01;32
-.btm  01;32
-.BTM  01;32
-.cmd  01;32
-.CMD  01;32
-.com  01;32
-.COM  01;32
-.dll  01;32
-.DLL  01;32
-.exe  01;32
-.EXE  01;32
+#.bat  01;32
+#.BAT  01;32
+#.btm  01;32
+#.BTM  01;32
+#.cmd  01;32
+#.CMD  01;32
+#.com  01;32
+#.COM  01;32
+#.dll  01;32
+#.DLL  01;32
+#.exe  01;32
+#.EXE  01;32
 
 # archives or compressed (bright red)
 .7z   01;31
@@ -153,6 +153,8 @@ EXEC 01;32     # This is for files with execute permission:
 .axv  01;35
 .avi  01;35
 .AVI  01;35
+.avif 01;35
+.AVIF 01;35
 .bmp  01;35
 .BMP  01;35
 .divx 01;35
@@ -167,6 +169,8 @@ EXEC 01;32     # This is for files with execute permission:
 .JPG  01;35
 .jpeg 01;35
 .JPEG 01;35
+.jxl  01;35
+.JXL  01;35
 .m2a  01;35
 .M2A  01;35
 .m2v  01;35
