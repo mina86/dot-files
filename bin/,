@@ -3,5 +3,5 @@
 if [ $# -eq 0 ]; then
 	paste -sd,
 else
-	printf "%s\n" "$@" | paste -sd,
+	printf '%s\n' "$@" | paste -sd,
 fi
