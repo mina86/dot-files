@@ -239,7 +239,6 @@ mpv/*              .config/mpv/@
 sawfishrc          .sawfish/rc
 sh/*               .@
 statuses           .irssi/@
-x/80-char.png      .urxvt/@
 x/Xresources       .config/@
 x/gtk-3.0.ini      .config/gtk-3.0/settings.ini
 x/gtkrc-2.0        .@
