@@ -84,7 +84,7 @@ PROMPT_COMMAND='PS1=${__PS1//"{{}}"/"$(eval "$PS1_COMMANDS")"}'
 ## not exactly the same way.
 ##
 __COMMAND_RPROMPT_CACHE_KEY=
-__COMMAND_RPROMPT_TIMEZONES='NYC:US/Eastern LON:Europe/London ZRH:Europe/Zurich TOK:Asia/Tokyo'
+__COMMAND_RPROMPT_TIMEZONES='NYC:America/New_York LON:Europe/London ZRH:Europe/Zurich TOK:Asia/Tokyo'
 __command_rprompt() {
 	local n current
 	n=$((COLUMNS - 4))
