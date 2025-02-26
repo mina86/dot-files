@@ -213,7 +213,9 @@ and 3. wrap to it’s original position."
         notmuch-hello-insert-alltags)
 
       notmuch-saved-searches
-      '(("to me"   . "is:unread and  is:me and -is:corp")
+      '(("to me"   . "is:unread and  is:me and -is:corp and -is:jobs and -is:local")
+        ("local"   . "is:unread and  is:local")
+        ("jobs"    . "is:unread and  is:jobs")
         ("comp me" . "is:unread and  is:me and  is:comp")
         ("comp"    . "is:unread and -is:me and  is:comp")
         ;; ("near me" . "is:unread and  is:me and  is:near")
