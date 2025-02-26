@@ -45,7 +45,7 @@
  '(font-lock-variable-name-face ((t (:foreground "lightgoldenrod"))))
  '(font-lock-warning-face ((t (:foreground "pink" :weight bold))))
  '(form-feed-line ((t (:strike-through "#366"))))
- '(fringe ((t (:background "#112211"))))
+ '(fringe ((t (:inherit mode-line-active))))
  '(header-line ((t (:inherit mode-line :background "#006" :foreground "#FFF"))))
  '(help-argument-name ((t (:inherit font-lock-variable-name-face))))
  '(highlight ((t (:background "#060" :underline "#0F0"))))
