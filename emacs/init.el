@@ -769,6 +769,9 @@ modified beforehand."
 (setq backup-by-copying-when-linked t) ;preserve hard links
 (auto-compression-mode 1)         ;automatic compression
 (setq make-backup-files nil)      ;no backup
+(setq create-lockfiles nil)       ;no lockfiles.  I’ve never needed it to avoid
+                                  ; editing collisions and started having issues
+                                  ; with lockfiles on SMB share
 (global-auto-revert-mode 1)       ;automaticly reload buffer when changed
 (setq vc-handled-backends nil)    ;I don't use vc-mode
 (setq auto-save-no-message t)
