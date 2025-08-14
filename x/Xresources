@@ -78,7 +78,6 @@ URxvt.print-pipe:      cat >$(TMPDIR=$HOME mktemp urxvt.XXXXXX)
 ! Terminal in urxvt
 Term.perl-ext-common:  matcher<C1>,tabbedex,searchable-scrollback<M-s>,background
 
-URxvt.backgroundPixmap:    HOME/.urxvt/80-char.png;0x0+0+0:tile
 URxvt.background.border: true
 ! TW / TW is there to signal that the image depends on terminal width.
 URxvt.background.expr: extend merge \
