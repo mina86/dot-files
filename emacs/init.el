@@ -1228,12 +1228,12 @@ three times - to the right, four times - centers."
 
 (add-hook 'tildify-space-predicates #'mn-tildify-space-needs-hard-space-p)
 
-(add-hook 'prog-mode-hook (lambda () (setq fill-column 80)))
 (add-hook 'csv-mode-hook 'turn-off-auto-fill)
 (add-hook 'wdired-mode-hook 'turn-off-auto-fill)
 (add-hook 'minibuffer-setup-hook 'turn-off-auto-fill)
 
-(setq-default display-fill-column-indicator t
+(setq-default fill-column 80
+              display-fill-column-indicator t
               display-fill-column-indicator-character ?│
               auto-fill-function 'do-auto-fill
               comment-auto-fill-only-comments t)
