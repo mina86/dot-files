@@ -14,7 +14,11 @@
 ;; initial frame as the settings are applied after its displayed.  We could do
 ;; this by setting the options via X resources but that would spread Emacs
 ;; configuration into multiple places.  It’s cleaner to do it here.
-(let ((font "-adobe-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1"))
+(let ((font (eval-when-compile
+              (let ((size (if (string= (system-name) "tuptus") 16 10)))
+                (format
+                 "-adobe-courier-medium-r-normal-*-%d-*-*-*-*-*-iso10646-1"
+                 size)))))
   (setq default-frame-alist `((font             . ,font)
                               (left             . 0)
                               (top              . 0)
