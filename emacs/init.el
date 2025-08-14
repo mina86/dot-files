@@ -297,7 +297,7 @@ perform stripping and behaves as plain `save-buffer'."
 
 (set-key [(control return)]        my-jump)
 (set-key [(control shift mouse-1)] ffap-at-mouse)
-(set-key ctl-x-map "\C-f"          ffap)
+;(set-key ctl-x-map "\C-f"          ffap)
 
 ;; Make q close current buffer if it's read-only
 (set-key "q" :args (n) "p"
