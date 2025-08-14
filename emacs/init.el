@@ -281,7 +281,7 @@ perform stripping and behaves as plain `save-buffer'."
 (set-key "\M-P" :args (delete) "P" (mpn-windmove 'up delete))
 (set-key "\M-N" :args (delete) "P" (mpn-windmove 'down delete))
 
-(set-key ctl-x-map "k"    kill-this-buffer)  ; don't ask which buffer to kill
+(set-key ctl-x-map "k"    kill-current-buffer)  ; don't ask which buffer to kill
 (set-key "\C-cr"          revert-buffer)     ; Reload buffer
 (set-key ctl-x-map "\C-b" (switch-to-buffer (other-buffer))) ; C-x C-b switch
 
@@ -434,15 +434,13 @@ If function given tries to `describe-function' otherwise uses
                ("b" . "~/.bashrc")
                ("S" . "~/.shellrc")
                ("s" . "~/.sawfish/rc"))))
-    (while lst
-      (when-let ((path (cdar lst)))
+    (dolist (el lst map)
+      (when-let* ((path (cdr el)))
 	(unless (eq ?/ (aref path 0))
 	  (setq path (expand-file-name path user-emacs-directory)))
 	(when (file-exists-p path)
-	  (define-key map (caar lst)
-	    (lambda () (interactive) (find-file path)))))
-      (setq lst (cdr lst)))
-    map)
+	  (define-key map (car el)
+	              (lambda () (interactive) (find-file path)))))))
   "Keymap for characters following the F2 key.")
 
 (global-set-key [(f2)] mpn-find-file-map)
@@ -488,21 +486,20 @@ Optional argument NO-REPEAT is passed to `kmacro-call-macro' function."
 (require 'remember)
 
 (defun remember-notes-initial-buffer ()
-  (if-let ((buf (find-buffer-visiting remember-data-file)))
-      ;; If notes are already open, simply return the buffer.  No further
-      ;; processing necessary.  This case is needed because with daemon mode,
-      ;; ‘initial-buffer-choice’ function can be called multiple times.
-      buf
-    (if-let ((buf (get-buffer remember-notes-buffer-name)))
-        (kill-buffer buf))
-    (save-current-buffer
-      (remember-notes t)
-      (condition-case nil
-          (cl-letf (((symbol-function 'yes-or-no-p) (lambda (&rest _) t)))
-            (recover-this-file))
-        (error)
-        (user-error))
-      (current-buffer))))
+   ;; If notes are already open, return the buffer.  This case is needed because
+   ;; with daemon mode, ‘initial-buffer-choice’ can be called multiple times.
+  (or (find-buffer-visiting remember-data-file)
+      (progn
+        (when-let* ((buf (get-buffer remember-notes-buffer-name)))
+          (kill-buffer buf))
+        (save-current-buffer
+          (remember-notes t)
+          (condition-case nil
+              (cl-letf (((symbol-function 'yes-or-no-p) (lambda (&rest _) t)))
+                (recover-this-file))
+            (error)
+            (user-error))
+          (current-buffer)))))
 
 (setq remember-notes-buffer-name "*scratch*"
       initial-buffer-choice #'remember-notes-initial-buffer)
@@ -615,6 +612,7 @@ modified beforehand."
 
 (setq search-whitespace-regexp "[ \t\r]+")
 
+(require 'avy)
 (set-key "\M-s" avy-goto-char-timer)
 (setq-default
  avy-background t
@@ -643,6 +641,7 @@ modified beforehand."
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (when (file-exists-p custom-file)
   (load-file custom-file))
+(setq-default custom-unlispify-remove-prefixes t)
 
 ;; Other
 (show-paren-mode t)               ;show matching parenthesis.
@@ -1051,7 +1050,7 @@ optional closing tags.  For example, if buffer is
 
 return context for \"div\" tag rather than \"p\" since p’s close
 tag is optional."
-  (when-let ((ctx (save-excursion (sgml-get-context t))))
+  (and-let* ((ctx (save-excursion (sgml-get-context t))))
     (setq ctx (nreverse ctx))
     (while (and ctx (string-match-p mpn-sgml-never-close-regexp
                                     (sgml-tag-name (car ctx))))
@@ -1066,10 +1065,10 @@ optional close tags (see ‘mpn-sgml-never-close-regexp’).  If
 called with prefix argument (even if it’s equal one) or preceding
 character is not less than, call ‘self-insert-command’ instead."
   (interactive (list current-prefix-arg))
-  (if-let ((context (and (not prefix)
-                         (eq (preceding-char) ?<)
-                         (mpn-sgml-get-context-for-close)))
-           (tag-name (sgml-tag-name context)))
+  (if-let* ((context (and (not prefix)
+                          (eq (preceding-char) ?<)
+                          (mpn-sgml-get-context-for-close)))
+            (tag-name (sgml-tag-name context)))
       (progn
         (insert "/" tag-name ">")
         (indent-according-to-mode))
@@ -1084,10 +1083,10 @@ argument (even if it’s equal one) or preceding character is not
 the same as the one being inserted, call ‘self-insert-command’
 instead."
   (interactive (list current-prefix-arg last-command-event))
-  (if-let ((ent (and (eq char (preceding-char))
-                     (alist-get char '((?< . "&lt;")
-                                       (?> . "&gt;")
-                                       (?& . "&amp;"))))))
+  (if-let* ((ent (and (eq char (preceding-char))
+                      (alist-get char '((?< . "&lt;")
+                                        (?> . "&gt;")
+                                        (?& . "&amp;"))))))
       (progn
         (delete-char -1)
         (insert ent))
@@ -1307,8 +1306,7 @@ three times - to the right, four times - centers."
           (setcdr pair 'cperl-mode)))
     list))
  (list auto-mode-alist interpreter-mode-alist))
-(setq cperl-invalid-face nil  ; don't highlight trailing white-space
-      cperl-highlight-variables-indiscriminately t
+(setq cperl-highlight-variables-indiscriminately t
       cperl-electric-backspace-untabify nil)
 
 ;; shell-script-mode
