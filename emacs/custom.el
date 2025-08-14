@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -83,8 +84,8 @@
  '(package-selected-packages
    '(apache-mode ascii-art-to-unicode auto-compile auto-dim-other-buffers
                  auto-package-update avy bison-mode browse-kill-ring csv-mode
-                 dash-functional evil form-feed gitattributes-mode gitconfig-mode
-                 gitignore-mode gnu-elpa-keyring-update gnus-alias google-c-style
-                 haskell-mode magit magit-filenotify markdown-mode
+                 dash-functional djvu evil form-feed gitattributes-mode
+                 gitconfig-mode gitignore-mode gnu-elpa-keyring-update
+                 gnus-alias google-c-style haskell-mode markdown-mode
                  multiple-cursors notmuch num3-mode protobuf-mode rust-mode s
-                 sed-mode shift-number typescript-mode)))
+                 sed-mode shift-number typescript-mode vterm)))
