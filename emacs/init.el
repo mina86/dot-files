@@ -1169,9 +1169,10 @@ it's not bound to space, the results may be somehow surprising."
     (insert "\\ "))
    (t (self-insert-command 1))))
 
-(eval-when-compile (require 'tex-mode))
-(add-lambda-hook '(tex-mode-hook latex-mode-hook)
-  (set-key tex-mode-map " " tex-space))
+;; (eval-when-compile (require 'tex-mode))
+;; (add-lambda-hook '(tex-mode-hook latex-mode-hook)
+;;   (set-key tex-mode-map " " tex-space))
+;; (define-key tex-mode-map " " #'self-insert-command)
 
 ;; Insert '\ ' instead of ' ' in nroff when needed
 ;; Also removes '\' when 2nd space added
@@ -1195,9 +1196,9 @@ it's not bound to space, the results may be somehow surprising."
     (insert-char ?\\ 1) (self-insert-command 1))
    (t (self-insert-command 1))))
 
-(eval-when-compile (require 'nroff-mode))
-(add-lambda-hook 'nroff-mode-hook
-  (set-key nroff-mode-map " " nroff-space))
+;; (eval-when-compile (require 'nroff-mode))
+;; (add-lambda-hook 'nroff-mode-hook
+;;   (set-key nroff-mode-map " " nroff-space))
 
 ;;   Misc
 
