@@ -1324,6 +1324,9 @@ three times - to the right, four times - centers."
 (unless (daemonp)
  (server-start))
 
+(setq-default dired-listing-switches "-Aog --si --time-style=+%Y-%m-%d --group-directories-first"
+              dired-mouse-drag-files t)
+
 (provide 'init)
 
 ;; Local
