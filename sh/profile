@@ -39,6 +39,8 @@ if less=$(which less 2>&1) && [ -n "$less" ]; then
 
 	if [ -x ~/.local/bin/lesspipe ]; then
 		eval "$(~/.local/bin/lesspipe --install-lesspipe)"
+	elif [ -x ~/code/tinyapps/lesspipe ]; then
+		eval "$(~/code/tinyapps/lesspipe --install-lesspipe)"
 	fi
 fi
 unset less
