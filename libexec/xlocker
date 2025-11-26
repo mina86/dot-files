@@ -7,7 +7,7 @@ if m pause-maybe; then
 	exec ln -sf ~/.local/bin/m "$playing_file"
 fi &
 
-sleep 0.1
+sleep 0.5
 
 if [ -x ~/.local/libexec/slock ]; then
 	~/.local/libexec/slock
