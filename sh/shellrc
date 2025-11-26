@@ -182,6 +182,10 @@ if [ -s ~/.nvm/nvm.sh ]; then
 	. ~/.nvm/nvm.sh
 fi
 
+if [ -d ~/.local/share/games/fortunes ] && which fortune >/dev/null 2>&1; then
+	fortune -e ~/.local/share/games/fortunes
+fi
+
 # No need to set environment if it has already been set.
 ${MINA86RC:+return}
 MINA86RC=ok
