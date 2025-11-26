@@ -72,7 +72,7 @@ esac
 # Add title to terminals
 __tsl=$(tput tsl 2>/dev/null)
 if [ -n "$__tsl" ]; then
-	__PS1='\['$__tsl$USER@$host$(tput fsl)'\]'$__PS1
+	__PS1='\['$__tsl$USER@${HOSTNAME#%%.*}$(tput fsl)'\]'$__PS1
 fi
 
 unset __tsl __close __sp __ellipsis

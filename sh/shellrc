@@ -4,59 +4,6 @@
 # Not interactive?
 case $- in *i*) : ;; *) return; esac
 
-case ${HOST:-} in
-'')
-	host=$(hostname 2>/dev/null)
-	if [ -z "$host" ]; then
-		# My OpenWRT is missing hostname command and I don’t know where
-		# to get it from.  Fortunately it has Python which I can use
-		# instead.
-		host=$(python -c 'import socket; print socket.gethostname()')
-	fi
-	host=${host%%.*}
-	;;
-*)
-	host=${HOST%%.*}
-esac
-
-# Make sure basic variables are set.  This should be guaranteed by the
-# environment (e.g. login) but I’ve seen those not being set in some weird
-# circumstances (maybe it was Solaris?).
-case $USER in
-'')
-	case $LOGNAME in
-	'') USER=$(id -un); LOGNAME=$USER ;;
-	*)  USER=$LOGNAME
-	esac
-	;;
-*)
-	LOGNAME=${LOGNAME:-$USER}
-esac
-case $HOME in '')
-	HOME=$(eval echo ~"$USER")
-esac
-
-# Add ~/.local/bin and ~/.code/tinyapps to PATH and make sure relative paths are
-# not present in it.  This needs to be done early so that ‘which’ calls below
-# work correctly.
-case ":$PATH:" in
-*:"$HOME"/.local/bin:*)
-	: ;;
-*)
-	if [ -d ~/code/tinyapps ]; then
-		PATH=$HOME/code/tinyapps:$PATH
-	fi
-	if [ -d ~/.local/bin ]; then
-		PATH=$HOME/.local/bin:$PATH
-	fi
-	if [ -d ~/.npm/packages/bin ]; then
-		PATH=$HOME/.npm/packages/bin:$PATH
-	fi
-	PATH=$(echo ":$PATH:" | sed -e 's~::*\(\([^/:][^:]*\)\?:\)*~:~g' \
-	                            -e 's/^::*//' -e 's/::*$//')
-esac
-export PATH
-
 # When running as regular user I don’t want others reading my stuff.  When
 # running as root though, I often create system files and those I want world to
 # be able to read.  This is why I use 077 umask for normal users and 022 for
@@ -65,20 +12,22 @@ export PATH
 # While here, set timeout for root shells so that they get automatically closed
 # if I forget do to it.  And also set PS1 the default PS1 which works for all
 # shells.
-case $USER in
-root)
+if [ root = "$LOGNAME" ]; then
 	umask 0022
 	TMOUT=1200
 	PS1='# '
-	;;
-*)
+else
 	umask 0077
 	PS1='$ '
-esac
+fi
 
-case $SSH_CLIENT$SSH_CONNECTION in ?*)
-	PS1="[$host]$PS1"
-esac
+# Show host name if this is remote host.
+if [ -n "$SSH_CLIENT$SSH_CONNECTION" ]; then
+	# HOSTNAME is defined in ~/.profile.
+	# shellcheck disable=SC3028
+	PS1="[${HOSTNAME##%%.*}]$PS1"
+	unset host
+fi
 
 unalias dir vdir l 2>/dev/null
 unset LS_OPTIONS
@@ -177,75 +126,42 @@ if [ -x ~/.local/bin/cargo ]; then
 	}
 fi
 
-if [ -s ~/.nvm/nvm.sh ]; then
-	export NVM_DIR
-	NVM_DIR="$HOME/.nvm"
-	. ~/.nvm/nvm.sh
+# Update colours whenever TERM changes.
+if [ "$__old_TERM" != "$TERM" ]; then
+	__old_TERM=$TERM
+	export __old_TERM
+
+	if [ -r ~/.dir_colors ]; then
+		eval "$(dircolors -b ~/.dir_colors)"
+	fi
+
+	if [ -n "$LESS" ]; then
+		if which tput >/dev/null 2>&1; then
+			LESS_TERMCAP_md=$(tput setaf 2)   # begin bold
+			LESS_TERMCAP_mb=$(tput setaf 1)   # begin blinking
+			LESS_TERMCAP_us=$(tput setaf 6)   # begin underline
+			LESS_TERMCAP_so=$(tput setab 3)   # begin stand-out-mode - info box
+			LESS_TERMCAP_se=$(tput sgr0)      # end stand-out-mode
+		else
+			esc=$(printf \\33)
+			LESS_TERMCAP_md=$esc'[36m'        # begin bold
+			LESS_TERMCAP_mb=$esc'[31m'        # begin blinking
+			LESS_TERMCAP_us=$esc'[33m'        # begin underline
+			LESS_TERMCAP_so=$esc'[38;43m'     # begin stand-out-mode - info box
+			LESS_TERMCAP_se=$esc'[0m'         # end stand-out-mode
+			unset esc
+		fi
+		LESS_TERMCAP_ue=$LESS_TERMCAP_se  # end underline
+		LESS_TERMCAP_me=$LESS_TERMCAP_se  # end mode
+		export LESS_TERMCAP_md LESS_TERMCAP_mb LESS_TERMCAP_us
+		export LESS_TERMCAP_se LESS_TERMCAP_ue LESS_TERMCAP_me
+		export LESS_TERMCAP_so
+	fi
 fi
 
 if [ -d ~/.local/share/games/fortunes ] && which fortune >/dev/null 2>&1; then
 	fortune -e ~/.local/share/games/fortunes
 fi
-
-# No need to set environment if it has already been set.
-${MINA86RC:+return}
-MINA86RC=ok
-export MINA86RC
-
-if which nano >/dev/null 2>&1; then
-	EDITOR=nano
-	VISUAL=nano
-	export EDITOR VISUAL
-fi
-
-if less=$(which less 2>&1) && [ -n "$less" ]; then
-	PAGER=$less
-	LESS=-FMSRj4
-	export PAGER LESS
-
-	if [ -x ~/.local/bin/lesspipe ]; then
-		eval "$(~/.local/bin/lesspipe --install-lesspipe)"
-	fi
-
-	if which tput >/dev/null 2>&1; then
-	    LESS_TERMCAP_md=$(tput setaf 2)   # begin bold
-	    LESS_TERMCAP_mb=$(tput setaf 1)   # begin blinking
-	    LESS_TERMCAP_us=$(tput setaf 6)   # begin underline
-	    LESS_TERMCAP_so=$(tput setab 3)   # begin stand-out-mode - info box
-	    LESS_TERMCAP_se=$(tput sgr0)      # end stand-out-mode
-	    LESS_TERMCAP_ue=$LESS_TERMCAP_se  # end underline
-	    LESS_TERMCAP_me=$LESS_TERMCAP_se  # end mode
-	else
-	    esc=$(printf \\33)
-	    LESS_TERMCAP_md=$esc'[36m'        # begin bold
-	    LESS_TERMCAP_mb=$esc'[31m'        # begin blinking
-	    LESS_TERMCAP_us=$esc'[33m'        # begin underline
-	    LESS_TERMCAP_so=$esc'[38;43m'     # begin stand-out-mode - info box
-	    LESS_TERMCAP_se=$esc'[0m'         # end stand-out-mode
-	    LESS_TERMCAP_ue=$esc'[0m'         # end underline
-	    LESS_TERMCAP_me=$esc'[0m'         # end mode
-	    unset esc
-	fi
-	export LESS_TERMCAP_md LESS_TERMCAP_mb LESS_TERMCAP_us LESS_TERMCAP_so
-	export LESS_TERMCAP_se LESS_TERMCAP_ue LESS_TERMCAP_me
-fi
-unset less
-
-if [ -z "$LS_COLORS" ] && [ -f ~/.dir_colors ]; then
-	eval "$(dircolors -b ~/.dir_colors)"
-fi
-
-# The encoding is ‘UTF-8’ on some systems and ‘utf8’ on others.  Furthermore, on
-# some en_GB is not available but en_US is.  Pick locale which is available.
-LANG=$(locale -a 2>/dev/null |grep -i '^en_\(GB\|US\)\.utf-\?8$'|sort|head -n1)
-[ -n "$LANG" ] || LANG=C.UTF-8
-LC_COLLATE=C
-
-# /tmp is in RAM, don't save history between reboots
-HISTFILE=/tmp/.$(id -un)-history
-HISTCONTROL=ignorespace:erasedups
-export LANG LC_COLLATE HISTFILE HISTCONTROL
-unset MAILCHECK MAIL
 
 # And finally, load local configuration.
 if [ -e ~/.config/sh/local ]; then

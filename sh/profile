@@ -1,9 +1,61 @@
 ## .profile                                             -*- shell-script -*-
 # shellcheck shell=sh
 
-ENV=~/.shellrc
-export ENV
+# Make sure basic variables are set.  Apparently I’ve witnessed them not being
+# set by the system.  I honestly don’t remember when, but keeping this in just
+# in case.
+[ -n "$LOGNAME" ] || LOGNAME=$(id -un)
+[ -n "$USER" ] || USER=$LOGNAME
+[ -n "$HOME" ] || HOME=$(eval echo ~"$USER")
+[ -n "$HOSTNAME" ] || HOSTNAME=$(hostname 2>/dev/null)
+export USER LOGNAME HOME HOSTNAME
 
+# Add various directories to PATH and make sure relative paths are not present
+# in it.  This needs to be done early so ‘which’ calls work correctly.
+for __d in \
+	~/.local/share/solana/install/active_release/bin \
+	~/.npm/packages/bin \
+	~/code/tinyapps \
+	~/.local/bin
+do
+	if [ -d "$__d" ]; then
+		PATH=$__d:$PATH
+	fi
+done
+unset __d
+PATH=$(echo ":$PATH:" | sed -e 's~::*\(\([^/:][^:]*\)\?:\)*~:~g' \
+                            -e 's/^::*//' -e 's/::*$//')
+
+if which nano >/dev/null 2>&1; then
+	EDITOR=nano
+	VISUAL=nano
+	export EDITOR VISUAL
+fi
+
+if less=$(which less 2>&1) && [ -n "$less" ]; then
+	PAGER=$less
+	LESS=-FMSRj4
+	export PAGER LESS
+
+	if [ -x ~/.local/bin/lesspipe ]; then
+		eval "$(~/.local/bin/lesspipe --install-lesspipe)"
+	fi
+fi
+unset less
+
+# The encoding is ‘UTF-8’ on some systems and ‘utf8’ on others.  Furthermore, on
+# some en_GB is not available but en_US is.  Pick locale which is available.
+LANG=$(locale -a 2>/dev/null |grep -i '^en_\(GB\|US\)\.utf-\?8$'|sort|head -n1)
+[ -n "$LANG" ] || LANG=C.UTF-8
+LC_COLLATE=C
+
+# /tmp is in RAM, don't save history between reboots
+HISTFILE=/tmp/.$(id -un)-history
+HISTCONTROL=ignorespace:erasedups
+export LANG LC_COLLATE HISTFILE HISTCONTROL
+unset MAILCHECK MAIL
+
+# Finally, run shell initialisation.
 if [ -n "$BASH_VERSION" ] && [ -r ~/.bashrc ]; then
 	# shellcheck source=shellrc
 	. ~/.bashrc
