@@ -153,28 +153,29 @@ alias gg='git grep -n'
 
 alias @='for i in'
 
-alias c=cargo
-cargo() {
-	set -- nice ~/.local/bin/cargo "$@"
-	#set -- nice /usr/bin/cargo "$@"
-	case $PWD in
-	*/code/near/rust-rocksdb/*)
-		CARGO_PROFILE_RELEASE_LTO=false \
-		CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64 \
-		CARGO_PROFILE_DEV_DEBUG=false \
+if [ -x ~/.local/bin/cargo ]; then
+	alias c=cargo
+	cargo() {
+		set -- nice ~/.local/bin/cargo "$@"
+		case $PWD in
+		*/rust-rocksdb/*)
+			CARGO_PROFILE_RELEASE_LTO=false \
+				CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64 \
+				CARGO_PROFILE_DEV_DEBUG=false \
+				"$@"
+			;;
+		*/code/near/*|*/code/comp/composable/*)
+			CARGO_PROFILE_RELEASE_LTO=false \
+				CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64 \
+				CARGO_PROFILE_DEV_DEBUG=false \
+				ROCKSDB_LIB_DIR=/usr/lib/x86_64-linux-gnu \
+				"$@"
+			;;
+		*)
 			"$@"
-		;;
-	*/code/near/*|*/code/comp/composable/*)
-		CARGO_PROFILE_RELEASE_LTO=false \
-		CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64 \
-		CARGO_PROFILE_DEV_DEBUG=false \
-		ROCKSDB_LIB_DIR=/usr/lib/x86_64-linux-gnu \
-			"$@"
-		;;
-	*)
-		CARGO_PROFILE_DEV_DEBUG=false "$@"
-	esac
-}
+		esac
+	}
+fi
 
 if [ -s ~/.nvm/nvm.sh ]; then
 	export NVM_DIR
