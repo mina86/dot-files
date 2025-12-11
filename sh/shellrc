@@ -131,8 +131,8 @@ if [ "$__old_TERM" != "$TERM" ]; then
 	__old_TERM=$TERM
 	export __old_TERM
 
-	if [ -r ~/.dir_colors ]; then
-		eval "$(dircolors -b ~/.dir_colors)"
+	if [ -r ~/.config/dir_colors ]; then
+		eval "$(dircolors -b ~/.config/dir_colors)"
 	fi
 
 	if [ -n "$LESS" ]; then
