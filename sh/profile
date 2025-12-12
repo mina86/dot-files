@@ -34,7 +34,7 @@ fi
 
 if less=$(which less 2>&1) && [ -n "$less" ]; then
 	PAGER=$less
-	LESS=-FMSRj4
+	LESS=-FMSRXj4
 	export PAGER LESS
 
 	if [ -x ~/.local/bin/lesspipe ]; then
