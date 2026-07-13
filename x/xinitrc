@@ -114,7 +114,10 @@ exec_quit_cmd() {
 
 exec_x() {
 	if [ -f ~/.config/Xresources ]; then
-		xrdb -merge -D"HOME=$HOME" ~/.config/Xresources
+		case $(hostname) in
+		tuptus) xrdb -DTUPTUS -merge ~/.config/Xresources ;;
+		*)      xrdb          -merge ~/.config/Xresources ;;
+		esac
 	fi
 	init_screen
 	exec_background_tasks &

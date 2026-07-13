@@ -14,10 +14,17 @@ XTerm*visualBell:      false
 XTerm*locale:          true
 XTerm*utf8:            3
 
+#ifdef TUPTUS
+XTerm*font:            -*-courier-medium-r-normal-*-16-*-*-*-*-*-iso10646-1
+XTerm*italicFont:      -*-courier-medium-o-normal-*-16-*-*-*-*-*-iso10646-1
+XTerm*boldfont:        -*-courier-bold-r-normal-*-16-*-*-*-*-*-iso10646-1
+XTerm*boldItalicFont:  -*-courier-bold-o-normal-*-16-*-*-*-*-*-iso10646-1
+#else
 XTerm*font:            -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
 XTerm*italicFont:      -*-courier-medium-o-normal-*-10-*-*-*-*-*-iso10646-1
 XTerm*boldfont:        -*-courier-bold-r-normal-*-10-*-*-*-*-*-iso10646-1
 XTerm*boldItalicFont:  -*-courier-bold-o-normal-*-10-*-*-*-*-*-iso10646-1
+#endif
 
 XTerm*colorMode:       true
 XTerm*colorBDMode:     false
@@ -39,6 +46,7 @@ XTerm*colorUL:         #DD0000
 *color1:               #CC0000
 *color2:               #00CC00
 *color3:               #bd5e01
+!*color4:               #0000CC
 *color4:               #6161ec
 *color5:               #CC00CC
 *color6:               #00CCCC
@@ -61,10 +69,17 @@ URxvt.visualBell:      false
 URxvt.internalBorder:  0
 URxvt.externalBorder:  0
 
+#ifdef TUPTUS
+URxvt.font:            -*-courier-medium-r-normal-*-16-*-*-*-*-*-iso10646-1
+URxvt.italicFont:      -*-courier-medium-o-normal-*-16-*-*-*-*-*-iso10646-1
+URxvt.boldfont:        -*-courier-bold-r-normal-*-16-*-*-*-*-*-iso10646-1
+URxvt.boldItalicFont:  -*-courier-bold-o-normal-*-16-*-*-*-*-*-iso10646-1
+#else
 URxvt.font:            -*-courier-medium-r-normal-*-10-*-*-*-*-*-iso10646-1
 URxvt.italicFont:      -*-courier-medium-o-normal-*-10-*-*-*-*-*-iso10646-1
 URxvt.boldfont:        -*-courier-bold-r-normal-*-10-*-*-*-*-*-iso10646-1
 URxvt.boldItalicFont:  -*-courier-bold-o-normal-*-10-*-*-*-*-*-iso10646-1
+#endif
 
 URxvt.background:      #000000
 URxvt.foreground:      #CCCCCC
@@ -73,18 +88,26 @@ URxvt.cursorColor:     #FFFF00
 
 URxvt*iso14755:        0
 
-URxvt.print-pipe:      cat >$(TMPDIR=$HOME mktemp urxvt.XXXXXX)
+URxvt.print-pipe:      cat >$(mktemp urxvt.XXXXXX)
 
 ! Terminal in urxvt
 Term.perl-ext-common:  matcher<C1>,tabbedex,searchable-scrollback<M-s>,background
 
 URxvt.background.border: true
 ! TW / TW is there to signal that the image depends on terminal width.
+#ifdef TUPTUS
+URxvt.background.expr: extend merge \
+    solid(64 * 10, TW / TW, [0, 0, 0]),                    \
+    pad(move 64 * 10, 0, solid 8 * 10, 1, [0.05, 0.05, 0]), \
+    pad(move 72 * 10, 0, solid 8 * 10, 1, [0.06, 0.00, 0]), \
+    pad(move 80 * 10, 0, solid 8 * 10, 1, [0.09, 0, 0]);
+#else
 URxvt.background.expr: extend merge \
     solid(64 * 6, TW / TW, [0, 0, 0]),                    \
     pad(move 64 * 6, 0, solid 8 * 6, 1, [0.05, 0.05, 0]), \
     pad(move 72 * 6, 0, solid 8 * 6, 1, [0.06, 0.00, 0]), \
     pad(move 80 * 6, 0, solid 8 * 6, 1, [0.09, 0, 0]);
+#endif
 
 URxvt.tabbed.tabbedex-rs-prefix: %
 URxvt.tabbedex.new-button:   0
