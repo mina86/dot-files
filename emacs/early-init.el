@@ -1,15 +1,5 @@
 ;; early-init.el  -- Emacs early configuration file   -*- lexical-binding: t -*-
 
-;; Disable GC while Emacs is initialising.  We get it back to normal after
-;; initialisation is done.
-(setq gc-cons-threshold most-positive-fixnum
-      gc-cons-percentage 0.5)
-(add-hook 'after-init-hook (lambda ()
-                             (setq gc-cons-threshold (* 64 1024 1024)
-                                   gc-cons-percentage 0.1)
-                             (garbage-collect))
-          t)
-
 ;; Set frame parameters.  We do it in early-init to avoid flickering of the
 ;; initial frame as the settings are applied after its displayed.  We could do
 ;; this by setting the options via X resources but that would spread Emacs
